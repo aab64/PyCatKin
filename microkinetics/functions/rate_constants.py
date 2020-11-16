@@ -1,5 +1,5 @@
-from physical_constants import *
 import numpy as np
+from microkinetics.constants.physical_constants import *
 
 
 def karr(T, prefac, barrier):

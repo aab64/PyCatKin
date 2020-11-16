@@ -1,9 +1,9 @@
-from state import *
-from reaction import *
-from system import *
-from reactor import *
-from scaling import *
 import numpy as np
+from microkinetics.classes.state import *
+from microkinetics.classes.reaction import *
+from microkinetics.classes.system import *
+from microkinetics.classes.reactor import *
+from microkinetics.classes.scaling import *
 
 # Conditions
 p = 1.0e5  # Pressure (Pa)

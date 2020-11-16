@@ -1,8 +1,8 @@
 import numpy as np
 import ase.io
 import os
-from physical_constants import *
 import pickle
+from microkinetics.constants.physical_constants import *
 
 
 class State:

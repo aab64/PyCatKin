@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.integrate import odeint
-from physical_constants import *
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import os
+from microkinetics.constants.physical_constants import *
 
 
 class System:

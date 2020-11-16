@@ -1,5 +1,5 @@
-from rate_constants import *
 import pickle
+from microkinetics.functions.rate_constants import *
 
 
 class Reaction:

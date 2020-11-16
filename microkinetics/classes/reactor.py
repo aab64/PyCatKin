@@ -1,6 +1,6 @@
-from physical_constants import *
 import numpy as np
 import pickle
+from microkinetics.constants.physical_constants import *
 
 
 class Reactor:

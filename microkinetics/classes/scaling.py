@@ -1,4 +1,4 @@
-from physical_constants import eVtokJ
+from microkinetics.constants.physical_constants import *
 
 
 class Scaling:
