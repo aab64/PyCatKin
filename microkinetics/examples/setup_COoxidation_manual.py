@@ -1,4 +1,3 @@
-import numpy as np
 from microkinetics.classes.state import *
 from microkinetics.classes.reaction import *
 from microkinetics.classes.system import *
@@ -15,8 +14,8 @@ adsdir = 'D:/Users/Astrid/Dropbox/COox.Pd111-Astrid/RPBE/'
 gasdir = 'D:/Users/Astrid/Dropbox/COox.Pd111-Astrid/RPBE/'
 
 # Location of results files and images
-results_dir = 'results/COoxidation/'
-figures_dir = 'Images/COoxidation/'
+results_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/COoxidation/results/'
+figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/COoxidation/images/'
 
 print('--------------------')
 print('System: CO oxidation')

@@ -1,13 +1,13 @@
-from state import *
-from reaction import *
-from system import *
-from reactor import *
-from scaling import *
+from microkinetics.classes.state import *
+from microkinetics.classes.reaction import *
+from microkinetics.classes.system import *
+from microkinetics.classes.reactor import *
+from microkinetics.classes.scaling import *
 import numpy as np
 
 # Conditions
 p = 1.0e5  # Pressure (Pa)
-verbose = True  # Print messages
+verbose = False  # Print messages
 savexyz = False  # Save xyz files (not invoked atm)
 
 # Location of outcars and frequencies
@@ -15,8 +15,8 @@ adsdir = 'D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys
 gasdir = 'D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/'
 
 # Location of results files and images
-results_dir = 'results/COoxidation/'
-figures_dir = 'Images/COoxidation/'
+results_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/COoxidation/results/'
+figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/COoxidation/images/'
 
 print('--------------------')
 print('System: CO oxidation')
@@ -55,7 +55,7 @@ states = dict(zip(snames, states))
 # All frequencies are in a sub-folder called freqs
 for s in snames:
     if states[s].path is not None:
-        states[s].vibs_path = states[s].path + '/freqs_ase'
+        states[s].vibs_path = states[s].path + '/nowave'
 
 print('Done.')
 
@@ -75,9 +75,9 @@ aAu = np.pi * rAu ** 2  # Au site area (m2)
 Acat_Au = 0.069 * 2e-4  # Total catalyst area (m2)
 
 # Temporary (also fix scaling!)
-rAu = 1.63e-10
-aAu = np.pi * rPd ** 2
-Acat_Au = 0.062 * 2e-4
+# rAu = 1.63e-10
+# aAu = np.pi * rPd ** 2
+# Acat_Au = 0.062 * 2e-4
 
 reactions = [Reaction(reac_type='adsorption',
                       reactants=[states['CO'], states['Clean']],
@@ -121,28 +121,28 @@ reactions += [Reaction(reac_type='adsorption',
                        TS=None,
                        area=aAu,
                        name='CO_ads_alloy_Au',
-                       scaling=1.0)]  # Only allow adsorption on half the sites
+                       scaling=0.5)]  # Only allow adsorption on half the sites
 reactions += [Reaction(reac_type='adsorption',
                        reactants=[states['CO'], states['Clean_alloy']],
                        products=[states['COonPd_alloy']],
                        TS=None,
                        area=aAu,
                        name='CO_ads_alloy_Pd',
-                       scaling=1.0)]  # Only allow adsorption on half the sites
+                       scaling=0.5)]  # Only allow adsorption on half the sites
 reactions += [Reaction(reac_type='adsorption',
                        reactants=[states['O2'], states['Clean_alloy'], states['Clean_alloy']],
                        products=[states['OonAu_alloy'], states['OonAu_alloy']],
                        TS=None,
                        area=aPd,
                        name='O2_ads_alloy_Au',
-                       scaling=1.0)]  # Only allow adsorption on half the sites
+                       scaling=0.5)]  # Only allow adsorption on half the sites
 reactions += [Reaction(reac_type='adsorption',
                        reactants=[states['O2'], states['Clean_alloy'], states['Clean_alloy']],
                        products=[states['OonPd_alloy'], states['OonPd_alloy']],
                        TS=None,
                        area=aPd,
                        name='O2_ads_alloy_Pd',
-                       scaling=1.0)]  # Only allow adsorption on half the sites
+                       scaling=0.5)]  # Only allow adsorption on half the sites
 
 # Zip reactions into a dictionary
 rnames = [r.name for r in reactions]
@@ -234,8 +234,14 @@ for v, considered_reactions in enumerate(reactionsets):
 
     for Tind, T in enumerate(Ts):
 
-        times = np.logspace(start=-16, stop=3, num=int(1e2)) * 2.4
-        sys.run_odeint(times=times, inflow_state=inflow_state, T=T, p=p, verbose=verbose)
+        times = np.logspace(start=-16, stop=3, num=int(1e4)) * 2.4
+        sys.run_odeint(times=times, inflow_state=inflow_state, T=T, p=p, verbose=verbose, rtol=1.0e-8, atol=1.0e-10)
+        print('%1.0f K' % T)
+        for r in considered_reactions:
+            if reactions[r].dGa_fwd is not None:
+                print(r + ' dGa: %1.2f J/mol' % reactions[r].dGa_fwd)
+            if reactions[r].dGrxn is not None:
+                print(r + ' dGr: %1.2f J/mol' % reactions[r].dGrxn)
         print('Done.')
 
         print('Post-processing...')
