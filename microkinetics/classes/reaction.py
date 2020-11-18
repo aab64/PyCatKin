@@ -36,9 +36,9 @@ class Reaction:
             self.dGrxn = (Gprod - Greac) * eVtokJ * 1.0e3
         if self.TS is not None:
             GTS = sum([i.get_free_energy(T=T, p=p, verbose=verbose) for i in self.TS])
-            self.dGa_fwd = (GTS - Greac) * eVtokJ * 1.0e3
+            self.dGa_fwd = np.max(((GTS - Greac) * eVtokJ * 1.0e3, 0.0))
             if self.reversible:
-                self.dGa_rev = (GTS - Gprod) * eVtokJ * 1.0e3
+                self.dGa_rev = np.max(((GTS - Gprod) * eVtokJ * 1.0e3, 0.0))
         else:
             self.dGa_fwd = 0.0
             self.dGa_rev = 0.0
