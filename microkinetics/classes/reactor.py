@@ -42,8 +42,8 @@ class Reactor:
 class InfiniteDilutionReactor(Reactor):
 
     def rhs(self, adsorbate_kinetics):
-        def combined(y, t, T, p, inflow_state):
-            return np.multiply(adsorbate_kinetics(y, T, p), self.is_adsorbate)
+        def combined(y, t, T, p, inflow_state, verbose=False):
+            return np.multiply(adsorbate_kinetics(y=y, T=T, p=p, verbose=verbose), self.is_adsorbate)
         return combined
 
 
@@ -61,10 +61,10 @@ class CSTReactor(Reactor):
             self.residence_time = self.volume / self.flow_rate
 
     def rhs(self, adsorbate_kinetics):
-        def combined(y, t, T, p, inflow_state):
+        def combined(y, t, T, p, inflow_state, verbose=False):
             self.set_scaling(T=T)
             scaling = [1 if i else (self.scaling / bartoPa) for i in self.is_adsorbate]
             flow = np.array([0 if not self.is_gas[i] else (inflow_state[i] - y[i]) / self.residence_time
                              for i in range(len(self.is_gas))])
-            return np.multiply(adsorbate_kinetics(y, T, p), np.array(scaling)) + flow
+            return np.multiply(adsorbate_kinetics(y=y, T=T, p=p, verbose=verbose), np.array(scaling)) + flow
         return combined

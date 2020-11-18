@@ -69,7 +69,7 @@ class System:
         else:
             self.reactor.is_gas = np.zeros(len(self.snames))
 
-    def check_rate_constants(self, T, p):
+    def check_rate_constants(self, T, p, verbose=False):
         """Check if the rate constants have been calculated
         and are updated to the current conditions.
 
@@ -87,16 +87,16 @@ class System:
             update = False
         if update:
             for r in self.reactions.keys():
-                self.reactions[r].calc_rate_constants(T, p)
+                self.reactions[r].calc_rate_constants(T=T, p=p, verbose=verbose)
                 self.rate_constants[r] = {'kfwd': self.reactions[r].kfwd,
                                           'krev': self.reactions[r].krev}
 
-    def reaction_terms(self, y, T, p):
+    def reaction_terms(self, y, T, p, verbose=False):
         """Constructs forward and reverse reaction rate terms
         by multiplying rate constants by reactant species coverages.
 
         """
-        self.check_rate_constants(T=T, p=p)
+        self.check_rate_constants(T=T, p=p, verbose=verbose)
         self.rates = np.zeros((len(self.species_map), 2))
         yfree = 1 - sum(y[self.adsorbate_indices])
         for rind, r in enumerate(self.species_map.keys()):
@@ -116,12 +116,12 @@ class System:
             for i in range(freebal, 0):
                 self.rates[rind, 0] *= yfree
 
-    def species_odes(self, y, T, p):
+    def species_odes(self, y, T, p, verbose=False):
         """Constructs species ODEs for adsorbate coverage from reaction terms.
 
         Returns array of species ODEs."""
         # Reaction rate terms
-        self.reaction_terms(y=y, T=T, p=p)
+        self.reaction_terms(y=y, T=T, p=p, verbose=verbose)
         net_rates = self.rates[:, 0] - self.rates[:, 1]
 
         # Construct ODE for each species
@@ -144,18 +144,12 @@ class System:
         Returns times and solution variable."""
         # Set initial coverages to zero if not specified
         yinit = np.zeros(len(self.snames))
-        print(self.snames)
-        print(len(self.snames))
-        print('-------------------------')
         if start_state is not None:
             for s in start_state.keys():
                 yinit[self.snames.index(s)] = start_state[s]
 
         # Set inflow mole fractions to zero if not specified
         yinflow = np.zeros(len(self.snames))
-        print(self.snames)
-        print(len(self.snames))
-        print('-------------------------')
         if inflow_state is not None:
             for s in inflow_state.keys():
                 yinflow[self.snames.index(s)] = inflow_state[s]
@@ -175,7 +169,8 @@ class System:
             times = np.logspace(np.log10(1e-14), np.log10(1e14), num=60)
 
         # Integrate species ODEs for given times
-        y = odeint(self.reactor.rhs(self.species_odes), yinit, times, rtol=rtol, atol=atol, args=(T, p, yinflow))
+        y = odeint(self.reactor.rhs(self.species_odes), yinit, times,
+                   rtol=rtol, atol=atol, args=(T, p, yinflow, verbose))
 
         if verbose:
             print('=========\nFinal conditions:\n')

@@ -52,7 +52,7 @@ class State:
             self.inertia = np.array([i if i > inertia_cutoff else 0.0 for i in self.inertia])
             self.shape = len([self.inertia[i] for i in range(len(self.inertia)) if i != 0.0])
 
-    def get_vibrations(self):
+    def get_vibrations(self, verbose=False):
         """Reads vibrations file from path and extracts frequencies.
 
         """
@@ -78,7 +78,8 @@ class State:
             i_freq = [(float(line.strip().split()[1].split('i')[0]) * 1e-3 / (h * JtoeV)) for line in
                       lines[initat:endat + 1] if 'i' in line]
         else:
-            print('Checking OUTCAR for frequencies')
+            if verbose:
+                print('Checking OUTCAR for frequencies')
             assert(self.path is not None)
             freq_path = self.path + '/OUTCAR'
             assert(os.path.isfile(freq_path))
@@ -104,20 +105,22 @@ class State:
         for f in range(len(freq)):
             if (freq[f] * h * JtoeV * 1e3) < 12.4:
                 freq[f] = 12.4 * 1e-3 / (h * JtoeV)
-                print('Truncating small freq %1.2f to 12.4 meV' % (freq[f] * h * JtoeV * 1e3))
+                if verbose:
+                    print('Truncating small freq %1.2f to 12.4 meV' % (freq[f] * h * JtoeV * 1e3))
         # Check correct DOF
         n_freq = len(freq)
         n_dof = len(freq) + len(i_freq)  # 3 * N_moving_atoms
         if self.state_type == 'gas':
             n_dof -= 3  # Translational DOF
         if n_freq < n_dof:
-            print('Incorrect number of frequencies! n_dof = %1.0f and n_freq = %1.0f' % (n_dof, n_freq))
-            print('Adding %1.0f extra frequencies of 12.4 meV...' % (n_dof - n_freq))
+            if verbose:
+                print('Incorrect number of frequencies! n_dof = %1.0f and n_freq = %1.0f' % (n_dof, n_freq))
+                print('Adding %1.0f extra frequencies of 12.4 meV...' % (n_dof - n_freq))
             freq += [12.4 * 1e-3 / (h * JtoeV) for f in range(n_dof - n_freq)]
         self.freq = np.array(sorted(freq, reverse=True))
         self.i_freq = np.array(i_freq)
 
-    def calc_electronic_energy(self):
+    def calc_electronic_energy(self, verbose=False):
         """Calculates electronic energy.
 
         Saves value in eV."""
@@ -125,20 +128,20 @@ class State:
             self.get_atoms()
         self.Gelec = self.atoms.get_potential_energy(force_consistent=True)
 
-    def calc_zpe(self):
+    def calc_zpe(self, verbose=False):
         """Calculates zero point energy.
 
         Saves value in eV."""
         if self.freq is None:
-            self.get_vibrations()
+            self.get_vibrations(verbose=verbose)
         self.Gzpe = 0.5 * h * sum(self.freq) * JtoeV
 
-    def calc_vibrational_contrib(self, T):
+    def calc_vibrational_contrib(self, T, verbose=False):
         """Calculates vibrational contribution to free energy.
 
         Saves value in eV."""
         if self.freq is None:
-            self.get_vibrations()
+            self.get_vibrations(verbose=verbose)
         if self.atoms is None:
             self.get_atoms()
 
@@ -152,7 +155,7 @@ class State:
 
         self.Gvibr = (0.5 * h * sum(use_freq) + kB * T * sum(np.log(1 - np.exp(-use_freq * h / (kB * T))))) * JtoeV
 
-    def calc_translational_contrib(self, T, p):
+    def calc_translational_contrib(self, T, p, verbose=False):
         """Calculates translational contribution to free energy.
 
         Saves value in eV."""
@@ -164,7 +167,7 @@ class State:
         else:
             self.Gtran = 0.0
 
-    def calc_rotational_contrib(self, T):
+    def calc_rotational_contrib(self, T, verbose=False):
         """Calculates rotational contribution to free energy
         accounting for linear/non-linear molecule.
 
@@ -185,9 +188,9 @@ class State:
 
         Saves value in eV."""
         self.calc_electronic_energy()
-        self.calc_vibrational_contrib(T=T)
-        self.calc_translational_contrib(T=T, p=p)
-        self.calc_rotational_contrib(T=T)
+        self.calc_vibrational_contrib(T=T, verbose=verbose)
+        self.calc_translational_contrib(T=T, p=p, verbose=verbose)
+        self.calc_rotational_contrib(T=T, verbose=verbose)
 
         self.Gfree = self.Gelec + self.Gtran + self.Grota + self.Gvibr
 
@@ -198,7 +201,6 @@ class State:
         """Returns the free energy in eV.
 
         """
-        print(self.name)
         self.calc_free_energy(T=T, p=p, verbose=verbose)
         return self.Gfree
 
