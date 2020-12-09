@@ -180,6 +180,35 @@ class System:
         self.times = times
         self.solution = y
 
+    def degree_of_rate_control(self, y, T, p, verbose=False):
+        """Calculate the degree of rate control dorc_i=r_i/sum(r_i).
+
+        Returns array of dorc_i terms for each step i."""
+        # Reaction rate terms
+        self.reaction_terms(y=y, T=T, p=p, verbose=verbose)
+        net_rates = self.rates[:, 0] - self.rates[:, 1]
+
+        # Construct ODE for each species
+        dy_dt = np.zeros(len(y))
+        dorc = dict()
+        for rind, rinfo in enumerate(self.species_map.items()):
+            dorc[rinfo[0]] = np.zeros(len(y))
+            for sp in rinfo[1]['yreac']:  # Species is consumed
+                dy_dt[sp] -= net_rates[rind] * rinfo[1]['scaling']
+                dorc[rinfo[0]][sp] -= net_rates[rind] * rinfo[1]['scaling']
+            for sp in rinfo[1]['yprod']:  # Species is formed
+                dy_dt[sp] += net_rates[rind] * rinfo[1]['scaling']
+                dorc[rinfo[0]][sp] += net_rates[rind] * rinfo[1]['scaling']
+            for sp in rinfo[1]['preac']:
+                dy_dt[sp] -= net_rates[rind] * rinfo[1]['scaling'] * rinfo[1]['site_density']
+                dorc[rinfo[0]][sp] -= net_rates[rind] * rinfo[1]['scaling'] * rinfo[1]['site_density']
+            for sp in rinfo[1]['pprod']:
+                dy_dt[sp] += net_rates[rind] * rinfo[1]['scaling'] * rinfo[1]['site_density']
+                dorc[rinfo[0]][sp] += net_rates[rind] * rinfo[1]['scaling'] * rinfo[1]['site_density']
+        for r in dorc.keys():
+            dorc[r] = [dorc[r][i] / dy_dt[i] if dy_dt[i] != 0.0 else 0.0 for i in range(len(dorc[r]))]
+        return dorc
+
     def write_results(self, T, p, path=''):
         """Write reaction rates, coverages and pressures to file.
         Reaction rates computed at temperature T and pressure p.
@@ -245,33 +274,33 @@ class System:
                 rates[t, 2 * i] = self.rates[i, 0]
                 rates[t, 2 * i + 1] = self.rates[i, 1]
 
-        fig, ax = plt.subplots(figsize=(3.33, 3.33))
+        fig, ax = plt.subplots(figsize=(6.66, 3.33))
         for i, sname in enumerate(self.snames):
             if i in self.adsorbate_indices:
-                ax.plot(self.times, self.solution[:, i], label=sname)
-        ax.legend(loc='upper center', frameon=False, ncol=2)
-        ax.set(xlabel='Time (s)', ylabel='Coverage', title=('%1.1f K' % T))
+                ax.plot(self.times / 3600, self.solution[:, i], label=sname)
+        ax.legend(loc='center right', frameon=False, ncol=2)
+        ax.set(xlabel='Time (hr)', ylabel='Coverage', title=('%1.1f K' % T), xscale='log')
         fig.tight_layout()
         if path is not None:
             figname = path + 'coverages_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.png'
             plt.savefig(figname, format='png', dpi=300)
 
-        fig, ax = plt.subplots(figsize=(3.33, 3.33))
+        fig, ax = plt.subplots(figsize=(6.66, 3.33))
         for i, sname in enumerate(self.snames):
             if i in self.gas_indices:
-                ax.plot(self.times, self.solution[:, i], label=sname)
-        ax.legend(loc='upper center', frameon=False, ncol=2)
-        ax.set(xlabel='Time (s)', ylabel='Pressure (bar)', title=('%1.1f K' % T))
+                ax.plot(self.times / 3600, self.solution[:, i], label=sname)
+        ax.legend(loc='center right', frameon=False, ncol=1)
+        ax.set(xlabel='Time (hr)', ylabel='Pressure (bar)', title=('%1.1f K' % T))
         fig.tight_layout()
         if path is not None:
             figname = path + 'pressures_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.png'
             plt.savefig(figname, format='png', dpi=300)
 
-        fig, ax = plt.subplots(figsize=(3.33, 3.33))
+        fig, ax = plt.subplots(figsize=(6.66, 3.33))
         for i, rname in enumerate([r for rname in self.reactions.keys() for r in [rname + '_fwd', rname + '_rev']]):
-            ax.plot(self.times, rates[:, i], label=rname)
-        ax.legend(loc='upper center', frameon=False, ncol=2)
-        ax.set(xlabel='Time (s)', ylabel='Rate (1/s)', title=('%1.1f K' % T))
+            ax.plot(self.times / 3600, rates[:, i], label=rname)
+        ax.legend(loc='lower center', frameon=False, ncol=4)
+        ax.set(xlabel='Time (hr)', ylabel='Rate (1/s)', title=('%1.1f K' % T), yscale='log')
         fig.tight_layout()
         if path is not None:
             figname = path + 'surfrates_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.png'
