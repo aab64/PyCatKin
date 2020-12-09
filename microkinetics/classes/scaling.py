@@ -39,17 +39,24 @@ class Scaling:
         assert(self.scaling_reactions is not None)
         assert(self.scaling_coeffs is not None)
 
-        self.Gfree = self.scaling_coeffs['intercept']
+        self.Gelec = self.scaling_coeffs['intercept']
+        self.Gfree = 0.0
         for r in self.scaling_reactions.values():
-            energy = r['reaction'].get_reaction_energy(T=T, p=p, verbose=verbose) / (eVtokJ * 1.0e3)
+            dEIS = r['reaction'].get_reaction_energy(T=T, p=p, verbose=verbose, etype='electronic') / (eVtokJ * 1.0e3)
+            dGIS = r['reaction'].get_reaction_energy(T=T, p=p, verbose=verbose, etype='free') / (eVtokJ * 1.0e3)
             if self.dereference:
-                ref_energy = sum([reac.get_free_energy(T=T, p=p, verbose=verbose) for reac in r['reaction'].reactants])
+                ref_EIS = sum([reac.Gelec for reac in r['reaction'].reactants])
+                ref_GIS = sum([reac.get_free_energy(T=T, p=p, verbose=verbose) for reac in r['reaction'].reactants])
             else:
-                ref_energy = 0.0
-            self.Gfree += r['multiplicity'] * (self.scaling_coeffs['gradient'] * energy + ref_energy)
+                ref_EIS = 0.0
+                ref_GIS = 0.0
+            self.Gelec += r['multiplicity'] * (self.scaling_coeffs['gradient'] * dEIS + ref_EIS)
+            self.Gfree += r['multiplicity'] * (-ref_EIS - dEIS + dGIS + ref_GIS)
+        self.Gfree += self.Gelec
 
         if verbose:
-            print((self.name + ': %1.2f eV') % self.Gfree)
+            print((self.name + ' elec: %1.2f eV') % self.Gelec)
+            print((self.name + ' free: %1.2f eV') % self.Gfree)
 
     def get_free_energy(self, T, p, verbose=False):
         """Returns the free energy in eV.
