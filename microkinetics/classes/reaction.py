@@ -25,23 +25,34 @@ class Reaction:
         self.dGrxn = None
         self.dGa_fwd = None
         self.dGa_rev = None
+        self.dErxn = None
+        self.dEa_fwd = None
+        self.dEa_rev = None
 
     def calc_reaction_energy(self, T, p, verbose=False):
         """Computes reaction energies and barriers in J/mol.
 
         """
         Greac = sum([i.get_free_energy(T=T, p=p, verbose=verbose) for i in self.reactants])
+        Ereac = sum([i.Gelec for i in self.reactants])
         if self.reversible:
             Gprod = sum([i.get_free_energy(T=T, p=p, verbose=verbose) for i in self.products])
+            Eprod = sum([i.Gelec for i in self.products])
             self.dGrxn = (Gprod - Greac) * eVtokJ * 1.0e3
+            self.dErxn = (Eprod - Ereac) * eVtokJ * 1.0e3
         if self.TS is not None:
             GTS = sum([i.get_free_energy(T=T, p=p, verbose=verbose) for i in self.TS])
+            ETS = sum([i.Gelec for i in self.TS])
             self.dGa_fwd = np.max(((GTS - Greac) * eVtokJ * 1.0e3, 0.0))
+            self.dEa_fwd = np.max(((ETS - Ereac) * eVtokJ * 1.0e3, 0.0))
             if self.reversible:
                 self.dGa_rev = np.max(((GTS - Gprod) * eVtokJ * 1.0e3, 0.0))
+                self.dEa_rev = np.max(((ETS - Eprod) * eVtokJ * 1.0e3, 0.0))
         else:
             self.dGa_fwd = 0.0
             self.dGa_rev = 0.0
+            self.dEa_fwd = 0.0
+            self.dEa_rev = 0.0
         if verbose:
             print('---------------------')
             print(self.name)
@@ -55,9 +66,12 @@ class Reaction:
                 for i in self.TS:
                     print('* ' + i.name + ', ' + i.state_type)
             print('dGfwd: % 1.2f (kJ/mol)' % (self.dGa_fwd * 1.0e-3))
+            print('dEfwd: % 1.2f (kJ/mol)' % (self.dEa_fwd * 1.0e-3))
             if self.reversible:
                 print('dGrev: % 1.2f (kJ/mol)' % (self.dGa_rev * 1.0e-3))
                 print('dGrxn: % 1.2f (kJ/mol)' % (self.dGrxn * 1.0e-3))
+                print('dErev: % 1.2f (kJ/mol)' % (self.dEa_rev * 1.0e-3))
+                print('dErxn: % 1.2f (kJ/mol)' % (self.dErxn * 1.0e-3))
             print('---------------------')
 
     def calc_rate_constants(self, T, p, verbose=False):
@@ -93,18 +107,22 @@ class Reaction:
             else:
                 self.krev = 0.0
 
-    def get_reaction_energy(self, T, p, verbose=False):
+    def get_reaction_energy(self, T, p, verbose=False, etype='free'):
         """Returns the reaction energy in J/mol.
 
         """
         self.calc_reaction_energy(T=T, p=p, verbose=verbose)
+        if etype == 'electronic':
+            return self.dErxn
         return self.dGrxn
 
-    def get_reaction_barriers(self, T, p, verbose=False):
+    def get_reaction_barriers(self, T, p, verbose=False, etype='free'):
         """Returns the reaction barriers in J/mol.
 
         """
         self.calc_reaction_energy(T=T, p=p, verbose=verbose)
+        if etype == 'electronic':
+            return self.dEa_fwd, self.dEa_rev
         return self.dGa_fwd, self.dGa_rev
 
     def save_pickle(self, path=None):
