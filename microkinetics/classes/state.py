@@ -3,11 +3,12 @@ import ase.io
 import os
 import pickle
 from microkinetics.constants.physical_constants import *
+from ase.visualize import view
 
 
 class State:
 
-    def __init__(self, state_type, path=None, vibs_path=None, name=None, sigma=None, mass=None):
+    def __init__(self, state_type, path=None, vibs_path=None, name=None, sigma=None, mass=None, gasdata=None):
         """Initialises State class.
         State class stores the species name and atoms object,
         the electronic energy and vibrational frequencies from DFT,
@@ -21,6 +22,7 @@ class State:
         self.name = name
         self.vibs_path = vibs_path
         self.mass = mass
+        self.gasdata = gasdata
         self.atoms = None
         self.freq = None
         self.i_freq = None
@@ -176,6 +178,10 @@ class State:
                                                               1.5))) * JtoeV
         else:
             self.Gtran = 0.0
+        if self.gasdata is not None:
+            for s in range(len(self.gasdata['fraction'])):
+                self.gasdata['state'][s].calc_translational_contrib(T=T, p=p, verbose=verbose)
+                self.Gtran += self.gasdata['fraction'][s] * self.gasdata['state'][s].Gtran
 
     def calc_rotational_contrib(self, T, verbose=False):
         """Calculates rotational contribution to free energy
@@ -192,9 +198,13 @@ class State:
                     8 * np.pi * np.pi * kB * T / (h ** 2), 1.5) * np.sqrt(np.prod(I)))) * JtoeV
         else:
             self.Grota = 0.0
+        if self.gasdata is not None:
+            for s in range(len(self.gasdata['fraction'])):
+                self.gasdata['state'][s].calc_rotational_contrib(T=T, verbose=verbose)
+                self.Grota += self.gasdata['fraction'][s] * self.gasdata['state'][s].Grota
 
     def calc_free_energy(self, T, p, verbose=False):
-        """Calculates free energy.
+        """Calculates free energy. 
 
         Saves value in eV."""
         self.calc_electronic_energy()
@@ -229,3 +239,14 @@ class State:
         """
         path = '' if path is None else path
         pickle.dump(self, open(path + self.name + '.pckl', 'wb'))
+
+    def view_atoms(self, path=None, rotation=None):
+        """Views the atoms object using the ASE visualizer.
+        If path is not None, saves as a png.
+
+        """
+        if self.atoms is None:
+            self.get_atoms()
+        view(self.atoms)
+        if path is not None:
+            ase.io.write(path + self.name + '.png', self.atoms, rotation=rotation)
