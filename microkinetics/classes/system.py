@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.integrate import odeint
+from scipy.integrate import odeint, ode
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import os
@@ -138,7 +138,7 @@ class System:
         return dy_dt
 
     def run_odeint(self, times=None, start_state=None, T=None, p=None, inflow_state=None,
-                   rtol=1e-6, atol=1e-8, verbose=False):
+                   rtol=1e-8, atol=1e-10, verbose=False):
         """Wrapper for ODE integrator.
 
         Returns times and solution variable."""
@@ -166,18 +166,29 @@ class System:
 
         # Choose solution times if not specified
         if times is None:
-            times = np.logspace(np.log10(1e-14), np.log10(1e14), num=60)
+            times = np.logspace(np.log10(1e-14), np.log10(1e3), num=1000)
 
         # Integrate species ODEs for given times
-        y = odeint(self.reactor.rhs(self.species_odes), yinit, times,
-                   rtol=rtol, atol=atol, args=(T, p, yinflow, verbose))
+        # y = odeint(self.reactor.rhs(self.species_odes), yinit, times,
+        #            rtol=rtol, atol=atol, args=(T, p, yinflow, verbose))
+
+        y = np.zeros((len(times) + 1, len(yinit)))
+        y[0, :] = yinit
+        r = ode(self.reactor.rhs(self.species_odes)).set_integrator('lsoda', method='bdf',
+                                                                    rtol=rtol, atol=atol)
+        r.set_initial_value(yinit, 0.0).set_f_params(T, p, yinflow, verbose)  # .set_jac_params()
+        for i, t in enumerate(times):
+            if r.successful() and r.t < times[-1]:
+
+                r.integrate(t)
+                y[i + 1, :] = r.y
 
         if verbose:
             print('=========\nFinal conditions:\n')
             for s, sname in enumerate(self.snames):
                 print('%15s : %9.2e' % (sname, y[-1][s]))
 
-        self.times = times
+        self.times = np.concatenate((np.zeros(1), times))
         self.solution = y
 
     def degree_of_rate_control(self, y, T, p, verbose=False):
@@ -274,33 +285,37 @@ class System:
                 rates[t, 2 * i] = self.rates[i, 0]
                 rates[t, 2 * i + 1] = self.rates[i, 1]
 
-        fig, ax = plt.subplots(figsize=(6.66, 3.33))
+        cmap = plt.get_cmap("Spectral", len(self.adsorbate_indices))
+        fig, ax = plt.subplots(figsize=(6.66, 6.66))
         for i, sname in enumerate(self.snames):
             if i in self.adsorbate_indices:
-                ax.plot(self.times / 3600, self.solution[:, i], label=sname)
-        ax.legend(loc='center right', frameon=False, ncol=2)
-        ax.set(xlabel='Time (hr)', ylabel='Coverage', title=('%1.1f K' % T), xscale='log')
+                ax.plot(self.times / 3600, self.solution[:, i], label=sname,
+                        color=cmap(self.adsorbate_indices.index(i)))
+        ax.legend(loc='center right', frameon=False, ncol=1)
+        ax.set(xlabel='Time (hr)', ylabel='Coverage', title=(r'$T=%1.1f$ K' % T), xscale='log', ylim=(-0.1, 1.1))
         fig.tight_layout()
         if path is not None:
             figname = path + 'coverages_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.png'
             plt.savefig(figname, format='png', dpi=300)
 
-        fig, ax = plt.subplots(figsize=(6.66, 3.33))
+        cmap = plt.get_cmap("Accent", len(self.gas_indices))  # Spectral
+        fig, ax = plt.subplots(figsize=(3.33, 3.33))
         for i, sname in enumerate(self.snames):
             if i in self.gas_indices:
-                ax.plot(self.times / 3600, self.solution[:, i], label=sname)
+                ax.plot(self.times / 3600, self.solution[:, i], label=sname, color=cmap(self.gas_indices.index(i)))
         ax.legend(loc='center right', frameon=False, ncol=1)
-        ax.set(xlabel='Time (hr)', ylabel='Pressure (bar)', title=('%1.1f K' % T))
+        ax.set(xlabel='Time (hr)', ylabel='Pressure (bar)', title=('%1.1f K' % T), xscale='log')
         fig.tight_layout()
         if path is not None:
             figname = path + 'pressures_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.png'
             plt.savefig(figname, format='png', dpi=300)
 
+        cmap = plt.get_cmap("Accent", len(self.reactions) * 2)
         fig, ax = plt.subplots(figsize=(6.66, 3.33))
         for i, rname in enumerate([r for rname in self.reactions.keys() for r in [rname + '_fwd', rname + '_rev']]):
-            ax.plot(self.times / 3600, rates[:, i], label=rname)
+            ax.plot(self.times / 3600, rates[:, i], label=rname, color=cmap(i))
         ax.legend(loc='lower center', frameon=False, ncol=4)
-        ax.set(xlabel='Time (hr)', ylabel='Rate (1/s)', title=('%1.1f K' % T), yscale='log')
+        ax.set(xlabel='Time (hr)', ylabel='Rate (1/s)', title=('%1.1f K' % T), yscale='log', xscale='log')
         fig.tight_layout()
         if path is not None:
             figname = path + 'surfrates_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.png'
