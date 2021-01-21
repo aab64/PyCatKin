@@ -43,11 +43,11 @@ class Reaction:
         if self.TS is not None:
             GTS = sum([i.get_free_energy(T=T, p=p, verbose=verbose) for i in self.TS])
             ETS = sum([i.Gelec for i in self.TS])
-            self.dGa_fwd = np.max(((GTS - Greac) * eVtokJ * 1.0e3, 0.0))
-            self.dEa_fwd = np.max(((ETS - Ereac) * eVtokJ * 1.0e3, 0.0))
+            self.dGa_fwd = (GTS - Greac) * eVtokJ * 1.0e3
+            self.dEa_fwd = (ETS - Ereac) * eVtokJ * 1.0e3
             if self.reversible:
-                self.dGa_rev = np.max(((GTS - Gprod) * eVtokJ * 1.0e3, 0.0))
-                self.dEa_rev = np.max(((ETS - Eprod) * eVtokJ * 1.0e3, 0.0))
+                self.dGa_rev = (GTS - Gprod) * eVtokJ * 1.0e3
+                self.dEa_rev = (ETS - Eprod) * eVtokJ * 1.0e3
         else:
             self.dGa_fwd = 0.0
             self.dGa_rev = 0.0
@@ -100,7 +100,7 @@ class Reaction:
                 self.Keq = None
                 self.krev = 0.0
         else:
-            self.kfwd = karr(T=T, prefac=prefactor(T), barrier=self.dGa_fwd)
+            self.kfwd = karr(T=T, prefac=prefactor(T), barrier=np.max((self.dGa_fwd, 0.0)))
             if self.reversible:
                 self.Keq = keq_therm(T=T, rxn_en=self.dGrxn)
                 self.krev = k_from_eq_rel(kknown=self.kfwd, Keq=self.Keq, direction='forward')
@@ -137,6 +137,7 @@ class UserDefinedReaction(Reaction):
 
     def __init__(self, reac_type, reversible=True, reactants=None, products=None, TS=None,
                  area=1.0e-19, name='reaction', scaling=1.0,
+                 dErxn_user=None, dEa_fwd_user=None, dEa_rev_user=None,
                  dGrxn_user=None, dGa_fwd_user=None, dGa_rev_user=None):
         """Initialises UserDefinedReaction class with energies specified by the user.
         Reaction class stores the states involved in the reaction,
@@ -145,6 +146,9 @@ class UserDefinedReaction(Reaction):
         """
         super(UserDefinedReaction, self).__init__(reac_type=reac_type, reversible=reversible, reactants=reactants,
                                                   products=products, TS=TS, area=area, name=name, scaling=scaling)
+        self.dErxn_user = dErxn_user
+        self.dEa_fwd_user = dEa_fwd_user
+        self.dEa_rev_user = dEa_rev_user
         self.dGrxn_user = dGrxn_user
         self.dGa_fwd_user = dGa_fwd_user
         self.dGa_rev_user = dGa_rev_user
@@ -154,15 +158,37 @@ class UserDefinedReaction(Reaction):
 
         """
         if self.reversible:
-            if isinstance(self.dGrxn_user, dict):
-                self.dGrxn = self.dGrxn_user[p][T] * eVtokJ * 1.0e3
+            if isinstance(self.dErxn_user, dict):
+                self.dErxn = self.dErxn_user[T] * eVtokJ * 1.0e3
             else:
-                assert (self.dGrxn_user is not None)
-                self.dGrxn = self.dGrxn_user * eVtokJ * 1.0e3
+                if self.dErxn_user is not None:
+                    self.dErxn = self.dErxn_user * eVtokJ * 1.0e3
+            if isinstance(self.dGrxn_user, dict):
+                self.dGrxn = self.dGrxn_user[T] * eVtokJ * 1.0e3
+            else:
+                if self.dGrxn_user is not None:
+                    self.dGrxn = self.dGrxn_user * eVtokJ * 1.0e3
+            if self.dErxn is None:
+                assert(self.dGrxn is not None)
+                self.dErxn = self.dGrxn
+            if self.dGrxn is None:
+                assert(self.dErxn is not None)
+                self.dGrxn = self.dErxn
+
+        if self.dEa_fwd_user is not None:
+            if isinstance(self.dEa_fwd_user, dict):
+                self.dEa_fwd = self.dEa_fwd_user[T] * eVtokJ * 1.0e3
+            else:
+                self.dEa_fwd = self.dEa_fwd_user * eVtokJ * 1.0e3
+            if self.reversible:
+                self.dEa_rev = (self.dEa_fwd - self.dErxn) * eVtokJ * 1.0e3
+        else:
+            self.dEa_fwd = 0.0
+            self.dEa_rev = 0.0
 
         if self.dGa_fwd_user is not None:
             if isinstance(self.dGa_fwd_user, dict):
-                self.dGa_fwd = self.dGa_fwd_user[p][T] * eVtokJ * 1.0e3
+                self.dGa_fwd = self.dGa_fwd_user[T] * eVtokJ * 1.0e3
             else:
                 self.dGa_fwd = self.dGa_fwd_user * eVtokJ * 1.0e3
             if self.reversible:
@@ -170,6 +196,13 @@ class UserDefinedReaction(Reaction):
         else:
             self.dGa_fwd = 0.0
             self.dGa_rev = 0.0
+
+        if self.dEa_fwd is None and self.dGa_fwd is not None:
+            self.dEa_fwd = self.dGa_fwd
+            self.dEa_rev = self.dGa_rev
+        elif self.dEa_fwd is not None and self.dGa_fwd is None:
+            self.dGa_fwd = self.dEa_fwd
+            self.dGa_rev = self.dEa_rev
 
         if verbose:
             print('---------------------')
@@ -184,7 +217,10 @@ class UserDefinedReaction(Reaction):
                 for i in self.TS:
                     print('* ' + i.name + ', ' + i.state_type)
             print('dGfwd: % 1.2f (kJ/mol)' % (self.dGa_fwd * 1.0e-3))
+            print('dEfwd: % 1.2f (kJ/mol)' % (self.dEa_fwd * 1.0e-3))
             if self.reversible:
                 print('dGrev: % 1.2f (kJ/mol)' % (self.dGa_rev * 1.0e-3))
                 print('dGrxn: % 1.2f (kJ/mol)' % (self.dGrxn * 1.0e-3))
+                print('dErev: % 1.2f (kJ/mol)' % (self.dEa_rev * 1.0e-3))
+                print('dErxn: % 1.2f (kJ/mol)' % (self.dErxn * 1.0e-3))
             print('---------------------')
