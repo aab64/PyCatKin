@@ -8,7 +8,8 @@ from ase.visualize import view
 
 class State:
 
-    def __init__(self, state_type, path=None, vibs_path=None, name=None, sigma=None, mass=None, gasdata=None):
+    def __init__(self, state_type, name=None, path=None, vibs_path=None, sigma=None, mass=None,
+                 gasdata=None, add_to_energy=None):
         """Initialises State class.
         State class stores the species name and atoms object,
         the electronic energy and vibrational frequencies from DFT,
@@ -18,11 +19,13 @@ class State:
         if name is None:
             name = os.path.basename(path)
         self.state_type = state_type
-        self.path = path
         self.name = name
+        self.path = path
         self.vibs_path = vibs_path
+        self.sigma = sigma
         self.mass = mass
         self.gasdata = gasdata
+        self.add_to_energy = add_to_energy
         self.atoms = None
         self.freq = None
         self.i_freq = None
@@ -34,7 +37,6 @@ class State:
         self.Gzpe = None
         self.inertia = None
         self.shape = None
-        self.sigma = sigma
         if self.state_type == 'gas':
             assert(self.sigma is not None)
 
@@ -44,11 +46,20 @@ class State:
         """
         assert(self.path is not None)
         outcar_path = self.path + '/OUTCAR'
+        # assert(os.path.isfile(outcar_path))
+        if not os.path.isfile(outcar_path):
+            outcar_path = self.path
         assert(os.path.isfile(outcar_path))
         self.atoms = ase.io.read(outcar_path, format='vasp-out')
         self.mass = sum(self.atoms.get_masses())
         if self.state_type == 'gas':
-            self.inertia = self.atoms.get_moments_of_inertia()
+            if self.name == 'acetaldehyde':
+                import copy
+                from ase.data.pubchem import pubchem_atoms_search
+                aa = pubchem_atoms_search(name='acetaldehyde')
+                self.inertia = copy.copy(aa.get_moments_of_inertia())
+            else:
+                self.inertia = self.atoms.get_moments_of_inertia()
             # Truncate inertial components likely resulting from low precision
             inertia_cutoff = 1.0e-12
             self.inertia = np.array([i if i > inertia_cutoff else 0.0 for i in self.inertia])
@@ -94,23 +105,24 @@ class State:
                 print('Checking OUTCAR for frequencies')
             assert(self.path is not None)
             freq_path = self.path + '/OUTCAR'
+            if not os.path.isfile(freq_path):
+                freq_path = self.path
             assert(os.path.isfile(freq_path))
             freq = []
             i_freq = []
-            firstcopy = None
+            firstcopy = 0
             with open(freq_path, 'r') as fd:
                 lines = fd.readlines()
             for line in lines:
                 data = line.split()
                 if 'THz' in data:
-                    if firstcopy != data[0]:
-                        fHz = float(data[-8]) * 1e12
+                    if (firstcopy + 1) == int(data[0]):
+                        fHz = float(data[-8]) * 1.0e12
                         if 'f/i=' not in data:
                             freq.append(fHz)
                         else:
                             i_freq.append(fHz)
-                        if firstcopy is None:
-                            firstcopy = data[0]
+                        firstcopy = int(data[0])
                     else:
                         break
         # Truncate small freqs
@@ -139,6 +151,8 @@ class State:
         if self.atoms is None:
             self.get_atoms()
         self.Gelec = self.atoms.get_potential_energy(force_consistent=True)
+        if self.add_to_energy:
+            self.Gelec += self.add_to_energy
 
     def calc_zpe(self, verbose=False):
         """Calculates zero point energy.
@@ -224,13 +238,20 @@ class State:
         self.calc_free_energy(T=T, p=p, verbose=verbose)
         return self.Gfree
 
-    def save_pdb(self, path='Images/xyz/'):
+    def set_energy_modifier(self, modifier, verbose=False):
+        """Sets modifier to the electronic energy.
+
+        Updates stored value in eV."""
+        self.add_to_energy = modifier
+        self.calc_electronic_energy(verbose=verbose)
+
+    def save_pdb(self, path=None):
         """Saves the atoms object as a pdb structure file.
 
         """
         if self.atoms is None:
             self.get_atoms()
-        assert(os.path.isdir(path))
+        path = '' if path is None else path
         ase.io.write(path + self.name + '.pdb', self.atoms, format='proteindatabank')
 
     def save_pickle(self, path=None):
@@ -238,9 +259,9 @@ class State:
 
         """
         path = '' if path is None else path
-        pickle.dump(self, open(path + self.name + '.pckl', 'wb'))
+        pickle.dump(self, open(path + 'state_' + self.name + '.pckl', 'wb'))
 
-    def view_atoms(self, path=None, rotation=None):
+    def view_atoms(self, rotation='', path=None):
         """Views the atoms object using the ASE visualizer.
         If path is not None, saves as a png.
 
@@ -249,4 +270,4 @@ class State:
             self.get_atoms()
         view(self.atoms)
         if path is not None:
-            ase.io.write(path + self.name + '.png', self.atoms, rotation=rotation)
+            ase.io.write(path + self.name + '.png', self.atoms, format='png', rotation=rotation)
