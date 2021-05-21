@@ -4,16 +4,16 @@ from microkinetics.classes.system import *
 from microkinetics.classes.reactor import *
 from microkinetics.classes.scaling import *
 from microkinetics.classes.energy import *
+from microkinetics.functions.profiling import *
 import numpy as np
-import time
 
 # Conditions
 p = 1.01325e5  # Pressure (Pa)
-Ts = list(np.linspace(start=423, stop=623, num=20, endpoint=True))  # Temperature (K)
+Ts = [600]  # list(np.linspace(start=423, stop=623, num=20, endpoint=True))  # Temperature (K)
 times = np.logspace(start=-10, stop=3, num=int(1e4))  # Times (s)
 withflow = False  # Include reactor model
 use_jacobian = True  # Use Jacobian to solve SS and ODEs
-verbose = True  # Print messages
+verbose = False  # Print messages
 
 # Location of outcars and frequencies
 adsdir = 'D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/'
@@ -139,9 +139,11 @@ print('Solving ODEs...')
 for Tind, T in enumerate(Ts):
     sys.set_parameters(times=times, start_state=start_state, inflow_state=inflow_state, T=T, p=p,
                        xtol=1.0e-12, use_jacobian=use_jacobian, verbose=verbose)
-    start_time = time.time()
-    sys.solve_odes()
-    print("--- %s seconds ---" % (time.time() - start_time))
+    # sys.solve_odes()
+    run_timed(sys.solve_odes)
+    draw_call_graph(sys.solve_odes, path=figures_dir + 'callgraph.png')
+    run_cprofiler('sys.solve_odes()')
+
     # sys.plot_transient(T=T, p=p, path=figures_dir)
     # sys.write_results(T=T, p=p, path=results_dir)
 
