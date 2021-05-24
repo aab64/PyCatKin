@@ -1,20 +1,34 @@
-import copy
-import numpy as np
-import matplotlib.pyplot as plt
 from microkinetics.constants.physical_constants import *
+import copy
+import pickle
+import os
+import numpy as np
+from scipy.interpolate import CubicSpline
+import matplotlib.pyplot as plt
 
 
 class Energy:
-    def __init__(self, minima=None):
+
+    def __init__(self, name='landscape', minima=None, path_to_pickle=None):
         """Initialises Energy class.
-        Energy class stores the states involved in the energy landscape,
-        and computes energy spans.
+        Energy class stores the states in the energy landscape,
+        and computes energy span model predictions.
+        If path_to_pickle is defined, the pickled object is loaded.
 
         """
-        self.minima = copy.copy(minima)
-        if self.minima is None:
-            print('No states loaded.')
-        self.energy_landscape = None
+
+        if path_to_pickle:
+            assert (os.path.isfile(path_to_pickle))
+            newself = pickle.load(open(path_to_pickle, 'rb'))
+            assert (isinstance(newself, Energy))
+            for att in newself.__dict__.keys():
+                setattr(self, att, getattr(newself, att))
+        else:
+            self.name = name
+            self.minima = copy.copy(minima)
+            self.energy_landscape = None
+            if self.minima is None:
+                print('No states loaded.')
 
     def construct_energy_landscape(self, T, p, verbose=False):
         """Records free and electronic energies of minima and
@@ -22,8 +36,12 @@ class Energy:
         relative to the first entry in minima.
         
         """
-        
-        self.energy_landscape = dict({'free': {}, 'electronic': {}, 'isTS': {}, 'T': T, 'p': p})
+
+        self.energy_landscape = dict({'free': {},
+                                      'electronic': {},
+                                      'isTS': {},
+                                      'T': T,
+                                      'p': p})
 
         ref_free = sum([s.get_free_energy(T=T, p=p, verbose=verbose) for s in self.minima[0]])
         ref_elec = sum([s.Gelec for s in self.minima[0]])
@@ -32,7 +50,8 @@ class Energy:
             self.energy_landscape['free'][sind] = sum([s.get_free_energy(T=T, p=p, verbose=verbose)
                                                        for s in self.minima[sind]]) - ref_free
             self.energy_landscape['electronic'][sind] = sum([s.Gelec for s in self.minima[sind]]) - ref_elec
-            self.energy_landscape['isTS'][sind] = 1 if True in [i.state_type == 'TS' for i in self.minima[sind]] else 0
+            self.energy_landscape['isTS'][sind] = 1 if True in [i.state_type == 'TS'
+                                                                for i in self.minima[sind]] else 0
 
     def draw_energy_landscape(self, T, p, etype='free', eunits='eV', verbose=False, path=None):
         """Records free and electronic energies of minima and
@@ -45,8 +64,6 @@ class Energy:
             self.construct_energy_landscape(T=T, p=p, verbose=verbose)
         elif self.energy_landscape['T'] != T or self.energy_landscape['p'] != p:
             self.construct_energy_landscape(T=T, p=p, verbose=verbose)
-
-        from scipy.interpolate import CubicSpline
 
         fmt = '%1.2f'
         if eunits == 'eV':
@@ -71,18 +88,24 @@ class Energy:
         for i in range(len(self.energy_landscape[etype].keys())):
             toadd = 0.25 if self.energy_landscape['isTS'][i] else 0.25
             if not self.energy_landscape['isTS'][i]:
-                xpoints += [i - toadd, i + toadd]
-                ypoints += [self.energy_landscape[etype][i] * conv, self.energy_landscape[etype][i] * conv]
+                xpoints += [i - toadd,
+                            i + toadd]
+                ypoints += [self.energy_landscape[etype][i] * conv,
+                            self.energy_landscape[etype][i] * conv]
             else:
-                xs = [i - 1 + toadd, i]
-                ys = [self.energy_landscape[etype][i - 1], self.energy_landscape[etype][i]]
+                xs = [i - 1 + toadd,
+                      i]
+                ys = [self.energy_landscape[etype][i - 1],
+                      self.energy_landscape[etype][i]]
                 spl = CubicSpline(xs, ys, bc_type='clamped')
                 xint = np.linspace(start=xs[0], stop=xs[-1], num=100)
                 yint = spl(xint)
                 xpoints += [x for x in xint]
                 ypoints += [y * conv for y in yint]
-                xs = [i, i + 1 - toadd]
-                ys = [self.energy_landscape[etype][i], self.energy_landscape[etype][i + 1]]
+                xs = [i,
+                      i + 1 - toadd]
+                ys = [self.energy_landscape[etype][i],
+                      self.energy_landscape[etype][i + 1]]
                 spl = CubicSpline(xs, ys, bc_type='clamped')
                 xint = np.linspace(start=xs[0], stop=xs[-1], num=100)
                 yint = spl(xint)
@@ -94,24 +117,30 @@ class Energy:
         label_I = True
         for k in self.energy_landscape[etype].keys():
             if self.energy_landscape['isTS'][k] == 1:
-                ax.plot(k, self.energy_landscape[etype][k] * conv, 's', color='dodgerblue', label=('Transition state' if
-                                                                                                   label_TS else ''))
+                ax.plot(k, self.energy_landscape[etype][k] * conv, 's',
+                        label=('Transition state' if label_TS else ''),
+                        color='dodgerblue')
                 label_TS = False
             else:
-                ax.plot(k, self.energy_landscape[etype][k] * conv, 's', color='tomato', label=('Intermediate' if
-                                                                                               label_I else ''))
+                ax.plot(k, self.energy_landscape[etype][k] * conv, 's',
+                        label=('Intermediate' if label_I else ''),
+                        color='tomato')
                 label_I = False
-            ax.text(k, self.energy_landscape[etype][k] * conv + 0.2 * conv, fmt % (self.energy_landscape[etype][k] *
-                                                                                   conv), ha='center')
+            ax.text(k, self.energy_landscape[etype][k] * conv + 0.2 * conv,
+                    fmt % (self.energy_landscape[etype][k] * conv),
+                    ha='center')
         ax.legend()
-        ax.set(xlabel='Reaction coordinate', ylabel='Relative ' + etype + ' energy (' + eunits + ')',
+        ax.set(xlabel='Reaction coordinate',
+               xlim=(-1, len(self.energy_landscape[etype].keys())),
                xticks=range(len(self.energy_landscape[etype].keys())),
-               ylim=(ax.get_ylim()[0] - 0.25 * conv, ax.get_ylim()[1] + 0.25 * conv),
-               xlim=(-1, len(self.energy_landscape[etype].keys())))
-        plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+               ylabel='Relative ' + etype + ' energy (' + eunits + ')',
+               ylim=(ax.get_ylim()[0] - 0.25 * conv, ax.get_ylim()[1] + 0.25 * conv))
+        plt.tick_params(axis='x', which='both',
+                        bottom=False, top=False, labelbottom=False)
         fig.tight_layout()
-        if path is not None:
-            fig.savefig(path + etype + '_energy_landscape.png', format='png', dpi=300)
+        if path:
+            fig.savefig(path + etype + '_energy_landscape.png',
+                        format='png', dpi=300)
 
     def evaluate_energy_span_model(self, T, p, etype='free', verbose=False, opath=None):
         """Energy span calculations.
@@ -125,13 +154,12 @@ class Energy:
         elif self.energy_landscape['T'] != T or self.energy_landscape['p'] != p:
             self.construct_energy_landscape(T=T, p=p, verbose=verbose)
 
-        Ti = [self.energy_landscape[etype][s] for s in self.energy_landscape[etype].keys()
-              if self.energy_landscape['isTS'][s] == 1]
-        Ij = [self.energy_landscape[etype][s] for s in self.energy_landscape[etype].keys()
-              if self.energy_landscape['isTS'][s] == 0]
-
-        nTi = len(Ti)
-        nIj = len(Ij)
+        nTi = len([self.energy_landscape[etype][s]
+                   for s in self.energy_landscape[etype].keys()
+                   if self.energy_landscape['isTS'][s] == 1])
+        nIj = len([self.energy_landscape[etype][s]
+                   for s in self.energy_landscape[etype].keys()
+                   if self.energy_landscape['isTS'][s] == 0])
 
         drxn = self.energy_landscape[etype][max(list(self.energy_landscape[etype].keys()))] * eVtokJ * 1.0e3
         print('dGrxn = %1.2f eV' % (drxn * 1.0e-3 / eVtokJ))
@@ -155,13 +183,19 @@ class Energy:
                 ctrj = 0
 
         den = sum(sum(np.exp(XTOFTi / (R * T))))
-        num_i = [sum([(np.exp(vals / (R * T)) / den) for vals in XTOFTi[i, :]]) for i in range(nTi)]
-        num_j = [sum([(np.exp(vals / (R * T)) / den) for vals in XTOFTi[:, j]]) for j in range(nIj)]
+        num_i = [sum([(np.exp(vals / (R * T)) / den)
+                      for vals in XTOFTi[i, :]])
+                 for i in range(nTi)]
+        num_j = [sum([(np.exp(vals / (R * T)) / den)
+                      for vals in XTOFTi[:, j]])
+                 for j in range(nIj)]
 
         tof = (kB * T / h) * np.exp((-drxn / (R * T)) - 1.0) / den
 
-        lTi = [lab for lab in self.energy_landscape['isTS'].keys() if self.energy_landscape['isTS'][lab] == 1]
-        lIj = [lab for lab in self.energy_landscape['isTS'].keys() if self.energy_landscape['isTS'][lab] == 0]
+        lTi = [lab for lab in self.energy_landscape['isTS'].keys()
+               if self.energy_landscape['isTS'][lab] == 1]
+        lIj = [lab for lab in self.energy_landscape['isTS'].keys()
+               if self.energy_landscape['isTS'][lab] == 0]
 
         print('dEmax = %1.2f eV' % (np.max(XTOFTi) * 1.0e-3 / eVtokJ))
 
@@ -173,19 +207,10 @@ class Energy:
 
         return tof, num_i, num_j, lTi, lIj
 
+    def save_pickle(self, path=None):
+        """Save the energy landscape as a pickle object.
 
-# sigma = 0.3 # eV
-# nsamples = 100
+        """
 
-# for smpl in range(nsamples):
-    # print('Noisy sample ' + str(smpl) + '...\n')
-    # g = np.random.normal(loc=0.0, scale=sigma, size=None)
-    # pert_energy_dict = copy.copy(energy_dict)
-    # for s in pert_energy_dict['Free'].keys():
-        # if s not in ['reference', 'gas', 'surface']:
-            # if pert_energy_dict['isTS'][s]:
-                # u = np.random.uniform()
-                # add = u * g
-            # else:
-                # add = g
-            # pert_energy_dict['Free'][s] += np.random.normal(loc=0.0, scale=sigma, size=None)
+        path = path if path else ''
+        pickle.dump(self, open(path + 'energy_' + self.name + '.pckl', 'wb'))

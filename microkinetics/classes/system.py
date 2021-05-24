@@ -1,54 +1,80 @@
-import numpy as np
-from scipy.integrate import ode, solve_ivp
-import matplotlib.pyplot as plt
-import matplotlib as mpl
+from microkinetics.classes.reactor import *
 import os
 import copy
+import pickle
+from scipy.integrate import ode  # , solve_ivp
 from scipy.optimize import fsolve
-from microkinetics.classes.reactor import *
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 
 class System:
 
-    def __init__(self, reactions, reactor=None):
-        self.reactions = reactions
-        self.reactor = reactor
-        self.snames = None
-        self.species_map = None
-        self.adsorbate_indices = None
-        self.gas_indices = None
-        self.dynamic_indices = None
-        self.rate_constants = None
-        self.conditions = None
-        self.rates = None
-        self.times = None
-        self.solution = None
-        self.full_steady = None
-        self.params = None
-        self.names_to_indices()
-        self.set_parameters()
-
-    def names_to_indices(self):
-        """Compiles species names and assigns indicies.
+    def __init__(self, reactions=None, reactor=None, path_to_pickle=None):
+        """Initialises System class.
+        System class stores the reactions and the reactor.
+        It is used to construct the reaction rates and species ODEs
+        and solve the transient or steady-state dynamics.
+        If path_to_pickle is defined, the pickled object is loaded.
 
         """
+
+        if path_to_pickle:
+            assert (os.path.isfile(path_to_pickle))
+            newself = pickle.load(open(path_to_pickle, 'rb'))
+            assert (isinstance(newself, System))
+            for att in newself.__dict__.keys():
+                setattr(self, att, getattr(newself, att))
+        else:
+            assert(reactions is not None)
+            assert(reactor is not None)
+            self.reactions = reactions
+            self.reactor = reactor
+            self.snames = None
+            self.species_map = None
+            self.adsorbate_indices = None
+            self.gas_indices = None
+            self.dynamic_indices = None
+            self.rate_constants = None
+            self.conditions = None
+            self.rates = None
+            self.times = None
+            self.solution = None
+            self.full_steady = None
+            self.params = None
+            self.names_to_indices()
+            self.set_parameters()
+
+    def names_to_indices(self):
+        """Compiles sorted list of species names and
+        assigns indicies corresponding to these for
+        easier access to elements of the solution vector.
+
+        """
+
         self.snames = []
         for r in self.reactions.keys():
             self.snames += [i.name for i in self.reactions[r].reactants if i.name not in self.snames]
             self.snames += [i.name for i in self.reactions[r].products if i.name not in self.snames]
-        self.snames = list(set(self.snames))
+        self.snames = sorted(list(set(self.snames)))
 
         self.species_map = dict()
-
         for r in self.reactions.keys():
-            yreac = [self.snames.index(i.name) for i in self.reactions[r].reactants if i.state_type == 'adsorbate' or
-                     i.state_type == 'surface']
-            preac = [self.snames.index(i.name) for i in self.reactions[r].reactants if i.state_type == 'gas']
-            yprod = [self.snames.index(i.name) for i in self.reactions[r].products if i.state_type == 'adsorbate' or
-                     i.state_type == 'surface']
-            pprod = [self.snames.index(i.name) for i in self.reactions[r].products if i.state_type == 'gas']
-            self.species_map[r] = {'yreac': yreac, 'yprod': yprod, 'preac': preac, 'pprod': pprod,
-                                   'site_density': 1.0 / self.reactions[r].area, 'scaling': self.reactions[r].scaling,
+            yreac = [self.snames.index(i.name) for i in self.reactions[r].reactants
+                     if i.state_type == 'adsorbate' or i.state_type == 'surface']
+            preac = [self.snames.index(i.name) for i in self.reactions[r].reactants
+                     if i.state_type == 'gas']
+            yprod = [self.snames.index(i.name) for i in self.reactions[r].products
+                     if i.state_type == 'adsorbate' or i.state_type == 'surface']
+            pprod = [self.snames.index(i.name) for i in self.reactions[r].products
+                     if i.state_type == 'gas']
+            self.species_map[r] = {'yreac': yreac,
+                                   'yprod': yprod,
+                                   'preac': preac,
+                                   'pprod': pprod,
+                                   'site_density': 1.0 / self.reactions[r].area,
+                                   'scaling': self.reactions[r].scaling,
                                    'perturbation': 0.0}
             if self.adsorbate_indices is None:
                 if yreac or yprod:
@@ -69,12 +95,14 @@ class System:
 
         if self.adsorbate_indices is not None:
             self.adsorbate_indices = list(set(self.adsorbate_indices))
-            self.reactor.is_adsorbate = [1 if i in self.adsorbate_indices else 0 for i in range(len(self.snames))]
+            self.reactor.is_adsorbate = [1 if i in self.adsorbate_indices else
+                                         0 for i in range(len(self.snames))]
         else:
             self.reactor.is_adsorbate = np.zeros(len(self.snames))
         if self.gas_indices is not None:
             self.gas_indices = list(set(self.gas_indices))
-            self.reactor.is_gas = [1 if i in self.gas_indices else 0 for i in range(len(self.snames))]
+            self.reactor.is_gas = [1 if i in self.gas_indices else
+                                   0 for i in range(len(self.snames))]
         else:
             self.reactor.is_gas = np.zeros(len(self.snames))
         self.dynamic_indices = self.reactor.get_dynamic_indices(self.adsorbate_indices, self.gas_indices)
@@ -84,6 +112,7 @@ class System:
         """Store simulation conditions, solver tolerances and verbosity.
 
         """
+
         self.params = dict()
         self.params['times'] = copy.copy(times)
         self.params['start_state'] = copy.copy(start_state)
@@ -101,6 +130,7 @@ class System:
         and are updated to the current conditions.
 
         """
+
         update = True
         if self.conditions is None or self.rate_constants is None:
             self.conditions = dict()
@@ -115,7 +145,8 @@ class System:
             update = False
         if update:
             for r in self.reactions.keys():
-                self.reactions[r].calc_rate_constants(T=self.params['temperature'], p=self.params['pressure'],
+                self.reactions[r].calc_rate_constants(T=self.params['temperature'],
+                                                      p=self.params['pressure'],
                                                       verbose=self.params['verbose'])
                 self.rate_constants[r] = {'kfwd': self.reactions[r].kfwd,
                                           'krev': self.reactions[r].krev}
@@ -125,6 +156,7 @@ class System:
         by multiplying rate constants by reactant coverages/pressures.
 
         """
+
         self.check_rate_constants()
         self.rates = np.zeros((len(self.species_map), 2))
 
@@ -152,21 +184,21 @@ class System:
             #     self.rates[rind, 0] *= yfree
 
     def species_odes(self, y):
-        """Constructs ODEs for adsorbate coverages from reaction rates.
+        """Constructs ODEs for adsorbate coverages and pressures
+        from the reaction rates.
 
         Returns array of species ODEs."""
-        # Reaction rate terms
+
         self.reaction_terms(y=y)
         net_rates = self.rates[:, 0] - self.rates[:, 1]
 
         ny = max(y.shape)
-
-        # Construct ODE for each species
         dy_dt = np.zeros(ny)
+
         for rind, rinfo in enumerate(self.species_map.values()):
-            for sp in rinfo['yreac']:  # Species is consumed
+            for sp in rinfo['yreac']:  # Species consumed
                 dy_dt[sp] -= net_rates[rind] * rinfo['scaling']
-            for sp in rinfo['yprod']:  # Species is formed
+            for sp in rinfo['yprod']:  # Species formed
                 dy_dt[sp] += net_rates[rind] * rinfo['scaling']
             for sp in rinfo['preac']:
                 dy_dt[sp] -= net_rates[rind] * rinfo['scaling'] * rinfo['site_density']
@@ -178,8 +210,8 @@ class System:
         """Constructs derivative of reactions wrt each species
         by multiplying rate constants by reactant coverages/pressures.
 
-        returns ndarray of derivatives
-        """
+        Returns an (Nr x Ns) array of derivatives."""
+
         self.check_rate_constants()
 
         ny = max(y.shape)
@@ -198,36 +230,39 @@ class System:
             yrev = np.prod([y[i, 0] for i in self.species_map[r]['yprod']])
             pfwd = np.prod([y[i, 0] * bartoPa for i in self.species_map[r]['preac']])
             prev = np.prod([y[i, 0] * bartoPa for i in self.species_map[r]['pprod']])
-            for ind, i in enumerate(self.species_map[r]['yreac']):  # Forward rate species coverages
-                dr_dtheta[rind, i] += kfwd * pfwd * np.prod([y[self.species_map[r]['yreac'][j], 0] for j in
-                                                             range(len(self.species_map[r]['yreac'])) if j != ind])
-            for ind, i in enumerate(self.species_map[r]['yprod']):  # Reverse rate species coverages
-                dr_dtheta[rind, i] -= krev * prev * np.prod([y[self.species_map[r]['yprod'][j], 0] for j in
-                                                             range(len(self.species_map[r]['yprod'])) if j != ind])
-            for ind, i in enumerate(self.species_map[r]['preac']):  # Forward rate species pressures
-                dr_dtheta[rind, i] += kfwd * yfwd * np.prod([y[self.species_map[r]['preac'][j], 0] * bartoPa for j in
-                                                             range(len(self.species_map[r]['preac'])) if j != ind])
-            for ind, i in enumerate(self.species_map[r]['pprod']):  # Reverse rate species pressures
-                dr_dtheta[rind, i] -= krev * yrev * np.prod([y[self.species_map[r]['pprod'][j], 0] * bartoPa for j in
-                                                             range(len(self.species_map[r]['pprod'])) if j != ind])
+            for ind, i in enumerate(self.species_map[r]['yreac']):
+                dr_dtheta[rind, i] += kfwd * pfwd * np.prod([y[self.species_map[r]['yreac'][j], 0]
+                                                             for j in range(len(self.species_map[r]['yreac']))
+                                                             if j != ind])
+            for ind, i in enumerate(self.species_map[r]['yprod']):
+                dr_dtheta[rind, i] -= krev * prev * np.prod([y[self.species_map[r]['yprod'][j], 0]
+                                                             for j in range(len(self.species_map[r]['yprod']))
+                                                             if j != ind])
+            for ind, i in enumerate(self.species_map[r]['preac']):
+                dr_dtheta[rind, i] += kfwd * yfwd * np.prod([y[self.species_map[r]['preac'][j], 0] * bartoPa
+                                                             for j in range(len(self.species_map[r]['preac']))
+                                                             if j != ind])
+            for ind, i in enumerate(self.species_map[r]['pprod']):
+                dr_dtheta[rind, i] -= krev * yrev * np.prod([y[self.species_map[r]['pprod'][j], 0] * bartoPa
+                                                             for j in range(len(self.species_map[r]['pprod']))
+                                                             if j != ind])
         return dr_dtheta
 
     def species_jacobian(self, y):
-        """Constructs derivatives of species ODEs for adsorbate coverages.
+        """Constructs derivatives of species ODEs
+        for adsorbate coverages and pressures.
 
-        Returns Jacobian with shape (ny x ny)."""
-        # Reaction rate derivatives
+        Returns Jacobian with shape (Ns x Ns)."""
+
         dr_dtheta = self.reaction_derivatives(y=y)
 
         ny = max(y.shape)
-
-        # Construct ODE for each species
         jac = np.zeros((ny, ny))
         for rind, rinfo in enumerate(self.species_map.values()):
             for sp1 in range(ny):
-                for sp2 in rinfo['yreac']:  # Species is consumed
+                for sp2 in rinfo['yreac']:  # Species consumed
                     jac[sp2, sp1] -= dr_dtheta[rind, sp1] * rinfo['scaling']
-                for sp2 in rinfo['yprod']:  # Species is formed
+                for sp2 in rinfo['yprod']:  # Species formed
                     jac[sp2, sp1] += dr_dtheta[rind, sp1] * rinfo['scaling']
                 for sp2 in rinfo['preac']:
                     jac[sp2, sp1] -= dr_dtheta[rind, sp1] * rinfo['scaling'] * rinfo['site_density']
@@ -238,7 +273,8 @@ class System:
     def solve_odes(self):
         """Wrapper for ODE integrator.
 
-        Returns times and solution variable."""
+        """
+
         self.conditions = None  # Force rate constants to be recalculated
 
         # Set initial coverages to zero if not specified
@@ -246,6 +282,8 @@ class System:
         if self.params['start_state'] is not None:
             for s in self.params['start_state'].keys():
                 yinit[self.snames.index(s)] = self.params['start_state'][s]
+        else:
+            print('Warning! No start_state specified - initial surface state should be defined!')
 
         # Set inflow mole fractions to zero if not specified
         yinflow = np.zeros(len(self.snames))
@@ -263,7 +301,7 @@ class System:
                     if s in self.gas_indices:
                         print('%15s : %1.2e' % (sname, yinflow[s]))
 
-        # Choose solution times if not specified
+        # Set solution times if not specified
         times = self.params['times']
         if times is None:
             times = np.logspace(np.log10(1e-14), np.log10(1e3), num=1000)
@@ -280,11 +318,13 @@ class System:
         y = np.zeros((len(times) + 1, len(yinit)))
         y[0, :] = yinit
 
+        # Create Jacobian handle if required
         if self.params['jacobian']:
             jacfun = self.reactor.jacobian(self.species_jacobian)
         else:
             jacfun = None
 
+        # Create ODE solver
         r = ode(self.reactor.rhs(self.species_odes), jacfun).set_integrator('lsoda', method='bdf',
                                                                             rtol=self.params['rtol'],
                                                                             atol=self.params['atol'])
@@ -293,6 +333,7 @@ class System:
         if self.params['jacobian']:
             r.set_jac_params(self.params['temperature'])
 
+        # Solve ODEs
         for i, t in enumerate(times):
             if r.successful() and r.t < times[-1]:
                 r.integrate(t)
@@ -309,10 +350,11 @@ class System:
     def find_steady(self, store_steady=False, plot_comparison=False, path=None):
         """Solve for the steady state solution
 
-        Returns steady state solution."""
+        Returns the steady state solution."""
 
         self.conditions = None  # Force rate constants to be recalculated
 
+        # Establish an initial guess
         if self.solution is not None:
             y_guess = copy.copy(self.solution[-1, self.dynamic_indices])
             full_steady = copy.copy(self.solution[-1, :])
@@ -321,17 +363,21 @@ class System:
             full_steady = np.zeros(len(self.adsorbate_indices) + len(self.gas_indices))
 
         # Set inflow mole fractions to zero if not specified
-        yinflow = None
+        yinflow = np.zeros(len(self.snames))
         if self.params['inflow_state']:
             yinflow = np.zeros(len(self.snames))
             for s in self.params['inflow_state'].keys():
                 yinflow[self.snames.index(s)] = self.params['inflow_state'][s]
 
+        # Function to solve
+        # Adds variable y to full solution vector and passes to function
+        # Returns only variable parts of function
         def func(y):
             full_steady[self.dynamic_indices] = y
             return self.reactor.rhs(self.species_odes)(t=0, y=full_steady, T=self.params['temperature'],
                                                        inflow_state=yinflow)[self.dynamic_indices]
 
+        # Jacobian to use
         if self.params['jacobian']:
             def jacfun(y):
                 full_steady[self.dynamic_indices] = y
@@ -342,8 +388,8 @@ class System:
         else:
             jacfun = None
 
-        y_steady, info, ier, mesg = fsolve(func=func, x0=y_guess, fprime=jacfun, full_output=True,
-                                           xtol=self.params['xtol'])
+        y_steady, info, ier, mesg = fsolve(func=func, x0=y_guess, fprime=jacfun,
+                                           full_output=True, xtol=self.params['xtol'])
         full_steady[self.dynamic_indices] = y_steady
 
         if store_steady:
@@ -366,19 +412,22 @@ class System:
                 if np.max(self.solution[:, i]) > 1.0e-6:
                     ax.plot(self.times, self.solution[:, i], label=self.snames[i],
                             color=cmap(self.dynamic_indices.index(i)))
-                    ax.plot(self.times, [full_steady[i] for t in self.times], label='', linestyle=':',
-                            color=cmap(self.dynamic_indices.index(i)))
+                    ax.plot(self.times, [full_steady[i] for t in self.times], label='',
+                            color=cmap(self.dynamic_indices.index(i)), linestyle=':')
             ax.legend(frameon=False, loc='center right')
-            ax.set(xlabel='Time (s)', ylabel='Coverage', title=(r'$T=%1.0f$ K' % self.params['temperature']),
-                   ylim=(1e-6, 1e1), xscale='log', yscale='log')
+            ax.set(xlabel='Time (s)', xscale='log',
+                   ylabel='Coverage', yscale='log', ylim=(1e-6, 1e1),
+                   title=(r'$T=%1.0f$ K' % self.params['temperature']))
             fig.tight_layout()
             if path:
-                fig.savefig((path + 'SS_vs_transience_%1.1fK.png') % self.params['temperature'], format='png', dpi=300)
+                fig.savefig((path + 'SS_vs_transience_%1.1fK.png') % self.params['temperature'],
+                            format='png', dpi=300)
 
         return full_steady
 
     def run_and_return_tof(self, tof_terms, ss_solve=False):
-        """Integrate or solve for the steady state and compute the TOF by summing steps in tof_terms
+        """Integrate or solve for the steady state and
+        compute the TOF by summing steps in tof_terms
 
         Returns array of xi_i terms for each step i."""
 
@@ -405,8 +454,10 @@ class System:
 
         r0 = self.run_and_return_tof(tof_terms=tof_terms, ss_solve=ss_solve)
         xi = dict()
+
         if self.params['verbose']:
             print('Checking degree of rate control...')
+
         for r in self.reactions.keys():
             self.species_map[r]['perturbation'] = eps * self.rate_constants[r]['kfwd']
             xi_r = self.run_and_return_tof(tof_terms=tof_terms, ss_solve=ss_solve)
@@ -415,14 +466,15 @@ class System:
             xi_r *= (self.rate_constants[r]['kfwd']) / (2.0 * eps * self.rate_constants[r]['kfwd'] * r0)
             xi[r] = xi_r
             self.species_map[r]['perturbation'] = 0.0
+
             if self.params['verbose']:
                 print(r + ': done.')
+
         return xi
 
     def write_results(self, path=''):
         """Write reaction rates, coverages and pressures to file.
-        Reaction rates computed at temperature T and pressure p.
-        File written to current directory unless otherwise specified
+        File written to current directory unless otherwise specified.
 
         """
 
@@ -454,15 +506,18 @@ class System:
         for t in range(len(self.times)):
             with open(rfile, 'a') as file:
                 self.reaction_terms(y=self.solution[t, :])
-                line = ', '.join([str(self.times[t])] + [(str(r[0]) + ', ' + str(r[1])) for r in self.rates]) + '\n'
+                line = ', '.join([str(self.times[t])] +
+                                 [(str(r[0]) + ', ' + str(r[1])) for r in self.rates]) + '\n'
                 file.write(line)
             with open(cfile, 'a') as file:
-                line = ', '.join([str(self.times[t])] + [str(self.solution[t, s]) for s in range(len(self.snames))
-                                                         if s in self.adsorbate_indices]) + '\n'
+                line = ', '.join([str(self.times[t])] +
+                                 [str(self.solution[t, s]) for s in range(len(self.snames))
+                                  if s in self.adsorbate_indices]) + '\n'
                 file.write(line)
             with open(pfile, 'a') as file:
-                line = ', '.join([str(self.times[t])] + [str(self.solution[t, s]) for s in range(len(self.snames))
-                                                         if s in self.gas_indices]) + '\n'
+                line = ', '.join([str(self.times[t])] +
+                                 [str(self.solution[t, s]) for s in range(len(self.snames))
+                                  if s in self.gas_indices]) + '\n'
                 file.write(line)
 
     def plot_transient(self, path=None):
@@ -470,6 +525,7 @@ class System:
         If path is specified, figures are saved to path
 
         """
+
         font = {'family': 'sans-serif', 'weight': 'normal', 'size': 8}
         plt.rc('font', **font)
         mpl.rcParams['lines.markersize'] = 6
@@ -485,7 +541,7 @@ class System:
 
         rates = np.zeros((len(self.times), len(self.reactions) * 2))
         for t in range(len(self.times)):
-            self.reaction_terms(y=self.solution[t, :], T=T, p=p)
+            self.reaction_terms(y=self.solution[t, :])
             for i in range(len(self.reactions)):
                 rates[t, 2 * i] = self.rates[i, 0]
                 rates[t, 2 * i + 1] = self.rates[i, 1]
@@ -497,19 +553,24 @@ class System:
                 ax.plot(self.times / 3600, self.solution[:, i], label=sname,
                         color=cmap(self.adsorbate_indices.index(i)))
         ax.legend(loc='center right', frameon=False, ncol=1)
-        ax.set(xlabel='Time (hr)', ylabel='Coverage', title=(r'$T=%1.1f$ K' % T), xscale='log', ylim=(-0.1, 1.1))
+        ax.set(xlabel='Time (hr)', xscale='log',
+               ylabel='Coverage', ylim=(-0.1, 1.1),
+               title=(r'$T=%1.1f$ K' % T))
         fig.tight_layout()
         if path:
             figname = path + 'coverages_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.png'
             plt.savefig(figname, format='png', dpi=300)
 
-        cmap = plt.get_cmap("Accent", len(self.gas_indices))  # Spectral
+        cmap = plt.get_cmap("Accent", len(self.gas_indices))
         fig, ax = plt.subplots(figsize=(3.2, 3.2))
         for i, sname in enumerate(self.snames):
             if i in self.gas_indices:
-                ax.plot(self.times / 3600, self.solution[:, i], label=sname, color=cmap(self.gas_indices.index(i)))
+                ax.plot(self.times / 3600, self.solution[:, i], label=sname,
+                        color=cmap(self.gas_indices.index(i)))
         ax.legend(loc='center right', frameon=False, ncol=1)
-        ax.set(xlabel='Time (hr)', ylabel='Pressure (bar)', title=('%1.1f K' % T), xscale='log')
+        ax.set(xlabel='Time (hr)', xscale='log',
+               ylabel='Pressure (bar)',
+               title=('%1.1f K' % T))
         fig.tight_layout()
         if path:
             figname = path + 'pressures_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.png'
@@ -517,12 +578,22 @@ class System:
 
         cmap = plt.get_cmap("Accent", len(self.reactions) * 2)
         fig, ax = plt.subplots(figsize=(6.4, 3.2))
-        for i, rname in enumerate([r for rname in self.reactions.keys() for r in [rname + '_fwd', rname + '_rev']]):
+        for i, rname in enumerate([r for rname in self.reactions.keys()
+                                   for r in [rname + '_fwd', rname + '_rev']]):
             ax.plot(self.times / 3600, rates[:, i], label=rname, color=cmap(i))
         ax.legend(loc='lower center', frameon=False, ncol=4)
-        ax.set(xlabel='Time (hr)', ylabel='Rate (1/s)', title=('%1.1f K' % T), yscale='log')
+        ax.set(xlabel='Time (hr)',
+               ylabel='Rate (1/s)', yscale='log',
+               title=('%1.1f K' % T))
         fig.tight_layout()
         if path:
             figname = path + 'surfrates_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.png'
             plt.savefig(figname, format='png', dpi=300)
 
+    def save_pickle(self, path=None):
+        """Save the system as a pickle object.
+
+        """
+
+        path = path if path else ''
+        pickle.dump(self, open(path + 'system' + '.pckl', 'wb'))

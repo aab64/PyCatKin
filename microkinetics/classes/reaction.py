@@ -1,47 +1,62 @@
-import pickle
 from microkinetics.functions.rate_constants import *
+import pickle
+import os
 
 
 class Reaction:
 
-    def __init__(self, reac_type, reversible=True, reactants=None, products=None, TS=None,
-                 area=1.0e-19, name='reaction', scaling=1.0):
+    def __init__(self, name='reaction', reac_type=None, reversible=True,
+                 reactants=None, products=None, TS=None,
+                 area=1.0e-19, scaling=1.0, path_to_pickle=None):
         """Initialises Reaction class.
         Reaction class stores the states involved in the reaction,
         the rate constants, reaction energy and barrier.
+        If path_to_pickle is defined, the pickled object is loaded.
 
         """
-        self.reac_type = reac_type
-        self.reversible = reversible
-        self.reactants = reactants
-        self.products = products
-        self.TS = TS
-        self.area = area
-        self.name = name
-        self.scaling = scaling
-        self.kfwd = None
-        self.krev = None
-        self.Keq = None
-        self.dGrxn = None
-        self.dGa_fwd = None
-        self.dGa_rev = None
-        self.dErxn = None
-        self.dEa_fwd = None
-        self.dEa_rev = None
+
+        if path_to_pickle:
+            assert (os.path.isfile(path_to_pickle))
+            newself = pickle.load(open(path_to_pickle, 'rb'))
+            assert (isinstance(newself, Reaction))
+            for att in newself.__dict__.keys():
+                setattr(self, att, getattr(newself, att))
+        else:
+            self.reac_type = reac_type
+            self.reversible = reversible
+            self.reactants = reactants
+            self.products = products
+            self.TS = TS
+            self.area = area
+            self.name = name
+            self.scaling = scaling
+            self.kfwd = None
+            self.krev = None
+            self.Keq = None
+            self.dGrxn = None
+            self.dGa_fwd = None
+            self.dGa_rev = None
+            self.dErxn = None
+            self.dEa_fwd = None
+            self.dEa_rev = None
 
     def calc_reaction_energy(self, T, p, verbose=False):
         """Computes reaction energies and barriers in J/mol.
 
         """
-        Greac = sum([i.get_free_energy(T=T, p=p, verbose=verbose) for i in self.reactants])
+
+        Greac = sum([i.get_free_energy(T=T, p=p, verbose=verbose)
+                     for i in self.reactants])
         Ereac = sum([i.Gelec for i in self.reactants])
         if self.reversible:
-            Gprod = sum([i.get_free_energy(T=T, p=p, verbose=verbose) for i in self.products])
+            Gprod = sum([i.get_free_energy(T=T, p=p, verbose=verbose)
+                         for i in self.products])
             Eprod = sum([i.Gelec for i in self.products])
             self.dGrxn = (Gprod - Greac) * eVtokJ * 1.0e3
             self.dErxn = (Eprod - Ereac) * eVtokJ * 1.0e3
         if self.TS is not None:
-            GTS = sum([i.get_free_energy(T=T, p=p, verbose=verbose) for i in self.TS])
+            GTS = sum([i.get_free_energy(T=T, p=p, verbose=verbose)
+                       for i in self.TS])
             ETS = sum([i.Gelec for i in self.TS])
             self.dGa_fwd = (GTS - Greac) * eVtokJ * 1.0e3
             self.dEa_fwd = (ETS - Ereac) * eVtokJ * 1.0e3
@@ -53,6 +68,7 @@ class Reaction:
             self.dGa_rev = 0.0
             self.dEa_fwd = 0.0
             self.dEa_rev = 0.0
+
         if verbose:
             print('---------------------')
             print(self.name)
@@ -78,9 +94,12 @@ class Reaction:
         """Computes reaction rate constants.
 
         """
+
         self.calc_reaction_energy(T=T, p=p, verbose=verbose)
+
         if self.reac_type == 'adsorption':
-            gassp = [s for s in self.reactants if s.state_type == 'gas']
+            gassp = [s for s in self.reactants
+                     if s.state_type == 'gas']
             assert(len(gassp) == 1)
             self.kfwd = kads(T=T, mass=gassp[0].mass, area=self.area)
             if self.reversible:
@@ -89,7 +108,8 @@ class Reaction:
             else:
                 self.krev = 0.0
         elif self.reac_type == 'desorption':
-            gassp = [s for s in self.products if s.state_type == 'gas']
+            gassp = [s for s in self.products
+                     if s.state_type == 'gas']
             assert(len(gassp) == 1)
             if self.reversible:
                 self.krev = kads(T=T, mass=gassp[0].mass, area=self.area)
@@ -111,7 +131,9 @@ class Reaction:
         """Returns the reaction energy in J/mol.
 
         """
+
         self.calc_reaction_energy(T=T, p=p, verbose=verbose)
+
         if etype == 'electronic':
             return self.dErxn
         return self.dGrxn
@@ -120,7 +142,9 @@ class Reaction:
         """Returns the reaction barriers in J/mol.
 
         """
+
         self.calc_reaction_energy(T=T, p=p, verbose=verbose)
+
         if etype == 'electronic':
             return self.dEa_fwd, self.dEa_rev
         return self.dGa_fwd, self.dGa_rev
@@ -129,8 +153,9 @@ class Reaction:
         """Save the reaction as a pickle object.
 
         """
-        path = '' if path is None else path
-        pickle.dump(self, open(path + self.name + '.pckl', 'wb'))
+
+        path = path if path else ''
+        pickle.dump(self, open(path + 'reaction_' + self.name + '.pckl', 'wb'))
 
 
 class UserDefinedReaction(Reaction):
@@ -139,11 +164,11 @@ class UserDefinedReaction(Reaction):
                  area=1.0e-19, name='reaction', scaling=1.0,
                  dErxn_user=None, dEa_fwd_user=None, dEa_rev_user=None,
                  dGrxn_user=None, dGa_fwd_user=None, dGa_rev_user=None):
-        """Initialises UserDefinedReaction class with energies specified by the user.
-        Reaction class stores the states involved in the reaction,
-        the rate constants, reaction energy and barrier.
+        """Initialises UserDefinedReaction class
+        in which energies are specified by the user.
 
         """
+
         super(UserDefinedReaction, self).__init__(reac_type=reac_type, reversible=reversible, reactants=reactants,
                                                   products=products, TS=TS, area=area, name=name, scaling=scaling)
         self.dErxn_user = dErxn_user
@@ -157,6 +182,7 @@ class UserDefinedReaction(Reaction):
         """Computes reaction energies and barriers in J/mol.
 
         """
+
         if self.reversible:
             if isinstance(self.dErxn_user, dict):
                 self.dErxn = self.dErxn_user[T] * eVtokJ * 1.0e3

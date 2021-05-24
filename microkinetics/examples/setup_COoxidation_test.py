@@ -11,7 +11,7 @@ import numpy as np
 p = 1.01325e5  # Pressure (Pa)
 Ts = [600]  # list(np.linspace(start=423, stop=623, num=20, endpoint=True))  # Temperature (K)
 times = np.logspace(start=-10, stop=3, num=int(1e4))  # Times (s)
-withflow = False  # Include reactor model
+withflow = True  # Include reactor model
 use_jacobian = True  # Use Jacobian to solve SS and ODEs
 verbose = False  # Print messages
 
@@ -112,7 +112,7 @@ if not withflow:
     reactor = InfiniteDilutionReactor()
 else:
     # CSTR
-    start_state = None
+    start_state = dict()
     inflow_state = dict()
     inflow_state['O2'] = 0.8 * p / bartoPa
     inflow_state['CO'] = 0.2 * p / bartoPa
@@ -139,11 +139,12 @@ print('Solving ODEs...')
 for Tind, T in enumerate(Ts):
     sys.set_parameters(times=times, start_state=start_state, inflow_state=inflow_state, T=T, p=p,
                        xtol=1.0e-12, use_jacobian=use_jacobian, verbose=verbose)
-    # sys.solve_odes()
-    run_timed(sys.solve_odes)
-    draw_call_graph(sys.solve_odes, path=figures_dir + 'callgraph.png')
-    run_cprofiler('sys.solve_odes()')
 
+    # run_timed(sys.solve_odes)
+    # run_cprofiler('sys.solve_odes()')
+    # draw_call_graph(sys.solve_odes, path=figures_dir + 'callgraph.png')
+
+    sys.solve_odes()
     # sys.plot_transient(T=T, p=p, path=figures_dir)
     # sys.write_results(T=T, p=p, path=results_dir)
 
@@ -218,25 +219,20 @@ minima[6] = [states['SRTS.Pd'], states['CO2'], states['Clean'], states['Clean']]
 minima[7] = [states['CO2'], states['CO2'],
              states['Clean'], states['Clean'], states['Clean'], states['Clean']]
 
-energy = Energy(minima)
+energy = Energy(minima=minima, name='COox_landscape')
 energy.draw_energy_landscape(T=500, p=p, etype='electronic', path=figures_dir)
 energy.draw_energy_landscape(T=500, p=p, etype='free', path=figures_dir)
 
 tofs = []
-fig, ax = plt.subplots(figsize=(3.2, 3.2))
+fig1, ax1 = plt.subplots(figsize=(3.2, 3.2))
 for T in Ts:
     tof, num_i, num_j, lTi, lIj = energy.evaluate_energy_span_model(T=T, p=p, verbose=False, etype='free')
     tofs.append(tof)
     print('ES:')
     print('T = %1.0f K, TOF = %1.2e 1/s, Ea = %1.2f kJ/mol' % (T, tof, 1.0e-3 *
                                                                np.log((h * tof * 2.0) / (kB * T)) * (-R * T)))
-ax.plot(Ts, tofs, color='darkorchid', label='ES v1')
-ax.plot(Ts, final_rates[:, -1], '-', color='teal', label='MK')
-ax.set(yscale='log', xlabel='Temperature (K)', ylabel='TOF (1/s)')
-ax.legend(frameon=False, loc='center right')
-fig.tight_layout()
-fig.savefig(figures_dir + 'EStof_temperature.png', format='png', dpi=300)
-fig.show()
+ax1.plot(Ts, tofs, color='darkorchid', label='ES v1')
+ax1.plot(Ts, final_rates[:, -1], '-', color='teal', label='MK')
 
 minima = dict()
 minima[0] = [states['Clean'], states['Clean'], states['Clean'], states['O2'], states['CO'], states['CO']]
@@ -248,7 +244,7 @@ minima[5] = [states['CO2'], states['O.Pd111'], states['CO.Pd111'], states['Clean
 minima[6] = [states['CO2'], states['SRTS.Pd'], states['Clean']]
 minima[7] = [states['CO2'], states['CO2'], states['Clean'], states['Clean'], states['Clean']]
 
-energy = Energy(minima)
+energy = Energy(minima=minima, name='COox_landscape')
 energy.draw_energy_landscape(T=500, p=p, etype='electronic', path=figures_dir)
 energy.draw_energy_landscape(T=500, p=p, etype='free', path=figures_dir)
 
@@ -260,10 +256,38 @@ for T in Ts:
     print('ES:')
     print('T = %1.0f K, TOF = %1.2e 1/s, Ea = %1.2f kJ/mol' % (T, tof, 1.0e-3 *
                                                                np.log((h * tof * 2.0) / (kB * T)) * (-R * T)))
-ax.plot(Ts, tofs, '--', color='orchid', label='ES v2')
-ax.set(yscale='log', xlabel='Temperature (K)', ylabel='TOF (1/s)')
-ax.legend(frameon=False, loc='center right')
-fig.tight_layout()
-fig.savefig(figures_dir + 'EStof_temperature.png', format='png', dpi=300)
-fig.show()
+ax1.plot(Ts, tofs, '--', label='ES v2',
+         color='orchid')
+ax1.set(xlabel='Temperature (K)',
+        ylabel='TOF (1/s)', yscale='log')
+ax1.legend(frameon=False, loc='center right')
+fig1.tight_layout()
+fig1.savefig(figures_dir + 'EStof_temperature.png',
+             format='png', dpi=300)
+fig1.show()
 
+# Pickle the files
+sys.save_pickle(path=results_dir + 'pickles/')
+sys.reactor.save_pickle(path=results_dir + 'pickles/')
+for r in sys.reactions.keys():
+    sys.reactions[r].save_pickle(path=results_dir + 'pickles/')
+    for s in sys.reactions[r].reactants + sys.reactions[r].products:
+        s.save_pickle(path=results_dir + 'pickles/')
+    if sys.reactions[r].TS:
+        for s in sys.reactions[r].TS:
+            s.save_pickle(path=results_dir + 'pickles/')
+energy.save_pickle(path=results_dir + 'pickles/')
+
+# Unpickle the files
+newsys = System(path_to_pickle=results_dir + 'pickles/system.pckl')
+newreac = Reactor(path_to_pickle=results_dir + 'pickles/reactor_reactor.pckl')
+newrxns = dict()
+newstts = dict()
+for r in sys.reactions.keys():
+    newrxns[r] = Reaction(path_to_pickle=results_dir + 'pickles/reaction_' + r + '.pckl')
+    for s in sys.reactions[r].reactants + sys.reactions[r].products:
+        newstts[s.name] = State(path_to_pickle=results_dir + 'pickles/state_' + s.name + '.pckl')
+    if sys.reactions[r].TS:
+        for s in sys.reactions[r].TS:
+            newstts[s.name] = Scaling(path_to_pickle=results_dir + 'pickles/scaling_state_' + s.name + '.pckl')
+neweng = Energy(path_to_pickle=results_dir + 'pickles/energy_COox_landscape.pckl')
