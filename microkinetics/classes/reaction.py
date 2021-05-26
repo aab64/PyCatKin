@@ -102,6 +102,9 @@ class Reaction:
                      if s.state_type == 'gas']
             assert(len(gassp) == 1)
             self.kfwd = kads(T=T, mass=gassp[0].mass, area=self.area)
+            if self.dGa_fwd:
+                print('Assuming activated adsorption has Arrhenius rate constant!')
+                self.kfwd = karr(T=T, prefac=self.kfwd, barrier=np.max((self.dGa_fwd, 0.0)))
             if self.reversible:
                 self.Keq = keq_therm(T=T, rxn_en=self.dGrxn)
                 self.krev = k_from_eq_rel(kknown=self.kfwd, Keq=self.Keq, direction='forward')
@@ -113,6 +116,9 @@ class Reaction:
             assert(len(gassp) == 1)
             if self.reversible:
                 self.krev = kads(T=T, mass=gassp[0].mass, area=self.area)
+                if self.dGa_rev:
+                    print('Assuming activated adsorption has Arrhenius rate constant!')
+                    self.krev = karr(T=T, prefac=self.krev, barrier=np.max((self.dGa_rev, 0.0)))
                 self.Keq = keq_therm(T=T, rxn_en=self.dGrxn)
                 self.kfwd = k_from_eq_rel(kknown=self.krev, Keq=self.Keq, direction='reverse')
             else:
@@ -229,6 +235,76 @@ class UserDefinedReaction(Reaction):
         elif self.dEa_fwd is not None and self.dGa_fwd is None:
             self.dGa_fwd = self.dEa_fwd
             self.dGa_rev = self.dEa_rev
+
+        if verbose:
+            print('---------------------')
+            print(self.name)
+            print('reactants:')
+            for i in self.reactants:
+                print('* ' + i.name + ', ' + i.state_type)
+            print('products:')
+            for i in self.products:
+                print('* ' + i.name + ', ' + i.state_type)
+            if self.TS is not None:
+                for i in self.TS:
+                    print('* ' + i.name + ', ' + i.state_type)
+            print('dGfwd: % 1.2f (kJ/mol)' % (self.dGa_fwd * 1.0e-3))
+            print('dEfwd: % 1.2f (kJ/mol)' % (self.dEa_fwd * 1.0e-3))
+            if self.reversible:
+                print('dGrev: % 1.2f (kJ/mol)' % (self.dGa_rev * 1.0e-3))
+                print('dGrxn: % 1.2f (kJ/mol)' % (self.dGrxn * 1.0e-3))
+                print('dErev: % 1.2f (kJ/mol)' % (self.dEa_rev * 1.0e-3))
+                print('dErxn: % 1.2f (kJ/mol)' % (self.dErxn * 1.0e-3))
+            print('---------------------')
+
+
+class ReactionDerivedReaction(Reaction):
+
+    def __init__(self, reac_type, reversible=True, reactants=None, products=None, TS=None,
+                 area=1.0e-19, name='reaction', scaling=1.0, base_reaction=None):
+        """Initialises ReactionDerivedReaction class
+        in which energies are specified by a different reaction.
+
+        """
+
+        super(ReactionDerivedReaction, self).__init__(reac_type=reac_type, reversible=reversible, reactants=reactants,
+                                                      products=products, TS=TS, area=area, name=name, scaling=scaling)
+        assert (base_reaction is not None)
+        self.base_reaction = base_reaction
+        if reversible != base_reaction.reversible:
+            revcheck = lambda s: 'reversible' if s else 'irreversible'
+            print('Warning! ReactionDerivedReaction is defined as %s but base Reaction is %s. Will use %s' %
+                  (revcheck(reversible), revcheck(base_reaction.reversible), revcheck(base_reaction.reversible)))
+            self.reversible = base_reaction.reversible
+
+    def calc_reaction_energy(self, T, p, verbose=False):
+        """Computes reaction energies and barriers in J/mol.
+
+        """
+
+        Greac = sum([i.get_free_energy(T=T, p=p, verbose=verbose)
+                     for i in self.base_reaction.reactants])
+        Ereac = sum([i.Gelec for i in self.base_reaction.reactants])
+        if self.base_reaction.reversible:
+            Gprod = sum([i.get_free_energy(T=T, p=p, verbose=verbose)
+                         for i in self.base_reaction.products])
+            Eprod = sum([i.Gelec for i in self.base_reaction.products])
+            self.dGrxn = (Gprod - Greac) * eVtokJ * 1.0e3
+            self.dErxn = (Eprod - Ereac) * eVtokJ * 1.0e3
+        if self.base_reaction.TS is not None:
+            GTS = sum([i.get_free_energy(T=T, p=p, verbose=verbose)
+                       for i in self.base_reaction.TS])
+            ETS = sum([i.Gelec for i in self.base_reaction.TS])
+            self.dGa_fwd = (GTS - Greac) * eVtokJ * 1.0e3
+            self.dEa_fwd = (ETS - Ereac) * eVtokJ * 1.0e3
+            if self.base_reaction.reversible:
+                self.dGa_rev = (GTS - Gprod) * eVtokJ * 1.0e3
+                self.dEa_rev = (ETS - Eprod) * eVtokJ * 1.0e3
+        else:
+            self.dGa_fwd = 0.0
+            self.dGa_rev = 0.0
+            self.dEa_fwd = 0.0
+            self.dEa_rev = 0.0
 
         if verbose:
             print('---------------------')
