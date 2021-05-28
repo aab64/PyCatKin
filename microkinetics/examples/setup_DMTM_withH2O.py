@@ -1,12 +1,26 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import pandas as pd
 from microkinetics.classes.state import State
 from microkinetics.classes.reaction import Reaction
 from microkinetics.classes.system import System
 from microkinetics.classes.reactor import *
 from microkinetics.classes.energy import *
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import pandas as pd
+from ase.io import read
+
+
+def load_from_contcar(state_path):
+    contcar_path = state_path + '/CONTCAR'
+    assert (os.path.isfile(contcar_path))
+    atoms = read(contcar_path)
+    inertia = atoms.get_moments_of_inertia()
+    outcar_path = state_path + '/OUTCAR'
+    assert (os.path.isfile(outcar_path))
+    atoms = read(outcar_path, format='vasp-out')
+    mass = sum(atoms.get_masses())
+    return atoms, mass, inertia
+
 
 font = {'family': 'sans-serif', 'weight': 'normal', 'size': 8}
 plt.rc('font', **font)
@@ -18,6 +32,7 @@ p = 1.0e5  # Pressure (Pa)
 T = 448.15  # Temperature (K)
 Apore = 3.8e-10 ** 2  # Pore area (m2) - taken from wikipedia for SSZ-13
 verbose = False  # Print messages
+use_jacobian = False  # Use Jacobian to solve SS and ODEs
 savexyz = False  # Save xyz files (not used)
 savefig = True
 
@@ -71,6 +86,10 @@ for s in snames:
     vib_dir = gas_vib_dir if states[s].state_type == 'gas' else ads_vib_dir
     states[s].path = opt_dir + states[s].name
     states[s].vibs_path = vib_dir + states[s].name
+    read_from_alternate = None
+    if states[s].state_type == 'gas':
+        read_from_alternate = {'get_atoms': lambda state_path=opt_dir + states[s].name: load_from_contcar(state_path)}
+    states[s].read_from_alternate = read_from_alternate
 
 frac = 0.67
 for s in states.keys():
@@ -196,7 +215,8 @@ ipath = figures_dir + 'withH2O/' if savefig else None
 for Tind, T in enumerate(Ts):
 
     times = np.logspace(start=int(np.log10(1e-16)), stop=int(np.log10(1e6)), num=int(1e6))
-    sys.set_parameters(times=times, start_state=start_state, T=T, p=p, inflow_state=None, verbose=verbose, xtol=1e-8)
+    sys.set_parameters(times=times, start_state=start_state, T=T, p=p, inflow_state=None,
+                       use_jacobian=use_jacobian, verbose=verbose, xtol=1e-8)
     sys.solve_odes()
     sys.find_steady(store_steady=True)
     sys.reaction_terms(sys.full_steady)
@@ -293,7 +313,7 @@ minima[16] = [states['Cu-pairH2O'], states['ch3oh'], states['ch3oh']]
 minima[17] = [states['ts1H2O'], states['ch3oh'], states['ch3oh']]
 minima[18] = [states['2CuH2O'], states['ch3oh'], states['ch3oh']]
 
-energy = Energy(minima)
+energy = Energy(minima=minima)
 energy.draw_energy_landscape(T=450, p=p, verbose=False, etype='electronic')
 energy.draw_energy_landscape(T=450, p=p, verbose=False, etype='free')
 

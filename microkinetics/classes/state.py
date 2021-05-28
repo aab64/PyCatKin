@@ -79,18 +79,9 @@ class State:
             self.inertia = np.array([i if i > inertia_cutoff else
                                      0.0 for i in self.inertia])
             self.shape = len([i for i in self.inertia if i > 0.0])
-            # Check if there are at least 2 non-zero components
             if self.shape < 2:
-                print('Too many'
-                      ' components of the moments of inertia are zero. Trying geometry in CONTCAR...')
-                outcar_path = self.path + '/CONTCAR'
-                assert(os.path.isfile(outcar_path))
-                atoms = ase.io.read(outcar_path)
-                self.inertia = atoms.get_moments_of_inertia()
-                self.inertia = np.array([i if i > inertia_cutoff else
-                                         0.0 for i in self.inertia])
-                self.shape = len([i for i in self.inertia if i > 0.0])
-                assert(self.shape > 1)
+                print('Too many components of the moments of inertia are zero.'
+                      'Please specify atoms differently.')
 
     def get_vibrations(self, verbose=False):
         """Reads vibrations file from path and extracts frequencies.

@@ -1,10 +1,24 @@
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import pandas as pd
 from microkinetics.classes.state import State
 from microkinetics.classes.reaction import Reaction
 from microkinetics.classes.system import System
 from microkinetics.classes.reactor import *
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import pandas as pd
+from ase.io import read
+
+
+def load_from_contcar(state_path):
+    contcar_path = state_path + '/CONTCAR'
+    assert (os.path.isfile(contcar_path))
+    atoms = read(contcar_path)
+    inertia = atoms.get_moments_of_inertia()
+    outcar_path = state_path + '/OUTCAR'
+    assert (os.path.isfile(outcar_path))
+    atoms = read(outcar_path, format='vasp-out')
+    mass = sum(atoms.get_masses())
+    return atoms, mass, inertia
+
 
 font = {'family': 'sans-serif', 'weight': 'normal', 'size': 8}
 plt.rc('font', **font)
@@ -16,6 +30,7 @@ p = 1.0e5  # Pressure (Pa)
 T = 448.15  # Temperature (K)
 Apore = 3.8e-10 ** 2  # Pore area (m2) - taken from wikipedia for SSZ-13
 verbose = False  # Print messages
+use_jacobian = False  # Use Jacobian to solve SS and ODEs
 savexyz = False  # Save xyz files (not used)
 savefig = True
 
@@ -102,6 +117,10 @@ for s in states.keys():
     vib_dir = gas_vib_dir if states[s].state_type == 'gas' else ads_vib_dir
     states[s].path = opt_dir + states[s].name
     states[s].vibs_path = vib_dir + states[s].name
+    read_from_alternate = None
+    if states[s].state_type == 'gas':
+        read_from_alternate = {'get_atoms': lambda state_path=opt_dir + states[s].name: load_from_contcar(state_path)}
+    states[s].read_from_alternate = read_from_alternate
 states['s2Och4'].gasdata = {'fraction': [frac], 'state': [states['ch4']]}
 states['sOch4'].gasdata = {'fraction': [frac], 'state': [states['ch4']]}
 states['s2Och4H2O'].gasdata['fraction'].append(frac)
@@ -317,7 +336,7 @@ for Tind, T in enumerate(Ts):
 
         times = np.logspace(start=int(np.log10(1e-12)), stop=int(np.log10(1e6)), num=int(1e4))
         sys.set_parameters(times=times, start_state=start_state, inflow_state=None, T=T, p=p,
-                           verbose=verbose, xtol=1e-8)
+                           use_jacobian=use_jacobian, verbose=verbose, xtol=1e-8)
         sys.solve_odes()
         # sys.find_steady(store_steady=True)
         # sys.reaction_terms(sys.full_steady)

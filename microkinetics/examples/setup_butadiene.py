@@ -3,6 +3,7 @@ from microkinetics.classes.energy import *
 from microkinetics.classes.reaction import *
 from microkinetics.classes.system import *
 from microkinetics.classes.reactor import *
+from microkinetics.functions.profiling import *
 import glob
 import copy
 from ase.data.pubchem import pubchem_atoms_search
@@ -12,7 +13,7 @@ from ase.io import read
 def load_acetaldehyde_from_pubchem(outcar_path):
     aa = pubchem_atoms_search(name='acetaldehyde')
     inertia = copy.copy(aa.get_moments_of_inertia())
-    vasp_atoms = ase.io.read(outcar_path, format='vasp-out')
+    vasp_atoms = read(outcar_path, format='vasp-out')
     mass = sum(vasp_atoms.get_masses())
     return vasp_atoms, mass, inertia
 
@@ -55,7 +56,7 @@ T = 723  # Temperature (K)
 Ts = list(np.linspace(start=523, stop=923,
                       num=17, endpoint=True))  # Temperatures (K)
 Asite = (13e-10 * 15e-10) / 4  # Site area (m2)
-times = np.logspace(start=-14, stop=3, num=int(1e5)) * 24 * 3.6  # Times (s)
+times = np.logspace(start=-14, stop=3, num=int(1e3)) * 24 * 3.6  # Times (s)
 use_jacobian = True  # Use Jacobian to solve SS and ODEs
 verbose = True  # Print messages
 
@@ -84,14 +85,12 @@ for folder in folders:
     for path in paths:
         if not os.path.isdir(path):
             if 'ethyl acetate' in path and '7Eiv' not in path:
-                ea_path = path
                 read_from_alternate = dict()
-                read_from_alternate['get_electronic_energy'] = lambda: load_ethyl_acetate_energy(ea_path)
-                read_from_alternate['get_vibrations'] = lambda: load_ethylacetate_frequencies(ea_path)
+                read_from_alternate['get_electronic_energy'] = lambda ea_path=path: load_ethyl_acetate_energy(ea_path)
+                read_from_alternate['get_vibrations'] = lambda ea_path=path: load_ethylacetate_frequencies(ea_path)
             elif 'acetaldehyde' in path:
-                aa_path = path
                 read_from_alternate = dict()
-                read_from_alternate['get_atoms'] = lambda: load_acetaldehyde_from_pubchem(aa_path)
+                read_from_alternate['get_atoms'] = lambda aa_path=path: load_acetaldehyde_from_pubchem(aa_path)
             else:
                 read_from_alternate = None
             if 'gas' in path:
@@ -468,4 +467,16 @@ ax.grid()
 fig.tight_layout()
 fig.show()
 
+mk_sys.set_parameters(times=times, start_state=start_state, T=T, p=p,
+                      use_jacobian=False, verbose=False)
+# draw_call_graph(mk_sys.solve_odes, path=figures_dir + 'pycallgraph_nojac.png')
+# run_timed(mk_sys.solve_odes)
+run_cprofiler('mk_sys.solve_odes()')
 
+print('========================================')
+
+mk_sys.set_parameters(times=times, start_state=start_state, T=T, p=p,
+                      use_jacobian=True, verbose=False)
+# draw_call_graph(mk_sys.solve_odes, path=figures_dir + 'pycallgraph.png')
+# run_timed(mk_sys.solve_odes)
+run_cprofiler('mk_sys.solve_odes()')
