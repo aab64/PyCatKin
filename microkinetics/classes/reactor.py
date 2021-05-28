@@ -29,6 +29,7 @@ class Reactor:
             self.scaling = None
             self.is_adsorbate = None
             self.is_gas = None
+            self.dynamic_indices = None
 
     def set_scaling(self, T):
         """Scaling from per site per second to per Pa per second.
@@ -59,13 +60,22 @@ class Reactor:
                                      np.transpose(np.tile(self.is_adsorbate,
                                                           (len(self.is_adsorbate), 1))))
 
+    def set_indices(self, is_adsorbate, is_gas):
+        """Set which indicies in the solution vector
+        correspond to adsorbate and gas species.
+
+        """
+        self.is_adsorbate = copy.copy(is_adsorbate)
+        self.is_gas = copy.copy(is_gas)
+
     def get_dynamic_indices(self, adsorbate_indices, gas_indices):
         """Returns which indicies in the solution vector vary with time
         (e.g., not pressure boundary conditions for ID reactors).
 
         """
 
-        return copy.copy(adsorbate_indices)
+        self.dynamic_indices = copy.copy(adsorbate_indices)
+        return self.dynamic_indices
 
     def save_pickle(self, path=None):
         """Save the reactor as a pickle object.
@@ -108,7 +118,8 @@ class InfiniteDilutionReactor(Reactor):
 
         """
 
-        return copy.copy(adsorbate_indices)
+        self.dynamic_indices = copy.copy(adsorbate_indices)
+        return self.dynamic_indices
 
 
 class CSTReactor(Reactor):
@@ -174,5 +185,5 @@ class CSTReactor(Reactor):
         vector experience transient changes.
 
         """
-
-        return copy.copy(adsorbate_indices) + copy.copy(gas_indices)
+        self.dynamic_indices = copy.copy(adsorbate_indices) + copy.copy(gas_indices)
+        return self.dynamic_indices

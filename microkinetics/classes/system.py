@@ -2,7 +2,7 @@ from microkinetics.classes.reactor import *
 import os
 import copy
 import pickle
-from scipy.integrate import ode  # , solve_ivp
+from scipy.integrate import ode, solve_ivp
 from scipy.optimize import fsolve
 import numpy as np
 import matplotlib.pyplot as plt
@@ -95,16 +95,17 @@ class System:
 
         if self.adsorbate_indices is not None:
             self.adsorbate_indices = list(set(self.adsorbate_indices))
-            self.reactor.is_adsorbate = [1 if i in self.adsorbate_indices else
-                                         0 for i in range(len(self.snames))]
+            is_adsorbate = [1 if i in self.adsorbate_indices else
+                            0 for i in range(len(self.snames))]
         else:
-            self.reactor.is_adsorbate = np.zeros(len(self.snames))
+            is_adsorbate = np.zeros(len(self.snames))
         if self.gas_indices is not None:
             self.gas_indices = list(set(self.gas_indices))
-            self.reactor.is_gas = [1 if i in self.gas_indices else
-                                   0 for i in range(len(self.snames))]
+            is_gas = [1 if i in self.gas_indices else
+                      0 for i in range(len(self.snames))]
         else:
-            self.reactor.is_gas = np.zeros(len(self.snames))
+            is_gas = np.zeros(len(self.snames))
+        self.reactor.set_indices(is_adsorbate=is_adsorbate, is_gas=is_gas)
         self.dynamic_indices = self.reactor.get_dynamic_indices(self.adsorbate_indices, self.gas_indices)
 
     def set_parameters(self, times=None, start_state=None, inflow_state=None, T=293.15, p=101325.0,
@@ -163,13 +164,10 @@ class System:
         ny = max(y.shape)
         y = y.reshape((ny, 1))
 
-        # yfree = 1 - sum(y[self.adsorbate_indices, 0])
-
         for rind, r in enumerate(self.species_map.keys()):
             self.rates[rind, 0] = self.rate_constants[r]['kfwd'] + self.species_map[r]['perturbation']
             self.rates[rind, 1] = self.rate_constants[r]['krev'] * (1.0 + self.species_map[r]['perturbation'] /
                                                                     self.rate_constants[r]['kfwd'])
-            # freebal = len(self.species_map[r]['yreac']) - len(self.species_map[r]['yprod'])
             for i in self.species_map[r]['yreac']:  # Forward rate species coverages
                 self.rates[rind, 0] *= y[i, 0]
             for i in self.species_map[r]['yprod']:  # Reverse rate species coverages
@@ -178,10 +176,6 @@ class System:
                 self.rates[rind, 0] *= (y[i, 0] * bartoPa)
             for i in self.species_map[r]['pprod']:  # Reverse rate species pressures
                 self.rates[rind, 1] *= (y[i, 0] * bartoPa)
-            # for i in range(0, freebal):
-            #     self.rates[rind, 1] *= yfree
-            # for i in range(freebal, 0):
-            #     self.rates[rind, 0] *= yfree
 
     def species_odes(self, y):
         """Constructs ODEs for adsorbate coverages and pressures
@@ -218,34 +212,35 @@ class System:
         y = y.reshape((ny, 1))
         dr_dtheta = np.zeros((len(self.species_map), ny))
 
-        # yfree = 1 - sum(y[self.adsorbate_indices, 0])
-        # assert(abs(yfree) <= 1e-16)  # Implementation assumes free sites are a state
+        def prodfun(reac, vartype, species):
+            val = 1.0
+            scaling = 1.0
+            nsp = len(self.species_map[reac][vartype])
+            for j in range(nsp):
+                if j != species:
+                    val *= y[self.species_map[reac][vartype][j], 0]
+                    if vartype in ['preac', 'pprod']:
+                        scaling = bartoPa
+            return val * scaling
 
         for rind, r in enumerate(self.species_map.keys()):
             kfwd = self.rate_constants[r]['kfwd'] + self.species_map[r]['perturbation']
             krev = self.rate_constants[r]['krev'] * (1.0 + self.species_map[r]['perturbation'] /
                                                      self.rate_constants[r]['kfwd'])
 
-            yfwd = np.prod([y[i, 0] for i in self.species_map[r]['yreac']])
-            yrev = np.prod([y[i, 0] for i in self.species_map[r]['yprod']])
-            pfwd = np.prod([y[i, 0] * bartoPa for i in self.species_map[r]['preac']])
-            prev = np.prod([y[i, 0] * bartoPa for i in self.species_map[r]['pprod']])
+            yfwd = prodfun(reac=r, vartype='yreac', species=None)
+            yrev = prodfun(reac=r, vartype='yprod', species=None)
+            pfwd = prodfun(reac=r, vartype='preac', species=None)
+            prev = prodfun(reac=r, vartype='pprod', species=None)
+
             for ind, i in enumerate(self.species_map[r]['yreac']):
-                dr_dtheta[rind, i] += kfwd * pfwd * np.prod([y[self.species_map[r]['yreac'][j], 0]
-                                                             for j in range(len(self.species_map[r]['yreac']))
-                                                             if j != ind])
+                dr_dtheta[rind, i] += kfwd * pfwd * prodfun(reac=r, vartype='yreac', species=ind)
             for ind, i in enumerate(self.species_map[r]['yprod']):
-                dr_dtheta[rind, i] -= krev * prev * np.prod([y[self.species_map[r]['yprod'][j], 0]
-                                                             for j in range(len(self.species_map[r]['yprod']))
-                                                             if j != ind])
+                dr_dtheta[rind, i] -= krev * prev * prodfun(reac=r, vartype='yprod', species=ind)
             for ind, i in enumerate(self.species_map[r]['preac']):
-                dr_dtheta[rind, i] += kfwd * yfwd * np.prod([y[self.species_map[r]['preac'][j], 0] * bartoPa
-                                                             for j in range(len(self.species_map[r]['preac']))
-                                                             if j != ind])
+                dr_dtheta[rind, i] += kfwd * yfwd * prodfun(reac=r, vartype='preac', species=ind)
             for ind, i in enumerate(self.species_map[r]['pprod']):
-                dr_dtheta[rind, i] -= krev * yrev * np.prod([y[self.species_map[r]['pprod'][j], 0] * bartoPa
-                                                             for j in range(len(self.species_map[r]['pprod']))
-                                                             if j != ind])
+                dr_dtheta[rind, i] -= krev * yrev * prodfun(reac=r, vartype='pprod', species=ind)
         return dr_dtheta
 
     def species_jacobian(self, y):
@@ -306,41 +301,44 @@ class System:
         if times is None:
             times = np.logspace(np.log10(1e-14), np.log10(1e3), num=1000)
 
-        # sol = solve_ivp(fun=self.reactor.rhs(self.species_odes),
-        #                 t_span=(self.params['times'][0], self.params['times'][-1]), y0=yinit, method='LSODA',
-        #                 args=(self.params['temperature'], yinflow),
-        #                 rtol=self.params['rtol'], atol=self.params['atol'])
-        # if self.params['verbose']:
-        #     print(sol.message)
-        # self.times = sol.t
-        # self.solution = np.transpose(sol.y)
-
         y = np.zeros((len(times) + 1, len(yinit)))
         y[0, :] = yinit
 
+        solfun = lambda tval, yval: self.reactor.rhs(self.species_odes)(t=tval, y=yval, T=self.params['temperature'],
+                                                                        inflow_state=yinflow)
+        jacfun = lambda tval, yval: self.reactor.jacobian(self.species_jacobian)(t=tval, y=yval,
+                                                                                 T=self.params['temperature'])
+        sol = solve_ivp(fun=solfun, jac=jacfun if self.params['jacobian'] else None,
+                        t_span=(self.params['times'][0], self.params['times'][-1]),
+                        y0=yinit, method='LSODA',
+                        rtol=self.params['rtol'], atol=self.params['atol'])
+        if self.params['verbose']:
+            print(sol.message)
+        self.times = sol.t
+        self.solution = np.transpose(sol.y)
+
         # Create Jacobian handle if required
-        if self.params['jacobian']:
-            jacfun = self.reactor.jacobian(self.species_jacobian)
-        else:
-            jacfun = None
-
+        # if self.params['jacobian']:
+        #     jacfun = self.reactor.jacobian(self.species_jacobian)
+        # else:
+        #     jacfun = None
+        #
         # Create ODE solver
-        r = ode(self.reactor.rhs(self.species_odes), jacfun).set_integrator('lsoda', method='bdf',
-                                                                            rtol=self.params['rtol'],
-                                                                            atol=self.params['atol'])
-        r.set_initial_value(yinit, 0.0).set_f_params(self.params['temperature'], yinflow)
-
-        if self.params['jacobian']:
-            r.set_jac_params(self.params['temperature'])
-
-        # Solve ODEs
-        for i, t in enumerate(times):
-            if r.successful() and r.t < times[-1]:
-                r.integrate(t)
-                y[i + 1, :] = r.y
-
-        self.times = np.concatenate((np.zeros(1), times))
-        self.solution = y
+        # r = ode(self.reactor.rhs(self.species_odes), jacfun).set_integrator('lsoda', method='bdf',
+        #                                                                     rtol=self.params['rtol'],
+        #                                                                     atol=self.params['atol'])
+        # r.set_initial_value(yinit, 0.0).set_f_params(self.params['temperature'], yinflow)
+        # if self.params['jacobian']:
+        #     r.set_jac_params(self.params['temperature'])
+        #
+        # # Solve ODEs
+        # for i, t in enumerate(times):
+        #     if r.successful() and r.t < times[-1]:
+        #         r.integrate(t)
+        #         y[i + 1, :] = r.y
+        #
+        # self.times = np.concatenate((np.zeros(1), times))
+        # self.solution = y
 
         if self.params['verbose']:
             print('=========\nFinal conditions:\n')

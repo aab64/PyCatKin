@@ -337,7 +337,7 @@ for gind, g in enumerate(gas_states):
             start_state[g] = xgas[gind] * p / bartoPa
 start_state['*'] = 1.0
 
-
+print('Solving MK model...')
 mk_tofs = []
 for Ti in Ts:
     mk_sys.set_parameters(times=times, start_state=start_state, T=Ti, p=p,
@@ -350,8 +350,11 @@ for Ti in Ts:
                         for i in [list(mk_sys.reactions.keys()).index('3F-3G'),
                                   list(mk_sys.reactions.keys()).index('4I-4K'),
                                   list(mk_sys.reactions.keys()).index('6G-6H')]]))
+print('Done.')
 
 # ES model
+print('Investigating energy landscapes...')
+
 p123 = dict()
 p123[0] = [states['surface'], states['ethanol'], states['ethanol'], states['ethanol']]
 p123[1] = [states['1A'], states['ethanol'], states['ethanol']]
@@ -467,16 +470,23 @@ ax.grid()
 fig.tight_layout()
 fig.show()
 
+print('Done.')
+
+print('Profiling...')
+print('- without Jacobian:')
 mk_sys.set_parameters(times=times, start_state=start_state, T=T, p=p,
                       use_jacobian=False, verbose=False)
 # draw_call_graph(mk_sys.solve_odes, path=figures_dir + 'pycallgraph_nojac.png')
 # run_timed(mk_sys.solve_odes)
 run_cprofiler('mk_sys.solve_odes()')
+print('Number of steps: %1.0f' % len(mk_sys.times))
 
-print('========================================')
-
+print('\n* * *\n')
+print('- with Jacobian:')
 mk_sys.set_parameters(times=times, start_state=start_state, T=T, p=p,
                       use_jacobian=True, verbose=False)
 # draw_call_graph(mk_sys.solve_odes, path=figures_dir + 'pycallgraph.png')
 # run_timed(mk_sys.solve_odes)
 run_cprofiler('mk_sys.solve_odes()')
+print('Number of steps: %1.0f' % len(mk_sys.times))
+print('Done.')
