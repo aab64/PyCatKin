@@ -103,7 +103,8 @@ class Reaction:
             assert(len(gassp) == 1)
             self.kfwd = kads(T=T, mass=gassp[0].mass, area=self.area)
             if self.dGa_fwd:
-                print('Assuming activated adsorption has Arrhenius rate constant!')
+                if verbose:
+                    print('Assuming activated adsorption has Arrhenius rate constant!')
                 self.kfwd = karr(T=T, prefac=self.kfwd, barrier=np.max((self.dGa_fwd, 0.0)))
             if self.reversible:
                 self.Keq = keq_therm(T=T, rxn_en=self.dGrxn)
@@ -117,7 +118,8 @@ class Reaction:
             if self.reversible:
                 self.krev = kads(T=T, mass=gassp[0].mass, area=self.area)
                 if self.dGa_rev:
-                    print('Assuming activated adsorption has Arrhenius rate constant!')
+                    if verbose:
+                        print('Assuming activated adsorption has Arrhenius rate constant!')
                     self.krev = karr(T=T, prefac=self.krev, barrier=np.max((self.dGa_rev, 0.0)))
                 self.Keq = keq_therm(T=T, rxn_en=self.dGrxn)
                 self.kfwd = k_from_eq_rel(kknown=self.krev, Keq=self.Keq, direction='reverse')
@@ -213,7 +215,7 @@ class UserDefinedReaction(Reaction):
             else:
                 self.dEa_fwd = self.dEa_fwd_user * eVtokJ * 1.0e3
             if self.reversible:
-                self.dEa_rev = (self.dEa_fwd - self.dErxn) * eVtokJ * 1.0e3
+                self.dEa_rev = (self.dEa_fwd - self.dErxn)
         else:
             self.dEa_fwd = 0.0
             self.dEa_rev = 0.0
@@ -224,7 +226,7 @@ class UserDefinedReaction(Reaction):
             else:
                 self.dGa_fwd = self.dGa_fwd_user * eVtokJ * 1.0e3
             if self.reversible:
-                self.dGa_rev = (self.dGa_fwd - self.dGrxn) * eVtokJ * 1.0e3
+                self.dGa_rev = (self.dGa_fwd - self.dGrxn)
         else:
             self.dGa_fwd = 0.0
             self.dGa_rev = 0.0
