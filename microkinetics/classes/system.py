@@ -3,10 +3,11 @@ import os
 import copy
 import pickle
 from scipy.integrate import ode, solve_ivp
-from scipy.optimize import fsolve
+from scipy.optimize import fsolve, minimize, least_squares
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import pandas as pd
 
 
 class System:
@@ -109,7 +110,7 @@ class System:
         self.dynamic_indices = self.reactor.get_dynamic_indices(self.adsorbate_indices, self.gas_indices)
 
     def set_parameters(self, times=None, start_state=None, inflow_state=None, T=293.15, p=101325.0,
-                       rtol=1e-8, atol=1e-10, xtol=1e-10, use_jacobian=True, verbose=False):
+                       rtol=1e-8, atol=1e-10, xtol=1e-8, ftol=1e-8, use_jacobian=True, verbose=False):
         """Store simulation conditions, solver tolerances and verbosity.
 
         """
@@ -123,6 +124,7 @@ class System:
         self.params['rtol'] = rtol
         self.params['atol'] = atol
         self.params['xtol'] = xtol
+        self.params['ftol'] = ftol
         self.params['jacobian'] = use_jacobian
         self.params['verbose'] = verbose
 
@@ -308,28 +310,21 @@ class System:
                                                                         inflow_state=yinflow)
         jacfun = lambda tval, yval: self.reactor.jacobian(self.species_jacobian)(t=tval, y=yval,
                                                                                  T=self.params['temperature'])
+
+        # Create ODE solver
         sol = solve_ivp(fun=solfun, jac=jacfun if self.params['jacobian'] else None,
                         t_span=(self.params['times'][0], self.params['times'][-1]),
-                        y0=yinit, method='LSODA',
+                        y0=yinit, method='BDF',
                         rtol=self.params['rtol'], atol=self.params['atol'])
         if self.params['verbose']:
             print(sol.message)
         self.times = sol.t
         self.solution = np.transpose(sol.y)
 
-        # Create Jacobian handle if required
-        # if self.params['jacobian']:
-        #     jacfun = self.reactor.jacobian(self.species_jacobian)
-        # else:
-        #     jacfun = None
-        #
-        # Create ODE solver
-        # r = ode(self.reactor.rhs(self.species_odes), jacfun).set_integrator('lsoda', method='bdf',
-        #                                                                     rtol=self.params['rtol'],
-        #                                                                     atol=self.params['atol'])
-        # r.set_initial_value(yinit, 0.0).set_f_params(self.params['temperature'], yinflow)
-        # if self.params['jacobian']:
-        #     r.set_jac_params(self.params['temperature'])
+        # r = ode(solfun, jac=jacfun if self.params['jacobian'] else None).set_integrator('lsoda', method='bdf',
+        #                                                                                 rtol=self.params['rtol'],
+        #                                                                                 atol=self.params['atol'])
+        # r.set_initial_value(yinit, 0.0)
         #
         # # Solve ODEs
         # for i, t in enumerate(times):
@@ -384,10 +379,31 @@ class System:
                 return np.array([[full_jacobian[i1, i2] for i1 in self.dynamic_indices]
                                  for i2 in self.dynamic_indices])
         else:
-            jacfun = None
+            jacfun = '3-point'
 
-        y_steady, info, ier, mesg = fsolve(func=func, x0=y_guess, fprime=jacfun,
-                                           full_output=True, xtol=self.params['xtol'])
+        # y_steady, info, ier, mesg = fsolve(func=func, x0=y_guess, fprime=jacfun,
+        #                                    full_output=True, xtol=self.params['xtol'])
+
+        sol = least_squares(fun=func, x0=y_guess, jac=jacfun, method='trf',
+                            xtol=self.params['xtol'], ftol=self.params['ftol'],
+                            max_nfev=np.max((int(1e4), 100 * len(y_guess))))
+        y_steady = sol.x
+        mesg = sol.message
+        ier = sol.nfev
+
+        # sol = minimize(fun=lambda x: np.linalg.norm(func(x)), x0=y_guess, method='Powell',
+        #                options={'xtol': self.params['xtol'], 'ftol': self.params['ftol'],
+        #                         'maxiter': np.max((int(1e4), 100 * len(y_guess))),
+        #                         'maxfev': np.max((int(1e4), 100 * len(y_guess)))})
+        # y_steady = sol.x
+        # mesg = sol.message
+        # ier = sol.nit
+
+        # sol = minimize(fun=func, x0=y_guess, method='Newton-CG', jac=jacfun)
+        # y_steady = sol.x
+        # mesg = sol.message
+        # ier = sol.nit
+
         full_steady[self.dynamic_indices] = y_steady
 
         if store_steady:
@@ -396,8 +412,10 @@ class System:
         if self.params['verbose']:
             print('Results of steady state search...')
             print('- At %1.0f K: %s, %1i' % (self.params['temperature'], mesg, ier))
-            print('- Max abs function value at steady state: %1.3e' % np.max(np.abs(func(y_steady))))
-            print('- Max abs difference: %1.3e' % (np.max(np.abs(y_steady - y_guess))))
+            print('- Cost function value at steady state: %.3g' % sol.cost)
+            print(sol.fun)
+            print('- Norm of function value at steady state: %.3g' % np.linalg.norm(func(y_steady)))
+            print('- Norm of guess minus steady state: %.3g' % np.linalg.norm(y_guess - y_steady))
 
         if plot_comparison:
             font = {'family': 'sans-serif', 'weight': 'normal', 'size': 8}
@@ -484,39 +502,30 @@ class System:
         T = self.params['temperature']
         p = self.params['pressure']
 
-        rfile = path + 'surfrates_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.txt'
-        cfile = path + 'coverages_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.txt'
-        pfile = path + 'pressures_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.txt'
+        rfile = path + 'rates_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.csv'
+        cfile = path + 'coverages_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.csv'
+        pfile = path + 'pressures_' + ('%1.1f' % T) + 'K_' + ('%1.1f' % (p / bartoPa)) + 'bar.csv'
 
-        with open(rfile, 'w') as file:
-            header = ', '.join(['Time (s)'] + [(r.name + '_fwd, ' + r.name + '_rev')
-                                               for r in self.reactions.values()]) + '\n'
-            file.write(header)
-        with open(cfile, 'w') as file:
-            header = ', '.join(['Time (s)'] + [s for i, s in enumerate(self.snames)
-                                               if i in self.adsorbate_indices]) + '\n'
-            file.write(header)
-        with open(pfile, 'w') as file:
-            header = ', '.join(['Time (s)'] + [s for i, s in enumerate(self.snames)
-                                               if i in self.gas_indices]) + '\n'
-            file.write(header)
+        rheader = ['Time (s)'] + [j for k in [i.split(',')
+                                              for i in [(r.name + '_fwd,' + r.name + '_rev')
+                                                        for r in self.reactions.values()]]
+                                  for j in k]
+        cheader = ['Time (s)'] + [s for i, s in enumerate(self.snames) if i in self.adsorbate_indices]
+        pheader = ['Time (s)'] + [s for i, s in enumerate(self.snames) if i in self.gas_indices]
 
+        rmat = np.zeros((len(self.times), 2 * self.rates.shape[0]))
         for t in range(len(self.times)):
-            with open(rfile, 'a') as file:
-                self.reaction_terms(y=self.solution[t, :])
-                line = ', '.join([str(self.times[t])] +
-                                 [(str(r[0]) + ', ' + str(r[1])) for r in self.rates]) + '\n'
-                file.write(line)
-            with open(cfile, 'a') as file:
-                line = ', '.join([str(self.times[t])] +
-                                 [str(self.solution[t, s]) for s in range(len(self.snames))
-                                  if s in self.adsorbate_indices]) + '\n'
-                file.write(line)
-            with open(pfile, 'a') as file:
-                line = ', '.join([str(self.times[t])] +
-                                 [str(self.solution[t, s]) for s in range(len(self.snames))
-                                  if s in self.gas_indices]) + '\n'
-                file.write(line)
+            self.reaction_terms(y=self.solution[t, :])
+            rmat[t, :] = self.rates.flatten()
+
+        times = self.times.reshape(len(self.times), 1)
+
+        df = pd.DataFrame(np.concatenate((times, rmat), axis=1), columns=rheader)
+        df.to_csv(path_or_buf=rfile, sep=',', header=True, index=False)
+        df = pd.DataFrame(np.concatenate((times, self.solution[:, self.adsorbate_indices]), axis=1), columns=cheader)
+        df.to_csv(path_or_buf=cfile, sep=',', header=True, index=False)
+        df = pd.DataFrame(np.concatenate((times, self.solution[:, self.gas_indices]), axis=1), columns=pheader)
+        df.to_csv(path_or_buf=pfile, sep=',', header=True, index=False)
 
     def plot_transient(self, path=None):
         """Plot transient rates, coverages and pressures.
