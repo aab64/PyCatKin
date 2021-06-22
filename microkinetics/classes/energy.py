@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 class Energy:
 
-    def __init__(self, name='landscape', minima=None, path_to_pickle=None):
+    def __init__(self, name='landscape', minima=None, labels=None, path_to_pickle=None):
         """Initialises Energy class.
         Energy class stores the states in the energy landscape,
         and computes energy span model predictions.
@@ -26,9 +26,12 @@ class Energy:
         else:
             self.name = name
             self.minima = copy.copy(minima)
+            self.labels = copy.copy(labels)
             self.energy_landscape = None
             if self.minima is None:
                 print('No states loaded.')
+            if self.labels is not None:
+                assert(len(self.labels) == len(self.minima))
 
     def construct_energy_landscape(self, T, p, verbose=False):
         """Records free and electronic energies of minima and
@@ -53,7 +56,8 @@ class Energy:
             self.energy_landscape['isTS'][sind] = 1 if True in [i.state_type == 'TS'
                                                                 for i in self.minima[sind]] else 0
 
-    def draw_energy_landscape(self, T, p, etype='free', eunits='eV', verbose=False, path=None):
+    def draw_energy_landscape(self, T, p, etype='free', eunits='eV', legend_location='upper right',
+                              verbose=False, path=None, show_labels=False):
         """Records free and electronic energies of minima and
         transition states on the energy landscape
         relative to the first entry in minima.
@@ -65,18 +69,18 @@ class Energy:
         elif self.energy_landscape['T'] != T or self.energy_landscape['p'] != p:
             self.construct_energy_landscape(T=T, p=p, verbose=verbose)
 
-        fmt = '%1.2f'
+        if show_labels:
+            assert(self.labels is not None)
+
+        fmt = '%.3g'
         if eunits == 'eV':
             conv = 1.0
         elif eunits == 'kcal/mol':
             conv = eVtokcal
-            fmt = '%1.1f'
         elif eunits == 'kJ/mol':
             conv = eVtokJ
-            fmt = '%1.1f'
         elif eunits == 'J/mol':
             conv = eVtokJ * 1.0e3
-            fmt = '%1.2e'
         else:
             print('Specified conversion not possible, using eV')
             conv = 1.0
@@ -129,7 +133,11 @@ class Energy:
             ax.text(k, self.energy_landscape[etype][k] * conv + 0.2 * conv,
                     fmt % (self.energy_landscape[etype][k] * conv),
                     ha='center')
-        ax.legend()
+            if show_labels:
+                ax.text(k, self.energy_landscape[etype][k] * conv - 0.2 * conv,
+                        self.labels[k],
+                        ha='center', va='top')
+        ax.legend(loc=legend_location)
         ax.set(xlabel='Reaction coordinate',
                xlim=(-1, len(self.energy_landscape[etype].keys())),
                xticks=range(len(self.energy_landscape[etype].keys())),
@@ -190,14 +198,35 @@ class Energy:
                       for vals in XTOFTi[:, j]])
                  for j in range(nIj)]
 
+        iTDTS = [i for i in range(len(num_i)) if num_i[i] == max(num_i)][0]
+        iTDTS = [k for k in self.energy_landscape['isTS'].keys()
+                 if self.energy_landscape['isTS'][k] == 1][iTDTS]
+        iTDI = [j for j in range(len(num_j)) if num_j[j] == max(num_j)][0]
+        iTDI = [k for k in self.energy_landscape['isTS'].keys()
+                 if self.energy_landscape['isTS'][k] == 0][iTDI]
+
+        TDTS = self.labels[iTDTS]
+        TDI = self.labels[iTDI]
+
         tof = (kB * T / h) * np.exp((-drxn / (R * T)) - 1.0) / den
 
-        lTi = [lab for lab in self.energy_landscape['isTS'].keys()
+        lTi = [self.labels[lab] for lab in self.energy_landscape['isTS'].keys()
                if self.energy_landscape['isTS'][lab] == 1]
-        lIj = [lab for lab in self.energy_landscape['isTS'].keys()
+        lIj = [self.labels[lab] for lab in self.energy_landscape['isTS'].keys()
                if self.energy_landscape['isTS'][lab] == 0]
 
-        print('dEmax = %1.2f eV' % (np.max(XTOFTi) * 1.0e-3 / eVtokJ))
+        Espan = self.energy_landscape[etype][iTDTS] - self.energy_landscape[etype][iTDI]
+        Eapp = np.log((h * tof) / (kB * T)) * (-R * T) * 1.0e-3
+        print('Energy span model results (%1.0f K): ' % T)
+        print('* TOF = % .3g 1/s' % tof)
+        print('* Espan = %.3g eV = %.3g kcal/mol = %.3g kJ/mol' %
+              (Espan, Espan * eVtokcal, Espan * eVtokJ))
+        print('* TDTS is %s.' % TDTS)
+        print('* TDI is %s.' % TDI)
+        print('* dGrxn = %.3g eV = %.3g kcal/mol = %.3g kJ/mol' %
+              (drxn * 1.0e-3 / eVtokJ, drxn / kcaltoJ, drxn * 1.0e-3))
+        print('* Eapp = %.3g eV = %.3g kcal/mol = %.3g kJ/mol' %
+              (Eapp / eVtokJ, Eapp * 1.0e3 / kcaltoJ, Eapp))
 
         if opath:
             with open(opath, 'w') as tfile:
@@ -205,7 +234,7 @@ class Energy:
                 tfile.write(', '.join([str(i) for i in num_i] + ['\n']))
                 tfile.write(', '.join([str(j) for j in num_j] + ['\n']))
 
-        return tof, num_i, num_j, lTi, lIj
+        return tof, Espan, TDTS, TDI, num_i, num_j, lTi, lIj
 
     def save_pickle(self, path=None):
         """Save the energy landscape as a pickle object.
