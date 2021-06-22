@@ -227,9 +227,9 @@ for Tind, T in enumerate(Ts):
 
     print('Done.')
 
-rates_output = pd.DataFrame(data=final_rates, index=Ts, columns=reactions.keys())
-cover_output = pd.DataFrame(data=final_cover, index=Ts, columns=[s for s in sys.snames if states[s].state_type ==
-                                                                 'adsorbate'])
+rates_output = pd.DataFrame(data=final_rates, index=Ts, columns=list(reactions.keys()))
+cover_output = pd.DataFrame(data=final_cover, index=Ts, columns=[s for s in sys.snames
+                                                                 if states[s].state_type == 'adsorbate'])
 dorc_output = pd.DataFrame(data=dorc)
 rates_output.to_csv(results_dir + 'rates.csv')
 cover_output.to_csv(results_dir + 'cover.csv')
@@ -321,14 +321,17 @@ minima[17] = [states['Cu-pair'], states['ch3oh'], states['ch3oh']]
 minima[18] = [states['ts1'], states['ch3oh'], states['ch3oh']]
 minima[19] = [states['2cu'], states['ch3oh'], states['ch3oh']]
 
-energy = Energy(minima=minima)
+peslabs = [i[0].name for i in minima.values()]
+
+energy = Energy(minima=minima, labels=peslabs)
 energy.construct_energy_landscape(T=450, p=p, verbose=False)
 energy.draw_energy_landscape(T=450, p=p, verbose=False)
 
 fig, ax = plt.subplots(figsize=(3.3, 3.3))
 ax.plot(Ts, final_rates[:, 5] + final_rates[:, 9], 'o-', color='tomato', label='MK')
 for T in Ts:
-    tof, num_i, num_j, lTi, lIj = energy.evaluate_energy_span_model(T=T, p=p, verbose=False, etype='free')
+    tof, Espan, TDTS, TDI, num_i, num_j, lTi, lIj = energy.evaluate_energy_span_model(T=T, p=p, etype='free',
+                                                                                      verbose=False)
     ax.plot(T, 2.0 * tof, '*-', color='teal', label='')
 
 ax.set(yscale='log', xlabel='Temperature (K)', ylabel='Rate (1/s)', title=r'Without H$_2$O')
