@@ -88,14 +88,14 @@ class State:
 
         """
 
-        freq = []
-        i_freq = []
+        freq = None
+        i_freq = None
 
         if isinstance(self.read_from_alternate, dict):
             if 'get_vibrations' in self.read_from_alternate.keys():
-                freq, i_freq = self.read_from_alternate['get_vibrations']()
+                freq, i_freq = copy.copy(self.read_from_alternate['get_vibrations']())
 
-        if not self.freq:
+        if not freq:
             if self.vibs_path is not None:
                 freq_path = self.vibs_path + '/log.vib'
             else:
