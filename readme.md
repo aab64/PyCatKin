@@ -10,9 +10,9 @@ There are several examples in the folder *examples* demonstrating different use 
 
 The following papers use PyCatKin:
 
-[Boje, *et al.*, *ChemRxiv* **(2020)**](https://doi.org/10.26434/chemrxiv.13118420.v2)
-[Tiburski, *et al.*, *ACS Nano* **(2021)**](https://pubs.acs.org/doi/10.1021/acsnano.1c01537)
-[Engedahl, *et al.*, *J. Phys. Chem. C* **(2021)**](TBC)
+[Boje, *et al.*, *ChemRxiv* **(2020)**](https://doi.org/10.26434/chemrxiv.13118420.v2)  
+[Tiburski, *et al.*, *ACS Nano* **(2021)**](https://pubs.acs.org/doi/10.1021/acsnano.1c01537)  
+[Engedahl, *et al.*, *J. Phys. Chem. C* **(2021)**](TBC)  
 
 ## Developers
 
