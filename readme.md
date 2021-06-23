@@ -23,6 +23,5 @@ The following papers use PyCatKin:
 Please post any issues on the Git repo, and we will try to reply ASAP.
 
 
---  
-Astrid Boje  
+---  
 2021/06/23
