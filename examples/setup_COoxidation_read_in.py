@@ -1,8 +1,8 @@
-from microkinetics.classes.state import *
-from microkinetics.classes.reaction import *
-from microkinetics.classes.system import *
-from microkinetics.classes.reactor import *
-from microkinetics.classes.scaling import *
+from pycatkin.classes.state import *
+from pycatkin.classes.reaction import *
+from pycatkin.classes.system import *
+from pycatkin.classes.reactor import *
+from pycatkin.classes.scaling import *
 import numpy as np
 import pandas as pd
 

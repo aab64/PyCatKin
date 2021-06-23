@@ -1,10 +1,10 @@
-from microkinetics.classes.state import *
-from microkinetics.classes.reaction import *
-from microkinetics.classes.system import *
-from microkinetics.classes.reactor import *
-from microkinetics.classes.scaling import *
-from microkinetics.classes.energy import *
-from microkinetics.functions.profiling import *
+from pycatkin.classes.state import *
+from pycatkin.classes.reaction import *
+from pycatkin.classes.system import *
+from pycatkin.classes.reactor import *
+from pycatkin.classes.scaling import *
+from pycatkin.classes.energy import *
+from pycatkin.functions.profiling import *
 import numpy as np
 
 # Conditions

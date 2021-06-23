@@ -1,4 +1,4 @@
-from microkinetics.classes.reactor import *
+from pycatkin.classes.reactor import *
 import os
 import copy
 import pickle

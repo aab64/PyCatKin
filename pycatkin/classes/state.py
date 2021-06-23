@@ -1,4 +1,4 @@
-from microkinetics.constants.physical_constants import *
+from pycatkin.constants.physical_constants import *
 import os
 import pickle
 import copy

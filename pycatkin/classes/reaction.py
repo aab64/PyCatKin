@@ -1,4 +1,4 @@
-from microkinetics.functions.rate_constants import *
+from pycatkin.functions.rate_constants import *
 import pickle
 import os
 
