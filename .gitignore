@@ -1,3 +1,5 @@
 *.pyc
 __pycache__/
 .idea/
+docs/_build/
+pycatkin.egg-info/
