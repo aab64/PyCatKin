@@ -11,9 +11,9 @@ import numpy as np
 p = 1.01325e5  # Pressure (Pa)
 Ts = [600]  # list(np.linspace(start=423, stop=623, num=20, endpoint=True))  # Temperature (K)
 times = np.logspace(start=-10, stop=3, num=int(1e4))  # Times (s)
-withflow = True  # Include reactor model
+withflow = False  # Include reactor model
 use_jacobian = True  # Use Jacobian to solve SS and ODEs
-verbose = False  # Print messages
+verbose = True  # Print messages
 
 # Location of outcars and frequencies
 adsdir = 'D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/'
@@ -147,6 +147,7 @@ for Tind, T in enumerate(Ts):
     sys.solve_odes()
     # sys.plot_transient(T=T, p=p, path=figures_dir)
     # sys.write_results(T=T, p=p, path=results_dir)
+    print('Solving SS')
 
     val = 100.0 - 100.0 * sys.solution[-1][sys.snames.index('CO')] / inflow_state['CO'] if inflow_state else 0.0
     XCO.append(val if val > 1.0e-9 else 0.0)
@@ -244,9 +245,9 @@ minima[5] = [states['CO2'], states['O.Pd111'], states['CO.Pd111'], states['Clean
 minima[6] = [states['CO2'], states['SRTS.Pd'], states['Clean']]
 minima[7] = [states['CO2'], states['CO2'], states['Clean'], states['Clean'], states['Clean']]
 
-energy = Energy(minima=minima, name='COox_landscape')
-energy.draw_energy_landscape(T=500, p=p, etype='electronic', path=figures_dir)
-energy.draw_energy_landscape(T=500, p=p, etype='free', path=figures_dir)
+energy = Energy(minima=minima, name='COox_landscape', labels=None)
+energy.draw_energy_landscape(T=500, p=p, etype='electronic', path=figures_dir, show_labels=False)
+energy.draw_energy_landscape(T=500, p=p, etype='free', path=figures_dir, show_labels=False)
 
 tofs = []
 # fig, ax = plt.subplots(figsize=(3.2, 3.2))
@@ -291,3 +292,62 @@ for r in sys.reactions.keys():
         for s in sys.reactions[r].TS:
             newstts[s.name] = Scaling(path_to_pickle=results_dir + 'pickles/scaling_state_' + s.name + '.pckl')
 neweng = Energy(path_to_pickle=results_dir + 'pickles/energy_COox_landscape.pckl')
+
+minima = dict()
+minima[0] = [states['CO.Pd111'], states['O.Pd111'], states['O.Pd111'], states['CO']]
+minima[1] = [states['SRTS.Pd'], states['O.Pd111'], states['CO']]
+minima[2] = [states['CO2'], states['O.Pd111'], states['Clean'], states['Clean'], states['CO']]
+minima[3] = [states['CO2'], states['SRTS.Pd'], states['Clean']]
+minima[4] = [states['CO2'], states['CO2'], states['Clean'], states['Clean'], states['Clean']]
+energy = Energy(minima=minima, name='COox_landscape', labels=None)
+energy.construct_energy_landscape(T=600, p=101325, verbose=verbose)
+
+etype = 'free'
+conv = 1.0
+fig, ax = plt.subplots(figsize=(3.2, 3.2))
+xpoints = []
+ypoints = []
+for i in range(len(energy.energy_landscape[etype].keys())):
+    toadd = 0.25 if energy.energy_landscape['isTS'][i] else 0.25
+    if not energy.energy_landscape['isTS'][i]:
+        xpoints += [i - toadd,
+                    i + toadd]
+        ypoints += [energy.energy_landscape[etype][i] * conv,
+                    energy.energy_landscape[etype][i] * conv]
+    else:
+        xs = [i - 1 + toadd,
+              i]
+        ys = [energy.energy_landscape[etype][i - 1],
+              energy.energy_landscape[etype][i]]
+        spl = CubicSpline(xs, ys, bc_type='clamped')
+        xint = np.linspace(start=xs[0], stop=xs[-1], num=100)
+        yint = spl(xint)
+        xpoints += [x for x in xint]
+        ypoints += [y * conv for y in yint]
+        xs = [i,
+              i + 1 - toadd]
+        ys = [energy.energy_landscape[etype][i],
+              energy.energy_landscape[etype][i + 1]]
+        spl = CubicSpline(xs, ys, bc_type='clamped')
+        xint = np.linspace(start=xs[0], stop=xs[-1], num=100)
+        yint = spl(xint)
+        xpoints += [x for x in xint]
+        ypoints += [y * conv for y in yint]
+
+ax.plot(xpoints, ypoints, '-', color='grey', linewidth=3.5)
+for k in energy.energy_landscape[etype].keys():
+    if energy.energy_landscape['isTS'][k] == 1:
+        ax.plot(k, energy.energy_landscape[etype][k] * conv, 's',
+                color='tomato', markersize=10)
+    else:
+        ax.plot(k, energy.energy_landscape[etype][k] * conv, 's',
+                color='darkturquoise', markersize=10)
+ax.set(xlim=(-0.25, len(energy.energy_landscape[etype].keys())-0.75),
+       xticks=range(len(energy.energy_landscape[etype].keys())))
+ax.axis('off')
+plt.tick_params(axis='x', which='both',
+                bottom=False, top=False, labelbottom=False)
+plt.tick_params(axis='y', which='both',
+                left=False, right=False, labelleft=False)
+fig.tight_layout()
+fig.savefig(figures_dir + 'logo_new.eps', format='eps')
