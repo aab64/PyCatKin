@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="pycatkin", 
-    version="0.1",
+    version="0.1.0",
     author="Astrid Boje",
     description="Python Catalysis Kinetics Toolset",
     packages=["pycatkin"],
