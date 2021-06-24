@@ -26,7 +26,10 @@ class Energy:
         else:
             self.name = name
             self.minima = copy.copy(minima)
-            self.labels = copy.copy(labels)
+            if labels is not None:
+                self.labels = copy.copy(labels)
+            else:
+                self.labels = [i[0].name for i in minima.values()]
             self.energy_landscape = None
             if self.minima is None:
                 print('No states loaded.')
@@ -116,19 +119,19 @@ class Energy:
                 xpoints += [x for x in xint]
                 ypoints += [y * conv for y in yint]
 
-        ax.plot(xpoints, ypoints, '-', color='grey')
+        ax.plot(xpoints, ypoints, '-', color='black')
         label_TS = True
         label_I = True
         for k in self.energy_landscape[etype].keys():
             if self.energy_landscape['isTS'][k] == 1:
                 ax.plot(k, self.energy_landscape[etype][k] * conv, 's',
                         label=('Transition state' if label_TS else ''),
-                        color='dodgerblue')
+                        color='tomato')
                 label_TS = False
             else:
                 ax.plot(k, self.energy_landscape[etype][k] * conv, 's',
                         label=('Intermediate' if label_I else ''),
-                        color='tomato')
+                        color='darkturquoise')
                 label_I = False
             ax.text(k, self.energy_landscape[etype][k] * conv + 0.2 * conv,
                     fmt % (self.energy_landscape[etype][k] * conv),
