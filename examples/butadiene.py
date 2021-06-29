@@ -55,8 +55,8 @@ T = 723  # Temperature (K)
 Ts = list(np.linspace(start=523, stop=923, num=17, endpoint=True))  # Temperatures (K)
 xethanol = np.linspace(start=0.002, stop=0.2, num=100)
 Asite = (13e-10 * 15e-10) / 4  # Site area (m2)
-# times = np.logspace(start=-12, stop=3, num=int(0.5e3)) * 24 * 3.6  # Times (s)
-times = pd.read_csv('original_times.csv').values[1::, 0]
+times = [0.0, 24 * 3600]  # Times (s)
+# times = pd.read_csv('original_times.csv').values[1::, 0]
 use_jacobian = True  # Use Jacobian to solve SS and ODEs
 verbose = False  # Print messages
 rtol = 1.0e-6
@@ -101,7 +101,7 @@ for folder in folders:
             elif 'acetaldehyde' in path:
                 read_from_alternate = dict()
                 read_from_alternate['get_atoms'] = lambda aa_path=path: load_acetaldehyde_from_pubchem(aa_path)
-            elif 'butanol formation' in path:
+            elif 'butanol formation' in path and 'v' not in path:
                 read_from_alternate = dict()
                 read_from_alternate['get_vibrations'] = lambda bu_path=path: load_other_frequencies(bu_path)
             else:
@@ -128,15 +128,19 @@ print('Done.')
 #     states[s].save_pdb(path=figures_dir)
 #     states[s].calc_electronic_energy(verbose=verbose)
 #
-# for k in ['7Eiv']:  # states.keys()
+
+# for k in states.keys():
+#     states[k].calc_electronic_energy(verbose=verbose)
 #     if states[k].state_type == 'adsorbate':
 #         for i in range(len(states[k].atoms)):
-#             if states[k].atoms.positions[i, 0] > 12:
+#             if states[k].atoms.positions[i, 0] > (states[k].atoms.get_cell()[0, 0] - 1):
 #                 states[k].atoms.positions[i, :] -= states[k].atoms.get_cell()[0, :]
-#             if states[k].atoms.positions[i, -1] > 10:
+#             if states[k].atoms.positions[i, 1] > (states[k].atoms.get_cell()[1, 1] - 1):
+#                 states[k].atoms.positions[i, :] -= states[k].atoms.get_cell()[1, :]
+#             if states[k].atoms.positions[i, -1] > (states[k].atoms.get_cell()[2, 2] - 1):
 #                 states[k].atoms.positions[i, :] -= states[k].atoms.get_cell()[-1, :]
-#     states[k].view_atoms(path=figures_dir + 'ASE/')
-#     states[k].save_pdb(path=figures_dir + 'xyz/')
+#     states[k].view_atoms(path=figures_dir + 'ASE/neat/')
+#     states[k].save_pdb(path=figures_dir + 'xyz/structures/')
 
 for s in snames:
     states[s].get_free_energy(T=T, p=p)
@@ -150,15 +154,15 @@ reactions = dict()
 initial_states = ['1A', '2A', '2F', '2J', '2L', '3A', '3D', '3F',
                   '4A', '4D', '4D', '4F', '4I', '5A',
                   '6A', '6C', '6E', '6G', '7A', '9D',
-                  '8A', '3Ci', '7Ei']  # , '3Civ'
+                  '8A', '3Ci', '3Civ', '7Ei']
 transition_states = ['1B', '2B', '2G', '2K', '2M', '3B', '3E', '3Fi',
                      '4B', None, '4E', '4G', '4J', '5B',
                      '6B', '6D', '6F', '6Gi', '7D', None,
-                     '8B', '3Cii', '7Eii']  # , '3Cv'
+                     '8B', '3Cii', '3Cv', '7Eii']
 final_states = ['1C', '2C', '2H', '2L', '2N', '3C', '3F', '3G',
                 '4C', '4Ca', '4F', '4H', '4K', '5C',
                 '6C', '6E', '6G', '6H', '7E', '9C',
-                '8C', '3Ciii', '7Eiii']  # , '3Cvi'
+                '8C', '3Ciii', '3Cvi', '7Eiii']
 for r in range(len(initial_states)):
     rname = initial_states[r] + '-' + final_states[r]
     reactions[rname] = Reaction(name=rname,
@@ -172,8 +176,9 @@ ads_initial_states = [['surface', 'ethanol'],
                       ['surface', 'H2O'],
                       ['surface', 'acetaldehyde'],
                       ['2O', 'crotonaldehyde'],
+                      ['surface', 'butanol'],
                       ['7Eiv', 'ethylacetate']]
-ads_final_states = ['1A', '9B', '10B', '2N', '7Eiii']
+ads_final_states = ['1A', '9B', '10B', '2N', '3Cvi', '7Eiii']
 for r in range(len(ads_initial_states)):
     rname = ads_initial_states[r][1] + '-' + ads_final_states[r]
     reactions[rname] = Reaction(name=rname,
@@ -203,7 +208,7 @@ newstates = ['3F', '3Fi', '3G',
              '6G', '6Gi', '6H',
              '4Ca',
              '3Ci', '3Cii', '3Ciii',
-             # '3Civ', '3Cv', '3Cvi', '3Cvii',
+             '3Civ', '3Cv', '3Cvi', '3Cvii',
              '7Ei', '7Eii', '7Eiii', '7Eiv',
              '8A', '8B', '8C',
              '9A', '9B', '9C', '9D',
@@ -219,10 +224,10 @@ gasstates = [['H2', 'H2', 'H2O', 'acetaldehyde'],  # 3F
              ['H2', 'acetaldehyde'],  # 3Ci
              ['H2', 'acetaldehyde'],  # 3Cii
              ['H2', 'acetaldehyde'],  # 3Ciii
-             # ['H2', 'H2O', 'acetaldehyde'],  # 3Civ
-             # ['H2', 'H2O', 'acetaldehyde'],  # 3Cv
-             # ['H2', 'H2O', 'acetaldehyde'],  # 3Cvi
-             # ['H2', 'H2O', 'acetaldehyde', 'butanol'],  # 3Cvi
+             ['H2', 'H2O', 'acetaldehyde'],  # 3Civ
+             ['H2', 'H2O', 'acetaldehyde'],  # 3Cv
+             ['H2', 'H2O', 'acetaldehyde'],  # 3Cvi
+             ['H2', 'H2O', 'acetaldehyde', 'butanol'],  # 3Cvii
              ['ethanol', 'H2'],  # 7Ei
              ['ethanol', 'H2'],  # 7Eii
              ['ethanol', 'H2'],  # 7Eiii
@@ -242,7 +247,7 @@ print('---------------')
 for i, s in enumerate(newstates):
     Gfree = np.sum([states[j].get_free_energy(T=T, p=p) for j in gasstates[i]]) - ref_free
     Gelec = np.sum([states[j].Gelec for j in gasstates[i]]) - ref_elec
-    if s not in ['9A', '10A']:
+    if s not in ['9A', '10A', '3Cvii']:
         Gfree += states[s].get_free_energy(T=T, p=p)
         Gelec += states[s].Gelec
     else:
@@ -340,6 +345,10 @@ pBuOH[1] = [states['3C'], states['H2'], states['H2'], states['H2O']]
 pBuOH[2] = [states['3Ci'], states['H2'], states['acetaldehyde']]
 pBuOH[3] = [states['3Cii'], states['H2'], states['acetaldehyde']]
 pBuOH[4] = [states['3Ciii'], states['H2'], states['acetaldehyde']]
+pBuOH[5] = [states['3Civ'], states['H2'], states['H2O'], states['acetaldehyde']]
+pBuOH[6] = [states['3Cv'], states['H2'], states['H2O'], states['acetaldehyde']]
+pBuOH[7] = [states['3Cvi'], states['H2'], states['H2O'], states['acetaldehyde']]
+pBuOH[8] = [states['surface'], states['H2'], states['H2O'], states['acetaldehyde'], states['butanol']]
 lBuOH = [i[0].name if i[0].name != 'surface' else '' for i in pBuOH.values()]
 energy_pBuOH = Energy(minima=pBuOH, labels=lBuOH, name='p3b')
 
@@ -347,7 +356,7 @@ energy_pBuOH = Energy(minima=pBuOH, labels=lBuOH, name='p3b')
 # ========
 gas_states = ['H2', 'H2O', 'C2H4', 'C4H6', 'C2H4O', 'C2H5OH', 'C4H6O', 'C4H10O', 'C4H8O2']
 gas_masses = [2.016, 18.02, 28.05, 54.09, 44.05, 46.07, 70.09, 74.12, 88.11]
-gas_fracts = [0.01, 1.0e-8, 0.01, 1.0e-8, 1.0e-8, 0.02, 1.0e-8, 1.0e-8, 1.0e-8]
+gas_fracts = [0.01, 1.0e-8, 0.01, 1.0e-8, 1.0e-8, 0.02, 1.0e-8, 0.0, 0.0]
 gas_sigmas = [2 if i == 'H2' or i == 'H2O' else 1 for i in gas_states]
 ads_states = ['H*', 'O*', 'OH*',
               'C2H3O*', 'C2H4O*', 'C2H5O*',
@@ -402,9 +411,9 @@ mk_reactants = [['C2H5O*', 'H*'],
                 ['C4H8O_2*'],
                 ['C4H8O_3*', 'H*'],
                 ['C4H10O', '*', '*'],
-                # ['C4H7O_1*', 'H*', 'H*'],
-                # ['C4H9O*', 'H*'],
-                # ['C4H10O', '*'],
+                ['C4H7O_1*', 'H*', 'H*'],
+                ['C4H9O*', 'H*'],
+                ['C4H10O', '*'],
                 ['C4H9O2_2*', '*'],
                 ['C4H8O2', '*']
                 ]
@@ -438,9 +447,9 @@ mk_products = [['H2', 'C2H4O*', '*'],
                ['C4H8O_3*'],
                ['C4H9O*', '*'],
                ['C4H9O*', 'H*'],
-               # ['C4H9O*', '*', '*'],
-               # ['C4H10O*', '*'],
-               # ['C4H10O*'],
+               ['C4H9O*', '*', '*'],
+               ['C4H10O*', '*'],
+               ['C4H10O*'],
                ['C4H8O2_3*', 'H*'],
                ['C4H8O2_3*']
                ]
@@ -474,13 +483,12 @@ mk_rnames = ['1A-1C',
              '12C-12E',
              '12E-12G',
              'butanol-12G',
-             # '3Ci-3Ciii',
-             # '3Civ-3Cvi',
-             # 'butanol-3Cvi',
+             '3Ci-3Ciii',
+             '3Civ-3Cvi',
+             'butanol-3Cvi',
              '7Ei-7Eiii',
              'ethylacetate-7Eiii'
              ]
-
 
 # User defined reactions (free energies at 673 K from Souza et al. (2020)
 souza_reactions = ['12A-12C', '12C-12E', '12E-12G', 'butanol-12G']
@@ -517,14 +525,14 @@ if runMK:
     mk_tests = ['all4',
                 'p123', 'p124', 'p156',
                 'byproducts_Souza',
-                # 'byproducts_House'
+                'byproducts_House'
                 ]
     test_inds = [list(np.arange(0, 25)),
                  list(np.arange(0, 8)) + list(np.arange(19, 25)),
                  list(np.arange(0, 3)) + list(np.arange(8, 13)) + list(np.arange(19, 25)),
                  [0] + list(np.arange(13, 18)) + list(np.arange(19, 25)),
-                 list(np.arange(0, 29))  # + list(np.arange(32, 34)),
-                 # list(np.arange(0, 25)) + list(np.arange(29, 34))
+                 list(np.arange(0, 29)) + list(np.arange(32, 34)),
+                 list(np.arange(0, 25)) + list(np.arange(29, 34))
                  ]
     mk_reactor = InfiniteDilutionReactor()
 
@@ -564,7 +572,7 @@ if runMK:
                     bu_tof += mk_sys.rates[i, 1] - mk_sys.rates[i, 0]
             ea_tof = 0.0
             if 'ethylacetate-7Eiii' in mk_sys.reactions.keys():
-                i = list(mk_sys.reactions.keys()).index(rterm)
+                i = list(mk_sys.reactions.keys()).index('ethylacetate-7Eiii')
                 ea_tof += mk_sys.rates[i, 1] - mk_sys.rates[i, 0]
 
             rates = np.zeros(len(mk_reactions))
@@ -629,7 +637,7 @@ if runES:
     energy_pBuOH.draw_energy_landscape(T=T, p=p, etype='electronic', eunits='kcal/mol',
                                        path=figures_dir, show_labels=True, legend_location='lower left')
     energy_pBuOH.draw_energy_landscape(T=T, p=p, etype='free', eunits='kcal/mol',
-                                       path=figures_dir, show_labels=True, legend_location='upper left')
+                                       path=figures_dir, show_labels=True, legend_location='upper right')
 
     for Ti in Ts:
         tof, Espan, TDTS, TDI, xTDTS, xTDI, lTi, lIj = energy_p123.evaluate_energy_span_model(T=Ti, p=p, verbose=False,
