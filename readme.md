@@ -1,5 +1,7 @@
 # PyCatKin Tool v0.1.0 <img align="center" src="https://github.com/aab64/PyCatKin/blob/master/docs/_static/avatar.png" width="200"/>
 
+[![DOI](https://zenodo.org/badge/313369000.svg)](https://zenodo.org/badge/latestdoi/313369000)
+
 This folder contains the source files and examples for using Python Catalysis Kinetics (PyCatKin). PyCatKin provides a toolset for studying kinetics in heterogeneous catalysis from the energy landscape. Its modules provide functionality for plotting energy landscapes, energy span (ES) modelling, mean-field microkinetic (MK) modelling, and MK modelling with idealised flow reactor models (CSTRs). 
 
 ## Using the tool
