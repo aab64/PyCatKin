@@ -8,6 +8,10 @@ This folder contains the source files and examples for using Python Catalysis Ki
 
 There are several case studies in the *examples* folder demonstrating different use cases. Note that these examples cannot be run by a user at present because they require data that is not shared here. This will be addressed in future when the user inputs are streamlined. 
 
+## Documentation
+The documentation is hosted on [pycatkin.readthedocs.io](https://pycatkin.readthedocs.io/)
+and is built automatically after each push.
+
 ## Scientific articles using PyCatKin
 
 The following papers used PyCatKin:
