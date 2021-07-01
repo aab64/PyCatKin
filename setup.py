@@ -7,4 +7,12 @@ setuptools.setup(
     description="Python Catalysis Kinetics Toolset",
     packages=["pycatkin"],
     python_requires=">=3.7",
+    install_requires=["numpy",
+                      "scipy",
+                      "matplotlib",
+                      "ase",
+                      "pandas",
+                      "sphinx",
+                      "sphinx_rtd_theme"
+                      ]
 )
