@@ -394,10 +394,12 @@ Structure of modules
 The central subpackage modules are defined as shown in the figure below:
 
 .. only:: latex
+   
    .. image:: _static/code_layout/code_layout.pdf
       :width: 750
 
 .. only:: html
+   
    .. image:: _static/code_layout/code_layout.svg
       :width: 750
 
