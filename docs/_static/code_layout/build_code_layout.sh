@@ -7,5 +7,6 @@ fi
 
 latex code_layout.tex
 dvisvgm  --exact --font-format=woff code_layout.dvi
+pdflatex code_layout.tex
 
 rm -f *.aux *.gz *.log *.dvi
