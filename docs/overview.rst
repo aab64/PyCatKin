@@ -393,7 +393,7 @@ Structure of modules
 :program:`PyCatKin` is written using `object-oriented <https://docs.python.org/3/tutorial/classes.html>`_ programming.
 The central subpackage modules are defined as shown in the figure below:
 
-.. image:: _static/code_layout/code_layout.svg
+.. image:: _static/code_layout/code_layout.*
    :width: 750
 
 The modules have the following functions:
