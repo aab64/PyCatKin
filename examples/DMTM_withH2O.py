@@ -37,14 +37,14 @@ savexyz = False  # Save xyz files (not used)
 savefig = True
 
 # Location of outcars and frequencies
-ads_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/energies/withH2O/'
-ads_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/vibrations/withH2O/'
-gas_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/energies/molecules/'
-gas_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/vibrations/molecules/'
+ads_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/energies/withH2O/'
+ads_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/vibrations/withH2O/'
+gas_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/energies/molecules/'
+gas_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/vibrations/molecules/'
 
 # Location of results files and images
-results_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/methanol/results/withH2O/'
-figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/methanol/images/'
+results_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/methanol/DMTM_Cu/results/withH2O/'
+figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/methanol/DMTM_Cu/images/'
 
 print('-----------------------')
 print('System 2: DMTM with H2O')

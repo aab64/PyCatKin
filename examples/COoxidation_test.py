@@ -9,11 +9,11 @@ import numpy as np
 
 # Conditions
 p = 1.01325e5  # Pressure (Pa)
-Ts = [600]  # list(np.linspace(start=423, stop=623, num=20, endpoint=True))  # Temperature (K)
-times = np.logspace(start=-10, stop=3, num=int(1e4))  # Times (s)
+Ts = [600]  # Temperature (K)
+times = [0, 3600]  # Times (s)
 withflow = False  # Include reactor model
 use_jacobian = True  # Use Jacobian to solve SS and ODEs
-verbose = True  # Print messages
+verbose = False  # Print messages
 
 # Location of outcars and frequencies
 adsdir = 'D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/'
@@ -56,8 +56,7 @@ print('Done.')
 # Site properties
 
 # Pd
-rPd = 2.0e-10  # Pd-Pd radius (m)
-aPd = np.pi * rPd ** 2  # Pd site area (m2)
+aPd = 1.0e-19  # Pd site area (m2)
 Acat_Pd = 0.062 * 2e-4 / 3250  # Total catalyst area (m2)
 
 # Reactions
@@ -105,8 +104,8 @@ print('Configuring reactor...')
 if not withflow:
     # InfiniteDilutionReactor
     start_state = dict()
-    start_state['O2'] = 0.8 * 0.02 * p / bartoPa
-    start_state['CO'] = 0.2 * 0.02 * p / bartoPa
+    start_state['O2'] = 0.8 * p / bartoPa
+    start_state['CO'] = 0.2 * p / bartoPa
     start_state['Clean'] = 1.0
     inflow_state = None
     reactor = InfiniteDilutionReactor()
@@ -145,7 +144,7 @@ for Tind, T in enumerate(Ts):
     # draw_call_graph(sys.solve_odes, path=figures_dir + 'callgraph.png')
 
     sys.solve_odes()
-    # sys.plot_transient(T=T, p=p, path=figures_dir)
+    sys.plot_transient()
     # sys.write_results(T=T, p=p, path=results_dir)
     print('Solving SS')
 

@@ -36,14 +36,14 @@ savexyz = False  # Save xyz files (not used)
 savefig = True
 
 # Location of outcars and frequencies
-ads_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/energies/withoutH2O/'
-ads_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/vibrations/withoutH2O/'
-gas_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/energies/molecules/'
-gas_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/vibrations/molecules/'
+ads_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/energies/withoutH2O/'
+ads_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/vibrations/withoutH2O/'
+gas_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/energies/molecules/'
+gas_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/vibrations/molecules/'
 
 # Location of results files and images
-results_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/results/withoutH2O/'
-figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/images/'
+results_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/DMTM_Cu/results/withoutH2O/'
+figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/DMTM_Cu/images/'
 
 print('--------------------------')
 print('System 1: DMTM without H2O')
@@ -325,7 +325,7 @@ peslabs = [i[0].name for i in minima.values()]
 
 energy = Energy(minima=minima, labels=peslabs)
 energy.construct_energy_landscape(T=450, p=p, verbose=False)
-energy.draw_energy_landscape(T=450, p=p, verbose=False)
+energy.draw_energy_landscape(T=450, p=p, verbose=False, etype='electronic')
 
 fig, ax = plt.subplots(figsize=(3.3, 3.3))
 ax.plot(Ts, final_rates[:, 5] + final_rates[:, 9], 'o-', color='tomato', label='MK')

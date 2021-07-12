@@ -10,10 +10,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('../'))
-# sys.path.insert(0, os.path.abspath('../microkinetics'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../microkinetics'))
 
 # -- Project information -----------------------------------------------------
 
@@ -21,6 +21,14 @@ project = 'PyCatKin'
 copyright = '2021, Astrid Boje'
 author = 'Astrid Boje'
 
+# The version info for the project you're documenting, acts as replacement for
+# |version| and |release|, also used in various other places throughout the
+# built documents.
+#
+# The short X.Y version.
+version = 'v0.1.0'
+# The full version, including alpha/beta/rc tags.
+release = ''
 
 # -- General configuration ---------------------------------------------------
 
@@ -31,11 +39,6 @@ extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon']
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
-def setup(app):
-    app.add_css_file("my-styles.css")
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -73,3 +76,11 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# Custom sidebar templates, must be a dictionary that maps document names
+# to template names.
+html_sidebars = {
+    '**': [
+        'searchbox.html',
+    ]
+}

@@ -4,8 +4,4 @@
 CO oxidation on a surface
 *************************************
 
-The infinite dilution case...
- 
-.. code-block:: python
-
-     T = 800.  # Temperature
+The infinite dilution case. TBC.

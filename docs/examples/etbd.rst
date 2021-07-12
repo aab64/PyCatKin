@@ -4,6 +4,4 @@
 Ethanol to 1,3-butadiene
 *************************************
 
-.. code-block:: python
-
-     T = 800.  # Temperature
+TBC.

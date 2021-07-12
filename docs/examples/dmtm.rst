@@ -4,6 +4,4 @@
 Direct methane to methanol
 *************************************
 
-.. code-block:: python
-
-     T = 800.  # Temperature
+TBC.
