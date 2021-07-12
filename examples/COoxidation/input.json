@@ -1,0 +1,118 @@
+{
+    "states":
+    {
+        "Pd111":
+        {
+            "state_type": "surface",
+            "path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/Clean",
+            "vibs_path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/Clean/nowave"
+        },
+        "CO.Pd111":
+        {
+            "state_type": "adsorbate",
+            "path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/CO.Pd111",
+            "vibs_path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/CO.Pd111/nowave"
+        },
+        "O.Pd111":
+        {
+            "state_type": "adsorbate",
+            "path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/O.Pd111",
+            "vibs_path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/O.Pd111/nowave"
+        },
+        "CO":
+        {
+            "state_type": "gas",
+            "sigma": 1,
+            "path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/CO",
+            "vibs_path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/CO/nowave"
+        },
+        "O2":
+        {
+            "state_type": "gas",
+            "sigma": 2,
+            "path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/O2",
+            "vibs_path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/O2/nowave"
+        },
+        "CO2":
+        {
+            "state_type": "gas",
+            "sigma": 2,
+            "path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/CO2",
+            "vibs_path": "D:/Users/Astrid/Documents/Chalmers/Data/CO oxidation/Pd111_PdAu_alloys/RPBE/CO2/nowave"
+        }
+    },
+    
+    "scaling_relation_states":
+    {
+        "SRTS.Pd111": 
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 0.7,
+                "intercept": 0.02
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "CO_ads",
+                    "multiplicity": 1.0
+                },
+                "O":
+                {
+                    "reaction": "O2_ads",
+                    "multiplicity": 0.5
+                }
+            },
+            "dereference": true
+        }
+    },
+    
+    "reactions":
+    {
+        "CO_ads":
+        {
+            "reac_type": "adsorption",
+            "area": 1.0e-19,
+            "reactants": ["CO", "Pd111"],
+            "TS": null,
+            "products": ["CO.Pd111"]
+        },
+        "O2_ads":
+        {
+            "reac_type": "adsorption",
+            "area": 1.0e-19,
+            "reactants": ["O2", "Pd111", "Pd111"],
+            "TS": null,
+            "products": ["O.Pd111", "O.Pd111"]
+        },
+        "CO_ox":
+        {
+            "reac_type": "scaling",
+            "area": 1.0e-19,
+            "reactants": ["CO.Pd111", "O.Pd111"],
+            "TS": ["SRTS.Pd111"],
+            "products": ["Pd111", "Pd111", "CO2"],
+            "reversible": false           
+        }
+    },
+    
+    "reactor": "InfiniteDilutionReactor",
+    
+    "system":
+    {
+        "times": [0.0, 3600.0],
+        "T": 600.0,
+        "p": 101325.0,
+        "start_state":
+        {
+            "O2": 0.8,
+            "CO": 0.2,
+            "Pd111": 1.0
+        },
+        "verbose": false,
+        "use_jacobian": true,
+        "xtol": 1.0e-12
+    }
+}
