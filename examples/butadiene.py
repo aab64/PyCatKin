@@ -3,6 +3,7 @@ from pycatkin.classes.energy import *
 from pycatkin.classes.reaction import *
 from pycatkin.classes.system import *
 from pycatkin.classes.reactor import *
+from pycatkin.classes.uncertainty import *
 from pycatkin.functions.profiling import *
 import glob
 import copy
@@ -13,7 +14,7 @@ import pandas as pd
 
 def load_acetaldehyde_from_pubchem(outcar_path):
     aa = pubchem_atoms_search(name='acetaldehyde')
-    inertia = copy.copy(aa.get_moments_of_inertia())
+    inertia = copy.deepcopy(aa.get_moments_of_inertia())
     vasp_atoms = read(outcar_path, format='vasp-out')
     mass = sum(vasp_atoms.get_masses())
     return vasp_atoms, mass, inertia
@@ -49,6 +50,34 @@ def load_ethyl_acetate_energy(energy_path):
     return Gelec_aa
 
 
+def get_tof(sys, tof_terms):
+    sys.reaction_terms(sys.solution[-1])
+    tval = 0.0
+    for rval in tof_terms:
+        if rval in sys.reactions.keys():
+            i = list(sys.reactions.keys()).index(rval)
+            tval += sys.rates[i, 0] - sys.rates[i, 1]
+    return tval
+
+
+def get_es_tof(sys, pes, temperature, pressure):
+    state_noises = dict()
+    for rxn in sys.reactions.keys():
+        for reac in sys.reactions[rxn].base_reaction.reactants + sys.reactions[rxn].base_reaction.products:
+            if reac.state_type == 'adsorbate' and reac.name not in state_noises.keys():
+                state_noises[reac.name] = reac.add_to_energy if reac.add_to_energy is not None else 0.0
+        if sys.reactions[rxn].base_reaction.TS:
+            for reac in sys.reactions[rxn].base_reaction.TS:
+                state_noises[reac.name] = reac.add_to_energy if reac.add_to_energy is not None else 0.0
+    for key in pes.minima.keys():
+        for s in pes.minima[key]:
+            if s.state_type == 'adsorbate' or s.state_type == 'TS':
+                assert(state_noises[s.name])
+                s.set_energy_modifier(state_noises[s.name])
+    tval, _, _, _, _, _, _, _ = pes.evaluate_energy_span_model(T=temperature, p=pressure, etype='free')
+    return tval
+
+
 # Conditions
 p = 1.01325e5  # Pressure (Pa)
 T = 723  # Temperature (K)
@@ -56,21 +85,23 @@ Ts = list(np.linspace(start=523, stop=923, num=17, endpoint=True))  # Temperatur
 xethanol = np.linspace(start=0.002, stop=0.2, num=100)
 Asite = (13e-10 * 15e-10) / 4  # Site area (m2)
 times = [0.0, 24 * 3600]  # Times (s)
-# times = pd.read_csv('original_times.csv').values[1::, 0]
 use_jacobian = True  # Use Jacobian to solve SS and ODEs
 verbose = False  # Print messages
-rtol = 1.0e-6
-atol = 1.0e-8
-xtol = 1.0e-16
-ftol = 1.0e-16
+rtol = 1.0e-6  # Relative tolerance for ODE solver
+atol = 1.0e-8  # Absolute tolerance for ODE solver
+xtol = 1.0e-16  # Step tolerance for SS solver
+ftol = 1.0e-16  # Function tolerance for SS solver
+nruns = 100  # Number of repeats for uncertainty quantification
+noise = 2  # Standard deviation of the noise in kcal/mol
 
 runMK = True
-runES = True
+runES = False
 runSweep = False
-saveResults = True
+runUQ = True
+saveResults = False
 profile = False
 
-# Location of outcars and frequencies
+# Location of outcar s and frequencies
 adsdir = 'D:/Users/Astrid/Documents/Chalmers/Data/Butadiene/DFT data/'
 folders = ['dehydrogenation', 'aldol condensation',
            'MPV red', 'aldol mpv',
@@ -113,6 +144,9 @@ for folder in folders:
                 else:
                     states += [State(state_type='gas', path=path, sigma=1,
                                      read_from_alternate=read_from_alternate, truncate_freq=False)]
+            elif 'surface' in path:
+                states += [State(state_type='surface', path=path,
+                                 read_from_alternate=read_from_alternate, truncate_freq=False)]
             else:
                 states += [State(state_type='adsorbate', path=path,
                                  read_from_alternate=read_from_alternate, truncate_freq=False)]
@@ -122,12 +156,6 @@ snames = [s.name for s in states]
 states = dict(zip(snames, states))
 
 print('Done.')
-
-# for s in ['3Ci', '3Cii', '3Ciii']:
-#     states[s].view_atoms(path=figures_dir)
-#     states[s].save_pdb(path=figures_dir)
-#     states[s].calc_electronic_energy(verbose=verbose)
-#
 
 # for k in states.keys():
 #     states[k].calc_electronic_energy(verbose=verbose)
@@ -146,7 +174,6 @@ for s in snames:
     states[s].get_free_energy(T=T, p=p)
     if states[s].i_freq is not None:
         if len(states[s].i_freq) == 1:
-            # print(s)
             states[s].state_type = 'TS'
 
 # Base reactions
@@ -232,15 +259,15 @@ gasstates = [['H2', 'H2', 'H2O', 'acetaldehyde'],  # 3F
              ['ethanol', 'H2'],  # 7Eii
              ['ethanol', 'H2'],  # 7Eiii
              ['ethanol', 'H2', 'ethylacetate'],  # 7Eiv
-             ['ethanol', 'ethanol', 'ethanol'],  # 8A
-             ['ethanol', 'ethanol', 'ethanol'],  # 8B
-             ['ethanol', 'ethanol', 'ethanol'],  # 8C
-             ['ethanol', 'ethanol', 'ethanol', 'H2O'],  # 9A
-             ['ethanol', 'ethanol', 'ethanol'],  # 9B
-             ['ethanol', 'ethanol', 'ethanol'],  # 9C
-             ['ethanol', 'ethanol', 'ethanol'],  # 9D
-             ['ethanol', 'ethanol', 'ethanol', 'acetaldehyde'],  # 10A
-             ['ethanol', 'ethanol', 'ethanol']]  # 10B
+             ['ethanol', 'H2', 'ethylacetate'],  # 8A
+             ['ethanol', 'H2', 'ethylacetate'],  # 8B
+             ['ethanol', 'H2', 'ethylacetate'],  # 8C
+             ['ethanol', 'H2', 'H2', 'H2O', 'crotonaldehyde'],  # 9A
+             ['ethanol', 'H2', 'H2', 'crotonaldehyde'],  # 9B
+             ['ethanol', 'H2', 'H2', 'crotonaldehyde'],  # 9C
+             ['ethanol', 'H2', 'H2', 'crotonaldehyde'],  # 9D
+             ['ethanol', 'ethanol', 'H2', 'acetaldehyde'],  # 10A
+             ['ethanol', 'ethanol', 'H2']]  # 10B
 
 print('State energies:')
 print('---------------')
@@ -256,6 +283,7 @@ for i, s in enumerate(newstates):
     print(s + ' & %.3g & %.3g' %
           (Gelec * eVtokJ * 1.0e3 / kcaltoJ,
            Gfree * eVtokJ * 1.0e3 / kcaltoJ))
+
 
 # Energy landscapes
 # =================
@@ -555,26 +583,15 @@ if runMK:
             start_state['*'] = 1.0
 
             mk_sys.set_parameters(times=times, start_state=start_state, T=Ti, p=p,
-                                  use_jacobian=use_jacobian, verbose=True,
+                                  use_jacobian=use_jacobian, verbose=verbose,
                                   atol=atol, rtol=rtol, xtol=None, ftol=1.0e-8)
             mk_sys.solve_odes()
+
+            bd_tof = get_tof(sys=copy.deepcopy(mk_sys), tof_terms=['3F-3G', '4I-4K', '6G-6H'])
+            bu_tof = -1.0 * get_tof(sys=copy.deepcopy(mk_sys), tof_terms=['butanol-3Cvi', 'butanol-12G'])
+            ea_tof = -1.0 * get_tof(sys=copy.deepcopy(mk_sys), tof_terms=['ethylacetate-7Eiii'])
+
             mk_sys.reaction_terms(y=mk_sys.solution[-1])
-
-            tof = 0.0
-            for rterm in ['3F-3G', '4I-4K', '6G-6H']:
-                if rterm in mk_sys.reactions.keys():
-                    i = list(mk_sys.reactions.keys()).index(rterm)
-                    tof += mk_sys.rates[i, 0] - mk_sys.rates[i, 1]
-            bu_tof = 0.0
-            for rterm in ['butanol-3Cvi', 'butanol-12G']:
-                if rterm in mk_sys.reactions.keys():
-                    i = list(mk_sys.reactions.keys()).index(rterm)
-                    bu_tof += mk_sys.rates[i, 1] - mk_sys.rates[i, 0]
-            ea_tof = 0.0
-            if 'ethylacetate-7Eiii' in mk_sys.reactions.keys():
-                i = list(mk_sys.reactions.keys()).index('ethylacetate-7Eiii')
-                ea_tof += mk_sys.rates[i, 1] - mk_sys.rates[i, 0]
-
             rates = np.zeros(len(mk_reactions))
             rates[test_inds[ind]] = mk_sys.rates[:, 0] - mk_sys.rates[:, 1]
 
@@ -603,14 +620,30 @@ if runMK:
                     final_fval[sind] = mk_sys.species_odes(y=mk_sys.full_steady)[mk_sys.snames.index(s)]
                     final_diff[sind] = odesol[-2, sind + 1] - odesol[-1, sind + 1]
 
-            mk_results[test_case][Ti] = {'tof': tof, 'rates': rates, 'transient_rates': transient_rates,
+            print('||fvals|| = %1.3e, ||xdiff|| = %1.3e' %
+                  (np.linalg.norm(final_fval), np.linalg.norm(final_diff)))
+
+            if test_case == 'all4' and runUQ:
+                mk_sys_uq = Uncertainty(sys=copy.deepcopy(mk_sys), nruns=nruns, sigma=(noise / eVtokcal))
+                tofs, mean_tof, std_tof = mk_sys_uq.get_mean_property_value(lambda s:
+                                                                            get_tof(sys=s, tof_terms=['3F-3G',
+                                                                                                      '4I-4K',
+                                                                                                      '6G-6H']))
+                es_tofs, es_mean_tof, es_std_tof = mk_sys_uq.get_mean_property_value(lambda s:
+                                                                                     get_es_tof(sys=s,
+                                                                                                temperature=Ti,
+                                                                                                pressure=p,
+                                                                                                pes=energy_p123))
+            else:
+                tofs = mean_tof = std_tof = es_tofs = es_mean_tof = es_std_tof = None
+
+            mk_results[test_case][Ti] = {'tof': bd_tof, 'rates': rates, 'transient_rates': transient_rates,
                                          'cover': odesol[-1, 1::], 'odesol': odesol[0:-1, :],
                                          'final_fval': pow(np.linalg.norm(final_fval), 2),
                                          'final_diff': pow(np.linalg.norm(final_diff), 2),
-                                         'ea_tof': ea_tof, 'bu_tof': bu_tof}
-
-            print('||fvals|| = %1.3e, ||xdiff|| = %1.3e' %
-                  (np.linalg.norm(final_fval), np.linalg.norm(final_diff)))
+                                         'ea_tof': ea_tof, 'bu_tof': bu_tof,
+                                         'tofs': tofs, 'mean_tof': mean_tof, 'std_tof': std_tof,
+                                         'es_tofs': es_tofs, 'es_mean_tof': es_mean_tof, 'es_std_tof': es_std_tof}
 
             if test_case == 'all4' and runSweep:
                 mk_sweep[Ti] = dict()
@@ -697,6 +730,15 @@ if saveResults:
                 df = pd.DataFrame(rates, columns=['Temperature (K)'] + list(mk_reactions.keys()))
                 df.to_csv(path_or_buf=alt_file_dir + 'rates.csv', sep=',', header=True, index=False)
 
+        if k == 'all4' and runUQ:
+            file_dir = mk_dir + k + ending + 'uq/'
+            parry = np.zeros((nruns + 1, 3))
+            parry[:, 0] = mk_results['all4'][623]['tofs']
+            parry[:, 1] = mk_results['all4'][723]['tofs']
+            parry[:, 2] = mk_results['all4'][823]['tofs']
+            df = pd.DataFrame(parry, columns=['623 K', '723 K', '823 K'])
+            df.to_csv(path_or_buf=(file_dir + 'uq_tofs.csv'), sep=',', header=True, index=False)
+
     # Energy
     en_dir = results_dir + 'Energy/'
     for Ti in Ts:
@@ -758,6 +800,60 @@ if runMK:
            yticks=np.logspace(start=-12, stop=0, endpoint=True, num=9))
     fig.tight_layout()
     fig.show()
+
+    if runUQ:
+        parry = [mk_results['all4'][623]['tofs'],
+                 mk_results['all4'][723]['tofs'],
+                 mk_results['all4'][823]['tofs']]
+        fig, ax = plt.subplots(figsize=(3.2, 3.2))
+        bplot = ax.boxplot(parry, positions=(1, 2, 3),
+                           patch_artist=True, zorder=1, widths=0.5)
+
+        ax.set(yscale='log')
+        colors = ['lightsteelblue', 'bisque', 'rosybrown']
+        bplot['medians'][0].set(color='black')
+        bplot['medians'][1].set(color='black')
+        bplot['medians'][2].set(color='black')
+
+        for patch, color in zip(bplot['boxes'], colors):
+            patch.set(facecolor=color)
+
+        for j in range(3):
+            la = ax.plot(j + 1, np.mean(parry[j][1::]), 'v', color='darkcyan')
+            lb = ax.plot(j + 1, parry[j][0], '^', color='mediumvioletred')
+
+        ax.set(xticklabels=('623', '723', '823'), xlabel='Temperature (K)',
+               ylabel='TOF (1/s)', title='MK model')
+        ax.minorticks_off()
+        ax.legend((la[0], lb[0]), ('Noisy mean', 'Original'), frameon=False, loc='upper left')
+        fig.tight_layout()
+
+        parry = [mk_results['all4'][623]['es_tofs'],
+                 mk_results['all4'][723]['es_tofs'],
+                 mk_results['all4'][823]['es_tofs']]
+        fig, ax = plt.subplots(figsize=(3.2, 3.2))
+        bplot = ax.boxplot(parry, positions=(1, 2, 3),
+                           patch_artist=True, zorder=1, widths=0.5)
+
+        ax.set(yscale='log')
+        colors = ['lightsteelblue', 'bisque', 'rosybrown']
+        bplot['medians'][0].set(color='black')
+        bplot['medians'][1].set(color='black')
+        bplot['medians'][2].set(color='black')
+
+        for patch, color in zip(bplot['boxes'], colors):
+            patch.set(facecolor=color)
+
+        for j in range(3):
+            la = ax.plot(j + 1, np.mean(parry[j][1::]), 'v', color='darkcyan')
+            lb = ax.plot(j + 1, parry[j][0], '^', color='mediumvioletred')
+
+        ax.set(xticklabels=('623', '723', '823'), xlabel='Temperature (K)',
+               ylabel='TOF (1/s)', title='p123')
+        ax.minorticks_off()
+        ax.legend((la[0], lb[0]), ('Noisy mean', 'Original'), frameon=False, loc='upper left')
+        fig.tight_layout()
+
 
 # Profiling for testing purposes (unrelated to manuscript)
 if profile:
