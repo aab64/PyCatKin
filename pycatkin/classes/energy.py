@@ -25,9 +25,9 @@ class Energy:
                 setattr(self, att, getattr(newself, att))
         else:
             self.name = name
-            self.minima = copy.copy(minima)
+            self.minima = copy.deepcopy(minima)
             if labels is not None:
-                self.labels = copy.copy(labels)
+                self.labels = copy.deepcopy(labels)
             else:
                 self.labels = [i[0].name for i in minima.values()]
             self.energy_landscape = None
@@ -89,7 +89,7 @@ class Energy:
             conv = 1.0
             eunits = 'eV'
 
-        fig, ax = plt.subplots(figsize=(6.4, 3.2))
+        fig, ax = plt.subplots(figsize=(10, 4))
         xpoints = []
         ypoints = []
         for i in range(len(self.energy_landscape[etype].keys())):

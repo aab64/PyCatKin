@@ -116,9 +116,9 @@ class System:
         """
 
         self.params = dict()
-        self.params['times'] = copy.copy(times)
-        self.params['start_state'] = copy.copy(start_state)
-        self.params['inflow_state'] = copy.copy(inflow_state)
+        self.params['times'] = copy.deepcopy(times)
+        self.params['start_state'] = copy.deepcopy(start_state)
+        self.params['inflow_state'] = copy.deepcopy(inflow_state)
         self.params['temperature'] = T
         self.params['pressure'] = p
         self.params['rtol'] = rtol
@@ -349,8 +349,8 @@ class System:
 
         # Establish an initial guess
         if self.solution is not None:
-            y_guess = copy.copy(self.solution[-1, self.dynamic_indices])
-            full_steady = copy.copy(self.solution[-1, :])
+            y_guess = copy.deepcopy(self.solution[-1, self.dynamic_indices])
+            full_steady = copy.deepcopy(self.solution[-1, :])
         else:
             y_guess = np.zeros(len(self.dynamic_indices))
             full_steady = np.zeros(len(self.adsorbate_indices) + len(self.gas_indices))

@@ -93,7 +93,7 @@ class State:
 
         if isinstance(self.read_from_alternate, dict):
             if 'get_vibrations' in self.read_from_alternate.keys():
-                freq, i_freq = copy.copy(self.read_from_alternate['get_vibrations']())
+                freq, i_freq = copy.deepcopy(self.read_from_alternate['get_vibrations']())
 
         if not freq:
             if self.vibs_path is not None:
@@ -216,7 +216,7 @@ class State:
         else:
             ntrunc = 0
         nfreqs = self.freq.shape[0] - ntrunc
-        use_freq = copy.copy(self.freq[0:nfreqs])
+        use_freq = copy.deepcopy(self.freq[0:nfreqs])
 
         self.Gvibr = (0.5 * h * sum(use_freq) +
                       kB * T * sum(np.log(1 - np.exp(-use_freq * h / (kB * T))))) * JtoeV

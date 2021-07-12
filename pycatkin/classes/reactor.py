@@ -65,8 +65,8 @@ class Reactor:
         correspond to adsorbate and gas species.
 
         """
-        self.is_adsorbate = copy.copy(is_adsorbate)
-        self.is_gas = copy.copy(is_gas)
+        self.is_adsorbate = copy.deepcopy(is_adsorbate)
+        self.is_gas = copy.deepcopy(is_gas)
 
     def get_dynamic_indices(self, adsorbate_indices, gas_indices):
         """Returns which indicies in the solution vector vary with time
@@ -74,7 +74,7 @@ class Reactor:
 
         """
 
-        self.dynamic_indices = copy.copy(adsorbate_indices)
+        self.dynamic_indices = copy.deepcopy(adsorbate_indices)
         return self.dynamic_indices
 
     def save_pickle(self, path=None):
@@ -118,7 +118,7 @@ class InfiniteDilutionReactor(Reactor):
 
         """
 
-        self.dynamic_indices = copy.copy(adsorbate_indices)
+        self.dynamic_indices = copy.deepcopy(adsorbate_indices)
         return self.dynamic_indices
 
 
@@ -185,5 +185,5 @@ class CSTReactor(Reactor):
         vector experience transient changes.
 
         """
-        self.dynamic_indices = copy.copy(adsorbate_indices) + copy.copy(gas_indices)
+        self.dynamic_indices = copy.deepcopy(adsorbate_indices) + copy.deepcopy(gas_indices)
         return self.dynamic_indices
