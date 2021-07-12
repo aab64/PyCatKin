@@ -1,7 +1,0 @@
-numpy
-scipy
-matplotlib
-ase
-pandas
-sphinx
-sphinx_rtd_theme
