@@ -64,8 +64,7 @@ pygments_style = 'sphinx'
 # documentation.
 #
 html_theme_options = {
-		     'prev_next_buttons_location': 'both',
-                     'logo': 'avatar.png'
+		     'prev_next_buttons_location': 'both'
 }
              
 # Add any paths that contain custom static files (such as style sheets) here,
