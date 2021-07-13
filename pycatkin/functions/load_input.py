@@ -17,56 +17,33 @@ def read_from_input_file(input_path='input.json'):
 
     print('Loading input file...')
 
-    states = None
-    reactions = None
-    reactor = None
-    sim_system = None
-
     with open(input_path) as file:
         pck_system = json.load(file)
 
     if 'states' in pck_system.keys():
+        print('Reading states:')
         states = dict()
         for s in pck_system['states'].keys():
+            print('* %s' % s)
             states[s] = State(name=s, **pck_system['states'][s])
+    else:
+        raise RuntimeError('Input file contains no states.')
 
     if 'scaling_relation_states' in pck_system.keys():
+        print('Reading scaling relation states:')
         if states is None:
             states = dict()
         for s in pck_system['scaling_relation_states'].keys():
+            print('* %s' % s)
             states[s] = Scaling(name=s, **pck_system['scaling_relation_states'][s])
 
-    if 'reactions' in pck_system.keys():
-        reactions = dict()
-        for r in pck_system['reactions'].keys():
-            reactions[r] = Reaction(name=r, **pck_system['reactions'][r])
-            reactions[r].reactants = [states[s] for s in reactions[r].reactants]
-            reactions[r].products = [states[s] for s in reactions[r].products]
-            if reactions[r].TS is not None:
-                reactions[r].TS = [states[s] for s in reactions[r].TS]
-        for r in reactions.keys():
-            for s in reactions[r].reactants + reactions[r].products:
-                if isinstance(s, Scaling):
-                    for sr in s.scaling_reactions.keys():
-                        s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
-            if reactions[r].TS is not None:
-                for s in reactions[r].TS:
-                    if isinstance(s, Scaling):
-                        for sr in s.scaling_reactions.keys():
-                            s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
-
-    if 'reactor' in pck_system.keys():
-        if pck_system['reactor'] == 'InfiniteDilutionReactor':
-            reactor = InfiniteDilutionReactor()
-        elif pck_system['reactor'] == 'CSTReactor':
-            reactor = CSTReactor(**pck_system['reactor']['CSTReactor'])
-        else:
-            print('Unknown reactor option, using default: InfiniteDilutionReactor.')
-            reactor = InfiniteDilutionReactor()
-
     if 'system' in pck_system.keys():
+        print('Reading system:')
         sys_params = pck_system['system']
         p = sys_params['p']
+        print('* Pressure: %1.0f Pa' % p)
+        T = sys_params['T']
+        print('* Temperature: %1.0f K' % T)
         startsites = 0.0
         if 'start_state' in sys_params.keys():
             for s in sys_params['start_state'].keys():
@@ -82,9 +59,54 @@ def read_from_input_file(input_path='input.json'):
                     sys_params['inflow_state'][s] = sys_params['inflow_state'][s] * p / bartoPa
                 else:
                     raise TypeError('Only gas states can comprise the inflow!')
-        if reactor is not None and reactions is not None:
-            sim_system = System(reactor=reactor, reactions=reactions)
-            sim_system.set_parameters(**sys_params)
+        sim_system = System()
+        sim_system.set_parameters(**sys_params)
+        for s in states.keys():
+            if states[s].gasdata is not None:
+                states[s].gasdata['state'] = [states[i] for i in states[s].gasdata['state']]
+            sim_system.add_state(state=states[s])
+
+    else:
+        raise RuntimeError('Input file contains no system details.')
+
+    if 'reactions' in pck_system.keys():
+        print('Reading reactions:')
+        reactions = dict()
+        for r in pck_system['reactions'].keys():
+            print('* %s' % r)
+            reactions[r] = Reaction(name=r, **pck_system['reactions'][r])
+            reactions[r].reactants = [sim_system.states[s] for s in reactions[r].reactants]
+            reactions[r].products = [sim_system.states[s] for s in reactions[r].products]
+            if reactions[r].TS is not None:
+                reactions[r].TS = [sim_system.states[s] for s in reactions[r].TS]
+        for r in reactions.keys():
+            for s in reactions[r].reactants + reactions[r].products:
+                if isinstance(s, Scaling):
+                    for sr in s.scaling_reactions.keys():
+                        s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
+            if reactions[r].TS is not None:
+                for s in reactions[r].TS:
+                    if isinstance(s, Scaling):
+                        for sr in s.scaling_reactions.keys():
+                            s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
+            sim_system.add_reaction(reaction=reactions[r])
+
+    if 'reactor' in pck_system.keys():
+        print('Reading reactor:')
+        if pck_system['reactor'] == 'InfiniteDilutionReactor':
+            print('* InfiniteDilutionReactor')
+            reactor = InfiniteDilutionReactor()
+        elif pck_system['reactor'] == 'CSTReactor':
+            print('* CSTReactor')
+            reactor = CSTReactor(**pck_system['reactor']['CSTReactor'])
+        else:
+            raise TypeError('Unknown reactor option, please choose InfiniteDilutionReactor or CSTReactor.')
+        sim_system.add_reactor(reactor=reactor)
+        sim_system.names_to_indices()
+    else:
+        if sim_system.reactions is not None:
+            raise RuntimeError('Cannot consider reactions without reactor.' +
+                               'To use constant boundary conditions, please specify InfiniteDilutionReactor.')
 
     print('Done.')
 
