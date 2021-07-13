@@ -2,8 +2,8 @@ from pycatkin.classes.reactor import *
 import os
 import copy
 import pickle
-from scipy.integrate import ode, solve_ivp
-from scipy.optimize import fsolve, minimize, least_squares
+from scipy.integrate import solve_ivp
+from scipy.optimize import least_squares
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -12,9 +12,9 @@ import pandas as pd
 
 class System:
 
-    def __init__(self, reactions=None, reactor=None, path_to_pickle=None):
+    def __init__(self, path_to_pickle=None):
         """Initialises System class.
-        System class stores the reactions and the reactor.
+        System class stores the states, reactions and reactor.
         It is used to construct the reaction rates and species ODEs
         and solve the transient or steady-state dynamics.
         If path_to_pickle is defined, the pickled object is loaded.
@@ -28,10 +28,9 @@ class System:
             for att in newself.__dict__.keys():
                 setattr(self, att, getattr(newself, att))
         else:
-            assert(reactions is not None)
-            assert(reactor is not None)
-            self.reactions = reactions
-            self.reactor = reactor
+            self.states = None
+            self.reactions = None
+            self.reactor = None
             self.snames = None
             self.species_map = None
             self.adsorbate_indices = None
@@ -44,21 +43,52 @@ class System:
             self.solution = None
             self.full_steady = None
             self.params = None
-            self.names_to_indices()
             self.set_parameters()
 
-    def names_to_indices(self):
-        """Compiles sorted list of species names and
-        assigns indicies corresponding to these for
-        easier access to elements of the solution vector.
+    def add_state(self, state):
+        """Adds a state to the dictionary of states
+        and adds its name to the list of names.
+        Checks state names are unique.
 
         """
 
-        self.snames = []
-        for r in self.reactions.keys():
-            self.snames += [i.name for i in self.reactions[r].reactants if i.name not in self.snames]
-            self.snames += [i.name for i in self.reactions[r].products if i.name not in self.snames]
-        self.snames = sorted(list(set(self.snames)))
+        if self.states is None:
+            self.states = dict()
+        if self.snames is None:
+            self.snames = []
+        if self.params['verbose']:
+            print('Adding state %s.' % state.name)
+        self.states[state.name] = state
+        if state.name in self.snames:
+            raise ValueError('Found two copies of state %s. State names must be unique!' % state.name)
+        else:
+            self.snames = sorted(self.snames + [state.name])
+
+    def add_reaction(self, reaction):
+        """Adds a reaction to the dictionary of reactions.
+
+        """
+
+        if self.reactions is None:
+            self.reactions = dict()
+        if self.params['verbose']:
+            print('Adding reaction %s.' % reaction.name)
+        self.reactions[reaction.name] = reaction
+
+    def add_reactor(self, reactor):
+        """Adds a reactor.
+
+        """
+
+        if self.params['verbose']:
+            print('Adding the reactor.')
+        self.reactor = reactor
+
+    def names_to_indices(self):
+        """Assigns indicies corresponding to the species for
+        easier access to elements of the solution vector.
+
+        """
 
         self.species_map = dict()
         for r in self.reactions.keys():
@@ -279,8 +309,6 @@ class System:
         if self.params['start_state'] is not None:
             for s in self.params['start_state'].keys():
                 yinit[self.snames.index(s)] = self.params['start_state'][s]
-        else:
-            print('Warning! No start_state specified - initial surface state should be defined!')
 
         # Set inflow mole fractions to zero if not specified
         yinflow = np.zeros(len(self.snames))
@@ -298,14 +326,6 @@ class System:
                     if s in self.gas_indices:
                         print('%15s : %1.2e' % (sname, yinflow[s]))
 
-        # Set solution times if not specified
-        times = self.params['times']
-        if times is None:
-            times = np.logspace(np.log10(1e-14), np.log10(1e3), num=1000)
-
-        y = np.zeros((len(times) + 1, len(yinit)))
-        y[0, :] = yinit
-
         solfun = lambda tval, yval: self.reactor.rhs(self.species_odes)(t=tval, y=yval, T=self.params['temperature'],
                                                                         inflow_state=yinflow)
         jacfun = lambda tval, yval: self.reactor.jacobian(self.species_jacobian)(t=tval, y=yval,
@@ -320,20 +340,6 @@ class System:
             print(sol.message)
         self.times = sol.t
         self.solution = np.transpose(sol.y)
-
-        # r = ode(solfun, jac=jacfun if self.params['jacobian'] else None).set_integrator('lsoda', method='bdf',
-        #                                                                                 rtol=self.params['rtol'],
-        #                                                                                 atol=self.params['atol'])
-        # r.set_initial_value(yinit, 0.0)
-        #
-        # # Solve ODEs
-        # for i, t in enumerate(times):
-        #     if r.successful() and r.t < times[-1]:
-        #         r.integrate(t)
-        #         y[i + 1, :] = r.y
-        #
-        # self.times = np.concatenate((np.zeros(1), times))
-        # self.solution = y
 
         if self.params['verbose']:
             print('=========\nFinal conditions:\n')
@@ -381,28 +387,12 @@ class System:
         else:
             jacfun = '3-point'
 
-        # y_steady, info, ier, mesg = fsolve(func=func, x0=y_guess, fprime=jacfun,
-        #                                    full_output=True, xtol=self.params['xtol'])
-
         sol = least_squares(fun=func, x0=y_guess, jac=jacfun, method='trf',
                             xtol=self.params['xtol'], ftol=self.params['ftol'],
                             max_nfev=np.max((int(1e4), 100 * len(y_guess))))
         y_steady = sol.x
         mesg = sol.message
         ier = sol.nfev
-
-        # sol = minimize(fun=lambda x: np.linalg.norm(func(x)), x0=y_guess, method='Powell',
-        #                options={'xtol': self.params['xtol'], 'ftol': self.params['ftol'],
-        #                         'maxiter': np.max((int(1e4), 100 * len(y_guess))),
-        #                         'maxfev': np.max((int(1e4), 100 * len(y_guess)))})
-        # y_steady = sol.x
-        # mesg = sol.message
-        # ier = sol.nit
-
-        # sol = minimize(fun=func, x0=y_guess, method='Newton-CG', jac=jacfun)
-        # y_steady = sol.x
-        # mesg = sol.message
-        # ier = sol.nit
 
         full_steady[self.dynamic_indices] = y_steady
 
@@ -458,7 +448,7 @@ class System:
         tof = 0.0
         for rind, r in enumerate(self.species_map.keys()):
             if r in tof_terms:
-                tof += self.rates[rind, 0] - self.rates[rind, 1]  # assumes forward directions
+                tof += self.rates[rind, 0] - self.rates[rind, 1]
         return tof
 
     def degree_of_rate_control(self, tof_terms, ss_solve=False, eps=1.0e-3):
