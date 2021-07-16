@@ -31,6 +31,7 @@ class System:
             self.states = None
             self.reactions = None
             self.reactor = None
+            self.energy_landscapes = None
             self.snames = None
             self.species_map = None
             self.adsorbate_indices = None
@@ -83,6 +84,17 @@ class System:
         if self.params['verbose']:
             print('Adding the reactor.')
         self.reactor = reactor
+
+    def add_energy_landscape(self, energy_landscape):
+        """Adds an energy landscape to the dictionary of reactions.
+
+        """
+
+        if self.energy_landscapes is None:
+            self.energy_landscapes = dict()
+        if self.params['verbose']:
+            print('Adding energy landscape %s.' % energy_landscape.name)
+        self.energy_landscapes[energy_landscape.name] = energy_landscape
 
     def names_to_indices(self):
         """Assigns indicies corresponding to the species for

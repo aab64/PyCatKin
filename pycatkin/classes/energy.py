@@ -25,11 +25,11 @@ class Energy:
                 setattr(self, att, getattr(newself, att))
         else:
             self.name = name
-            self.minima = copy.deepcopy(minima)
+            self.minima = minima
             if labels is not None:
-                self.labels = copy.deepcopy(labels)
+                self.labels = labels
             else:
-                self.labels = [i[0].name for i in minima.values()]
+                self.labels = [i[0].name for i in minima]
             self.energy_landscape = None
             if self.minima is None:
                 print('No states loaded.')
@@ -52,7 +52,7 @@ class Energy:
         ref_free = sum([s.get_free_energy(T=T, p=p, verbose=verbose) for s in self.minima[0]])
         ref_elec = sum([s.Gelec for s in self.minima[0]])
 
-        for sind, state in self.minima.items():
+        for sind, state in enumerate(self.minima):
             self.energy_landscape['free'][sind] = sum([s.get_free_energy(T=T, p=p, verbose=verbose)
                                                        for s in self.minima[sind]]) - ref_free
             self.energy_landscape['electronic'][sind] = sum([s.Gelec for s in self.minima[sind]]) - ref_elec
@@ -170,7 +170,7 @@ class Energy:
                    if self.energy_landscape['isTS'][s] == 1])
         nIj = len([self.energy_landscape[etype][s]
                    for s in self.energy_landscape[etype].keys()
-                   if self.energy_landscape['isTS'][s] == 0])
+                   if self.energy_landscape['isTS'][s] == 0]) - 1
 
         drxn = self.energy_landscape[etype][max(list(self.energy_landscape[etype].keys()))] * eVtokJ * 1.0e3
         print('dGrxn = %1.2f eV' % (drxn * 1.0e-3 / eVtokJ))
@@ -178,16 +178,13 @@ class Energy:
         XTOFTi = np.zeros((nTi, nIj))
         ctri = 0
         ctrj = 0
-        for i in range(len(self.energy_landscape['free'].keys())):
+        for i in range(nTi + nIj):
             if self.energy_landscape['isTS'][i]:
                 Ti = self.energy_landscape[etype][i] * eVtokJ * 1.0e3
-                for j in range(len(self.energy_landscape['free'].keys())):
+                for j in range(nTi + nIj):
                     if not self.energy_landscape['isTS'][j]:
                         Ij = self.energy_landscape[etype][j] * eVtokJ * 1.0e3
-                        if i >= j:
-                            dGij = drxn
-                        else:
-                            dGij = 0.0
+                        dGij = drxn if i >= j else 0.0
                         XTOFTi[ctri, ctrj] = Ti - Ij - dGij
                         ctrj += 1
                 ctri += 1
@@ -216,7 +213,7 @@ class Energy:
         lTi = [self.labels[lab] for lab in self.energy_landscape['isTS'].keys()
                if self.energy_landscape['isTS'][lab] == 1]
         lIj = [self.labels[lab] for lab in self.energy_landscape['isTS'].keys()
-               if self.energy_landscape['isTS'][lab] == 0]
+               if self.energy_landscape['isTS'][lab] == 0][0:-1]
 
         Espan = self.energy_landscape[etype][iTDTS] - self.energy_landscape[etype][iTDI]
         Eapp = np.log((h * tof) / (kB * T)) * (-R * T) * 1.0e-3
