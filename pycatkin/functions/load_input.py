@@ -108,6 +108,17 @@ def read_from_input_file(input_path='input.json'):
             raise RuntimeError('Cannot consider reactions without reactor.' +
                                'To use constant boundary conditions, please specify InfiniteDilutionReactor.')
 
+    if 'energy landscapes' in pck_system.keys():
+        print('Reading energy landscapes:')
+        for pes in pck_system['energy landscapes'].keys():
+            print('* %s' % pes)
+            minima = pck_system['energy landscapes'][pes]["minima"]
+            labels = pck_system['energy landscapes'][pes]["labels"]
+            minima = [[sim_system.states[s] for s in minima[k]] for k in range(len(minima))]
+            labels = labels if labels else [i[0].name for i in minima]
+            energy_landscape = Energy(name=pes, minima=minima, labels=labels)
+            sim_system.add_energy_landscape(energy_landscape=energy_landscape)
+
     print('Done.')
 
     return sim_system

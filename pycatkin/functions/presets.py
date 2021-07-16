@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
-from ase.io import read
 import numpy as np
 import matplotlib as mpl
 import pandas as pd
+import os
 
 font = {'family': 'sans-serif', 'weight': 'normal', 'size': 8}
 plt.rc('font', **font)
@@ -23,7 +23,7 @@ def run(sim_system, plot_results=False, save_results=False,
         sim_system.write_results(path=csv_path)
 
 
-def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_terms=None,
+def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_terms=None, eps=1.0e-3,
                      plot_results=False, save_results=False, fig_path=None, csv_path=''):
     """Runs the ODE solver for a range of temperatures
     and optionally plots/saves the results.
@@ -34,9 +34,10 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
     final = np.zeros((len(temperatures), len(sim_system.snames)))
     drcs = dict()
     for Tind, T in enumerate(temperatures):
-        print('* %1.0f K:' % T)
+        print('* %1.0f K' % T)
         sim_system.params['temperature'] = T
-        sim_system.solve_odes()
+        run(sim_system=sim_system, plot_results=plot_results, save_results=save_results,
+            fig_path=fig_path, csv_path=csv_path)
         if steady_state_solve:
             sim_system.find_steady(store_steady=True)
             final[Tind, :] = sim_system.full_steady
@@ -45,9 +46,14 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
         sim_system.reaction_terms(final[Tind, :])
         rates[Tind, :] = sim_system.rates[:, 0] - sim_system.rates[:, 1]
         if tof_terms is not None:
-            drcs[T] = sim_system.degree_of_rate_control(tof_terms)
+            drcs[T] = sim_system.degree_of_rate_control(tof_terms, eps=eps)
 
     if plot_results:
+        if fig_path:
+            if not os.path.isdir(fig_path):
+                print('Directory does not exist. Will try creating it...')
+                os.mkdir(fig_path)
+
         cmap = plt.get_cmap("Spectral", len(sim_system.adsorbate_indices))
         fig, ax = plt.subplots(figsize=(3.2, 3.2))
         for i, sname in enumerate(sim_system.snames):
@@ -106,6 +112,11 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
                 plt.savefig(fig_path + 'tof_vs_temperature.png', format='png', dpi=300)
 
     if save_results:
+        if csv_path is not '':
+            if not os.path.isdir(csv_path):
+                print('Directory does not exist. Will try creating it...')
+                os.mkdir(csv_path)
+
         rfile = csv_path + 'rates_vs_temperature.csv'
         cfile = csv_path + 'coverages_vs_temperature.csv'
         pfile = csv_path + 'pressures__vs_temperature.csv'
@@ -142,5 +153,64 @@ def draw_states(sim_system, rotation='', fig_path=None):
     and optionally saves them.
 
     """
+
+    if fig_path:
+        if not os.path.isdir(fig_path):
+            print('Directory does not exist. Will try creating it...')
+            os.mkdir(fig_path)
     for s in sim_system.snames:
         sim_system.states[s].view_atoms(rotation=rotation, path=fig_path)
+
+
+def draw_energy_landscapes(sim_system, etype='free', eunits='eV', legend_location='upper right',
+                           show_labels=False, fig_path=None):
+    """Draws the energy landscapes using the parameters
+    saved to sim_system.params and optionally saves them.
+
+    """
+
+    if fig_path:
+        if not os.path.isdir(fig_path):
+            print('Directory does not exist. Will try creating it...')
+            os.mkdir(fig_path)
+    for k in sim_system.energy_landscapes.keys():
+        sim_system.energy_landscapes[k].draw_energy_landscape(T=sim_system.params['temperature'],
+                                                              p=sim_system.params['pressure'],
+                                                              verbose=sim_system.params['verbose'],
+                                                              etype=etype, eunits=eunits,
+                                                              legend_location=legend_location,
+                                                              path=fig_path, show_labels=show_labels)
+
+
+def run_energy_span_temperatures(sim_system, temperatures, etype='free', save_results=False, csv_path=''):
+    """Runs the energy span model for a range of temperatures
+    and optionally saves the results.
+
+    """
+
+    if save_results:
+        if csv_path is not '':
+            if not os.path.isdir(csv_path):
+                print('Directory does not exist. Will try creating it...')
+                os.mkdir(csv_path)
+
+    for k in sim_system.energy_landscapes.keys():
+        print('* Landscape %s:' % k)
+        esm = dict()
+        for Tind, T in enumerate(temperatures):
+            sim_system.params['temperature'] = T
+
+            esm[T] = sim_system.energy_landscapes[k].evaluate_energy_span_model(T=sim_system.params['temperature'],
+                                                                                p=sim_system.params['pressure'],
+                                                                                verbose=sim_system.params['verbose'],
+                                                                                etype=etype)
+        if save_results:
+            df = pd.DataFrame(data=[[T] + list(esm[T][0:4]) for T in temperatures],
+                              columns=['Temperature (K)', 'TOF (1/s)', 'Espan (eV)', 'TDTS', 'TDI'])
+            df.to_csv(path_or_buf=csv_path + 'energy_span_summary_%s.csv' % k, sep=',', header=True, index=False)
+            df = pd.DataFrame(data=[[T] + esm[T][4] for T in temperatures],
+                              columns=['Temperature (K)'] + esm[temperatures[0]][6])
+            df.to_csv(path_or_buf=csv_path + 'energy_span_xTDTS_%s.csv' % k, sep=',', header=True, index=False)
+            df = pd.DataFrame(data=[[T] + esm[T][5] for T in temperatures],
+                              columns=['Temperature (K)'] + esm[temperatures[0]][7])
+            df.to_csv(path_or_buf=csv_path + 'energy_span_xTDI_%s.csv' % k, sep=',', header=True, index=False)
