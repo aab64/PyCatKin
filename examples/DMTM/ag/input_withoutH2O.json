@@ -1,0 +1,223 @@
+{
+    "states":
+    {
+        "2s":
+        {
+            "state_type": "adsorbate"
+        },
+        "s-pair":
+        {
+            "state_type": "adsorbate"
+        },
+        "sO2s":
+        {
+            "state_type": "adsorbate"
+        },
+        "s2Och4":
+        {
+            "state_type": "adsorbate",
+            "gasdata":
+            {
+                "fraction": [0.67],
+                "state": ["ch4"]
+            }
+        },
+        "sOsCH3OH":
+        {
+            "state_type": "adsorbate"
+        },
+        "sO":
+        {
+            "state_type": "adsorbate"
+        },
+        "sOch4":
+        {
+            "state_type": "adsorbate",
+            "gasdata":
+            {
+                "fraction": [0.67],
+                "state": ["ch4"]
+            }
+        },
+        "sOHsCH3":
+        {
+            "state_type": "adsorbate"
+        },
+        "sCH3OH":
+        {
+            "state_type": "adsorbate"
+        },
+        "s":
+        {
+            "state_type": "adsorbate"
+        },
+        "ts1":
+        {
+            "state_type": "TS"
+        },
+        "rad1":
+        {
+            "state_type": "TS"
+        },
+        "ts5":
+        {
+            "state_type": "TS"
+        },
+        "ts6":
+        {
+            "state_type": "TS"
+        },
+        "o2":
+        {
+            "state_type": "gas",
+            "sigma": 2
+        },
+        "ch4":
+        {
+            "state_type": "gas",
+            "sigma": 12
+        },
+        "ch3oh":
+        {
+            "state_type": "gas",
+            "sigma": 1
+        },
+        "h2o":
+        {
+            "state_type": "gas",
+            "sigma": 2
+        }
+    },
+    
+    "reactions":
+    {
+        "r0":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["2s"],
+            "TS": ["ts1"],
+            "products": ["s-pair"]
+        },
+        "r1":
+        {
+            "reac_type": "adsorption",
+            "area": 1.444e-19,
+            "reactants": ["s-pair", "o2"],
+            "TS": null,
+            "products": ["sO2s"]
+        },
+        "r3":
+        {
+            "reac_type": "adsorption",
+            "area": 1.444e-19,
+            "reactants": ["sO2s", "ch4"],
+            "TS": null,
+            "products": ["s2Och4"]
+        },
+        "r4":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["s2Och4"],
+            "TS": ["rad1"],
+            "products": ["sOsCH3OH"]
+        },
+        "r5":
+        {
+            "reac_type": "desorption",
+            "area": 1.444e-19,
+            "reactants": ["sOsCH3OH"],
+            "TS": null,
+            "products": ["sO", "ch3oh"]
+        },
+        "r6":
+        {
+            "reac_type": "adsorption",
+            "area": 1.444e-19,
+            "reactants": ["sO", "ch4"],
+            "TS": null,
+            "products": ["sOch4"]
+        },
+        "r7":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["sOch4"],
+            "TS": null,
+            "products": ["sOHsCH3"]
+        },
+        "r8":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["sOHsCH3"],
+            "TS": ["ts5"],
+            "products": ["sCH3OH"]
+        },
+        "r9":
+        {
+            "reac_type": "desorption",
+            "area": 1.444e-19,
+            "reactants": ["sCH3OH"],
+            "TS": null,
+            "products": ["s", "ch3oh"]
+        },
+        "r10":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["s"],
+            "TS": ["ts6"],
+            "products": ["s-pair"]
+        }
+    },
+    
+    "reactor": "InfiniteDilutionReactor",
+    
+    "system":
+    {
+        "times": [0.0, 1.0e12],
+        "T": 400.0,
+        "p": 100000.0,
+        "start_state":
+        {
+            "o2": 0.1,
+            "ch4": 0.02,
+            "ch3oh": 1.0e-11,
+            "2s": 1.0
+        },
+        "verbose": false,
+        "use_jacobian": true,
+        "atol": 1.0e-8,
+        "rtol": 1.0e-6
+    },
+    
+    "energy landscapes":
+    {
+        "full_pes":
+        {
+            "minima":
+            [
+                ["2s", "o2", "ch4", "ch4"],
+                ["ts1", "o2", "ch4", "ch4"],
+                ["s-pair", "o2", "ch4", "ch4"],
+                ["sO2s", "ch4", "ch4"],
+                ["s2Och4", "ch4"],
+                ["rad1", "ch4"],
+                ["sOsCH3OH", "ch4"],
+                ["sO", "ch4", "ch3oh"],
+                ["sOch4", "ch3oh"],
+                ["sOHsCH3", "ch3oh"],
+                ["ts5", "ch3oh"],
+                ["sCH3OH", "ch3oh"],
+                ["s", "ch3oh", "ch3oh"],
+                ["ts6", "ch3oh", "ch3oh"],
+                ["s-pair", "ch3oh", "ch3oh"],
+                ["ts1", "ch3oh", "ch3oh"],
+                ["2s", "ch3oh", "ch3oh"]
+            ],
+            "labels": null
+        }
+    }
+}

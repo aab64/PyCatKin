@@ -1,7 +1,7 @@
 {
     "states":
     {
-        "2sH2O":
+        "2s-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
@@ -10,7 +10,7 @@
                 "state": ["h2o"]
             }
         },
-        "s-pairH2O":
+        "s-pair-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
@@ -19,7 +19,7 @@
                 "state": ["h2o"]
             }
         },
-        "sO2sH2O":
+        "sO2s-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
@@ -28,7 +28,7 @@
                 "state": ["h2o"]
             }
         },
-        "sOOsH2O":
+        "sOOs-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
@@ -37,34 +37,7 @@
                 "state": ["h2o"]
             }
         },
-        "s2Och4H2O":
-        {
-            "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67, 0.67],
-                "state": ["ch4", "h2o"]
-            }
-        },
-        "sOsCH3OHH2O":
-        {
-            "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
-        },
-        "sOH2O":
-        {
-            "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
-        },
-        "sOch4H2O":
+        "s2Och4-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
@@ -73,7 +46,7 @@
                 "state": ["ch4", "h2o"]
             }
         },
-        "sOHsCH3H2O":
+        "sOsCH3OH-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
@@ -82,7 +55,7 @@
                 "state": ["h2o"]
             }
         },
-        "sCH3OHH2O":
+        "sO-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
@@ -91,7 +64,16 @@
                 "state": ["h2o"]
             }
         },
-        "sH2O":
+        "sOch4-h2o":
+        {
+            "state_type": "adsorbate",
+            "gasdata":
+            {
+                "fraction": [0.67, 0.67],
+                "state": ["ch4", "h2o"]
+            }
+        },
+        "sOHsCH3-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
@@ -100,7 +82,25 @@
                 "state": ["h2o"]
             }
         },
-        "ts1H2O":
+        "sCH3OH-h2o":
+        {
+            "state_type": "adsorbate",
+            "gasdata":
+            {
+                "fraction": [0.67],
+                "state": ["h2o"]
+            }
+        },
+        "s-h2o":
+        {
+            "state_type": "adsorbate",
+            "gasdata":
+            {
+                "fraction": [0.67],
+                "state": ["h2o"]
+            }
+        },
+        "ts1-h2o":
         {
             "state_type": "TS",
             "gasdata":
@@ -109,7 +109,7 @@
                 "state": ["h2o"]
             }
         },
-        "ts2H2O":
+        "ts2-h2o":
         {
             "state_type": "TS",
             "gasdata":
@@ -118,7 +118,7 @@
                 "state": ["h2o"]
             }
         },
-        "ts3H2O":
+        "rad1-h2o":
         {
             "state_type": "TS",
             "gasdata":
@@ -127,7 +127,7 @@
                 "state": ["h2o"]
             }
         },
-        "ts4H2O":
+        "rad2-h2o":
         {
             "state_type": "TS",
             "gasdata":
@@ -136,7 +136,16 @@
                 "state": ["h2o"]
             }
         },
-        "ts5H2O":
+        "ts5-h2o":
+        {
+            "state_type": "TS",
+            "gasdata":
+            {
+                "fraction": [0.67],
+                "state": ["h2o"]
+            }
+        },
+        "ts6-h2o":
         {
             "state_type": "TS",
             "gasdata":
@@ -173,89 +182,89 @@
         {
             "reac_type": "Arrhenius",
             "area": 1.444e-19,
-            "reactants": ["2sH2O"],
-            "TS": ["ts1H2O"],
-            "products": ["s-pairH2O"]
+            "reactants": ["2s-h2o"],
+            "TS": ["ts1-h2o"],
+            "products": ["s-pair-h2o"]
         },
         "r1":
         {
             "reac_type": "adsorption",
             "area": 1.444e-19,
-            "reactants": ["s-pairH2O", "o2"],
+            "reactants": ["s-pair-h2o", "o2"],
             "TS": null,
-            "products": ["sO2sH2O"]
+            "products": ["sO2s-h2o"]
         },
         "r2":
         {
             "reac_type": "Arrhenius",
             "area": 1.444e-19,
-            "reactants": ["sO2sH2O"],
+            "reactants": ["sO2s-h2o"],
             "TS": null,
-            "products": ["sOOsH2O"]
+            "products": ["sOOs-h2o"]
         },
         "r3":
         {
             "reac_type": "adsorption",
             "area": 1.444e-19,
-            "reactants": ["sOOsH2O", "ch4"],
+            "reactants": ["sOOs-h2o", "ch4"],
             "TS": null,
-            "products": ["s2Och4H2O"]
+            "products": ["s2Och4-h2o"]
         },
         "r4":
         {
             "reac_type": "Arrhenius",
             "area": 1.444e-19,
-            "reactants": ["s2Och4H2O"],
-            "TS": ["ts2H2O"],
-            "products": ["sOsCH3OHH2O"]
+            "reactants": ["s2Och4-h2o"],
+            "TS": ["ts2-h2o"],
+            "products": ["sOsCH3OH-h2o"]
         },
         "r5":
         {
             "reac_type": "desorption",
             "area": 1.444e-19,
-            "reactants": ["sOsCH3OHH2O"],
+            "reactants": ["sOsCH3OH-h2o"],
             "TS": null,
-            "products": ["sOH2O", "ch3oh"]
+            "products": ["sO-h2o", "ch3oh"]
         },
         "r6":
         {
             "reac_type": "adsorption",
             "area": 1.444e-19,
-            "reactants": ["sOH2O", "ch4"],
+            "reactants": ["sO-h2o", "ch4"],
             "TS": null,
-            "products": ["sOch4H2O"]
+            "products": ["sOch4-h2o"]
         },
         "r7":
         {
             "reac_type": "Arrhenius",
             "area": 1.444e-19,
-            "reactants": ["sOch4H2O"],
-            "TS": ["ts3H2O"],
-            "products": ["sOHsCH3H2O"]
+            "reactants": ["sOch4-h2o"],
+            "TS": ["rad1-h2o"],
+            "products": ["sOHsCH3-h2o"]
         },
         "r8":
         {
             "reac_type": "Arrhenius",
             "area": 1.444e-19,
-            "reactants": ["sOHsCH3H2O"],
-            "TS": ["ts4H2O"],
-            "products": ["sCH3OHH2O"]
+            "reactants": ["sOHsCH3-h2o"],
+            "TS": ["rad2-h2o"],
+            "products": ["sCH3OH-h2o"]
         },
         "r9":
         {
             "reac_type": "desorption",
             "area": 1.444e-19,
-            "reactants": ["sCH3OHH2O"],
+            "reactants": ["sCH3OH-h2o"],
             "TS": null,
-            "products": ["sH2O", "ch3oh"]
+            "products": ["s-h2o", "ch3oh"]
         },
         "r10":
         {
             "reac_type": "Arrhenius",
             "area": 1.444e-19,
-            "reactants": ["sH2O"],
-            "TS": ["ts5H2O"],
-            "products": ["s-pairH2O"]
+            "reactants": ["s-h2o"],
+            "TS": ["ts5-h2o"],
+            "products": ["s-pair-h2o"]
         }
     },
     
@@ -271,9 +280,42 @@
             "o2": 0.1,
             "ch4": 0.02,
             "ch3oh": 1.0e-11,
-            "2sH2O": 1.0
+            "2s-h2o": 1.0
         },
         "verbose": false,
-        "use_jacobian": true
+        "use_jacobian": true,
+        "atol": 1.0e-8,
+        "rtol": 1.0e-6
+    },
+    
+    "energy landscapes":
+    {
+        "full_pes":
+        {
+            "minima":
+            [
+                ["2s-h2o", "o2", "ch4", "ch4"],
+                ["ts1-h2o", "o2", "ch4", "ch4"],
+                ["s-pair-h2o", "o2", "ch4", "ch4"],
+                ["sO2s-h2o", "ch4", "ch4"],
+                ["ts2-h2o", "ch4", "ch4"],
+                ["sOOs-h2o", "ch4", "ch4"],
+                ["s2Och4-h2o", "ch4"],
+                ["rad1-h2o", "ch4"],
+                ["sOsCH3OH-h2o", "ch4"],
+                ["sO-h2o", "ch4", "ch3oh"],
+                ["sOch4-h2o", "ch3oh"],
+                ["rad2-h2o", "ch3oh"],
+                ["sOHsCH3-h2o", "ch3oh"],
+                ["ts5-h2o", "ch3oh"],
+                ["sCH3OH-h2o", "ch3oh"],
+                ["s-h2o", "ch3oh", "ch3oh"],
+                ["ts6-h2o", "ch3oh", "ch3oh"],
+                ["s-pair-h2o", "ch3oh", "ch3oh"],
+                ["ts1-h2o", "ch3oh", "ch3oh"],
+                ["2s-h2o", "ch3oh", "ch3oh"]
+            ],
+            "labels": null
+        }
     }
 }
