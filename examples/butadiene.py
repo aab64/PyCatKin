@@ -97,7 +97,7 @@ noise = 2  # Standard deviation of the noise in kcal/mol
 runMK = True
 runES = False
 runSweep = False
-runUQ = True
+runUQ = False
 saveResults = False
 profile = False
 
@@ -545,6 +545,57 @@ for r in range(len(mk_rnames)):
                                                   dGrxn_user=souza_energies[souza_reactions.index(rname)][2],
                                                   dGa_fwd_user=souza_energies[souza_reactions.index(rname)][0])
 
+########################################################################################################################
+# Dopants
+for sname in ['1A', '1B', '1C']:
+    states[sname + '_Cu'] = State(state_type='adsorbate', path=adsdir + 'Cu_MgO/TS_mechanism/deH2/' + sname + '_Cu')
+    states[sname + '_Zn'] = State(state_type='adsorbate', path=adsdir + 'Zn_MgO/TS_mechanism/deH2/' + sname + '_Zn')
+for sname in ['2F', '2G', '2H']:
+    states[sname + '_Cu'] = State(state_type='adsorbate', path=adsdir + 'Cu_MgO/TS_mechanism/aldol/' + sname + '_Cu')
+    states[sname + '_Zn'] = State(state_type='adsorbate', path=adsdir + 'Zn_MgO/TS_mechanism/aldol/' + sname + '_Zn')
+for sname in ['5A', '5B', '5C']:
+    states[sname + '_Cu'] = State(state_type='adsorbate', path=adsdir + 'Cu_MgO/TS_mechanism/deH2O/' + sname + '_Cu')
+    states[sname + '_Zn'] = State(state_type='adsorbate', path=adsdir + 'Zn_MgO/TS_mechanism/deH2O/' + sname + '_Zn')
+for sname in ['6A', '6B', '6C']:
+    states[sname + '_Cu'] = State(state_type='adsorbate', path=adsdir + 'Cu_MgO/TS_mechanism/Prins/' + sname + '_Cu')
+    states[sname + '_Zn'] = State(state_type='adsorbate', path=adsdir + 'Zn_MgO/TS_mechanism/Prins/' + sname + '_Zn')
+for sname in ['surface']:
+    states[sname + '_Cu'] = State(state_type='adsorbate', path=adsdir + 'Cu_MgO/metal_site/1/' + sname + '_Cu')
+    states[sname + '_Zn'] = State(state_type='adsorbate', path=adsdir + 'Zn_MgO/metal_site/1/' + sname + '_Zn')
+
+for r in ['ethanol-1A', '1A-1C', '5A-5C', '6A-6C', '2F-2H']:
+    reactions[r + '_Cu'] = copy.deepcopy(reactions[r])
+    reactions[r + '_Cu'].reactants = [states[i.name + '_Cu'] if i.name != 'ethanol' else states[i.name] for i in reactions[r].reactants]
+    reactions[r + '_Cu'].products = [states[i.name + '_Cu'] if i.name != 'ethanol' else states[i.name] for i in reactions[r].products]
+    if reactions[r + '_Cu'].TS is not None:
+        reactions[r + '_Cu'].TS = [states[i.name + '_Cu'] if i.name != 'ethanol' else states[i.name] for i in reactions[r].TS]
+    reactions[r + '_Zn'] = copy.deepcopy(reactions[r])
+    reactions[r + '_Zn'].reactants = [states[i.name + '_Zn'] if i.name != 'ethanol' else states[i.name] for i in reactions[r].reactants]
+    reactions[r + '_Zn'].products = [states[i.name + '_Zn'] if i.name != 'ethanol' else states[i.name] for i in reactions[r].products]
+    if reactions[r + '_Zn'].TS is not None:
+        reactions[r + '_Zn'].TS = [states[i.name + '_Zn'] if i.name != 'ethanol' else states[i.name] for i in reactions[r].TS]
+
+mk_rnamestmp = ['ethanol-1A', '1A-1C', '5A-5C', '6A-6C', '2F-2H']
+for r in range(len(mk_rnamestmp)):
+    k = mk_rnames.index(mk_rnamestmp[r])
+    rname = mk_rnamestmp[r] + '_Cu'
+    rtype = reactions[rname].reac_type
+    mk_reactions[rname] = ReactionDerivedReaction(name=rname,
+                                                  area=Asite,
+                                                  reac_type=rtype,
+                                                  base_reaction=reactions[rname],
+                                                  reactants=[mk_states[i] for i in mk_reactants[k]],
+                                                  products=[mk_states[i] for i in mk_products[k]])
+    rname = mk_rnamestmp[r] + '_Zn'
+    rtype = reactions[rname].reac_type
+    mk_reactions[rname] = ReactionDerivedReaction(name=rname,
+                                                  area=Asite,
+                                                  reac_type=rtype,
+                                                  base_reaction=reactions[rname],
+                                                  reactants=[mk_states[i] for i in mk_reactants[k]],
+                                                  products=[mk_states[i] for i in mk_products[k]])
+########################################################################################################################
+
 # Run MK model
 mk_results = dict()
 mk_sweep = dict()
@@ -553,23 +604,39 @@ if runMK:
     mk_tests = ['all4',
                 'p123', 'p124', 'p156',
                 'byproducts_Souza',
-                'byproducts_House'
+                'byproducts_House',
+                'Cu',
+                'Zn',
                 ]
     test_inds = [list(np.arange(0, 25)),
                  list(np.arange(0, 8)) + list(np.arange(19, 25)),
                  list(np.arange(0, 3)) + list(np.arange(8, 13)) + list(np.arange(19, 25)),
                  [0] + list(np.arange(13, 18)) + list(np.arange(19, 25)),
                  list(np.arange(0, 29)) + list(np.arange(32, 34)),
-                 list(np.arange(0, 25)) + list(np.arange(29, 34))
+                 list(np.arange(0, 25)) + list(np.arange(29, 34)),
+                 list((34, 1, 40)) + list(np.arange(3, 13)) + list((36, 38)) + list(np.arange(15, 20)) + [42] + list(np.arange(21, 25)),
+                 list((35, 1, 41)) + list(np.arange(3, 13)) + list((37, 39)) + list(np.arange(15, 20) + [43] + list(np.arange(21, 25)))
                  ]
     mk_reactor = InfiniteDilutionReactor()
 
     for ind, test_case in enumerate(mk_tests):
         print(test_case)
         mk_results[test_case] = dict()
+
         test_rxns = dict(zip([list(mk_reactions.keys())[i] for i in test_inds[ind]],
                              [list(mk_reactions.values())[i] for i in test_inds[ind]]))
-        mk_sys = System(reactor=mk_reactor, reactions=test_rxns)
+
+        mk_sys = System()
+        for s in mk_states.keys():
+            mk_sys.add_state(state=mk_states[s])
+        for r in test_rxns.keys():
+            test_rxns[r].reactants = [mk_sys.states[i.name] for i in test_rxns[r].reactants]
+            test_rxns[r].products = [mk_sys.states[i.name] for i in test_rxns[r].products]
+            if test_rxns[r].TS is not None:
+                test_rxns[r].TS = [mk_sys.states[i.name] for i in test_rxns[r].TS]
+            mk_sys.add_reaction(reaction=test_rxns[r])
+        mk_sys.add_reactor(reactor=mk_reactor)
+        mk_sys.names_to_indices()
 
         for Ti in Ts:
             print('%1.0f K' % Ti)
@@ -590,6 +657,7 @@ if runMK:
             bd_tof = get_tof(sys=copy.deepcopy(mk_sys), tof_terms=['3F-3G', '4I-4K', '6G-6H'])
             bu_tof = -1.0 * get_tof(sys=copy.deepcopy(mk_sys), tof_terms=['butanol-3Cvi', 'butanol-12G'])
             ea_tof = -1.0 * get_tof(sys=copy.deepcopy(mk_sys), tof_terms=['ethylacetate-7Eiii'])
+            eth_tof = get_tof(sys=copy.deepcopy(mk_sys), tof_terms=['ethanol-1A', 'ethanol-1A_Cu', 'ethanol-1A_Zn'])
 
             mk_sys.reaction_terms(y=mk_sys.solution[-1])
             rates = np.zeros(len(mk_reactions))
@@ -641,7 +709,7 @@ if runMK:
                                          'cover': odesol[-1, 1::], 'odesol': odesol[0:-1, :],
                                          'final_fval': pow(np.linalg.norm(final_fval), 2),
                                          'final_diff': pow(np.linalg.norm(final_diff), 2),
-                                         'ea_tof': ea_tof, 'bu_tof': bu_tof,
+                                         'ea_tof': ea_tof, 'bu_tof': bu_tof, 'eth_tof': eth_tof,
                                          'tofs': tofs, 'mean_tof': mean_tof, 'std_tof': std_tof,
                                          'es_tofs': es_tofs, 'es_mean_tof': es_mean_tof, 'es_std_tof': es_std_tof}
 
@@ -801,6 +869,19 @@ if runMK:
     fig.tight_layout()
     fig.show()
 
+    fig, ax = plt.subplots(figsize=(3.2, 3.2))
+    labs = ['MgO', 'Cu-MgO', 'Zn-MgO']
+    for kind, k in enumerate(['all4', 'Cu', 'Zn']):
+        c = 'green' if k == 'all4' else 'sienna' if k == 'Cu' else 'slategrey'
+        ax.plot(Ts, [mk_results[k][Ti]['tof'] for Ti in Ts],
+                color=c, label=labs[kind])
+    ax.set(xlabel='Temperature (K)', ylabel='TOF (1/s)', yscale='log',
+           ylim=(1e-12, 1e0), xlim=(523, 923),
+           yticks=np.logspace(start=-12, stop=0, endpoint=True, num=9))
+    ax.legend(frameon=False)
+    fig.tight_layout()
+    fig.show()
+
     if runUQ:
         parry = [mk_results['all4'][623]['tofs'],
                  mk_results['all4'][723]['tofs'],
@@ -887,3 +968,5 @@ if profile:
     run_cprofiler('mk_sys.solve_odes()')
     print('Number of steps: %1.0f' % len(mk_sys.times))
     print('Done.')
+
+
