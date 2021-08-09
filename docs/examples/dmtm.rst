@@ -412,7 +412,7 @@ Let's start by examining the potential energy landscape using ``draw_energy_land
     draw_energy_landscapes(sim_system=sim_system,
                            etype='electronic',
                            show_labels=True,
-                           fig_path='')
+                           fig_path='figures/')
 
 .. figure:: source/dmtm/electronic_energy_landscape.png
    :alt: potential energy landscape for the DMTM reaction
@@ -424,7 +424,7 @@ or the free energy landscape at, say, 450 K::
 
     sim_system.params['temperature'] = 450
     draw_energy_landscapes(sim_system=sim_system,
-                           fig_path='')
+                           fig_path='figures/')
 
 .. figure:: source/dmtm/free_energy_landscape.png
    :alt: free energy landscape for the DMTM reaction
@@ -445,12 +445,13 @@ There is another preset function we can use to compare energy landscapes (for ex
     sim_system2 = copy.deepcopy(sim_system)
     sim_system2.params['temperature'] = 650
     
-    sim_systems = {'450 K': sim_system, '650 K': sim_system2}
+    sim_systems = {'450 K': sim_system,
+                   '650 K': sim_system2}
     
     compare_energy_landscapes(sim_systems=sim_systems,
                               legend_location='lower center',
                               show_labels=True,
-                              fig_path='')
+                              fig_path='figures/')
 
 .. figure:: source/dmtm/free_energy_landscapes.png
    :alt: free energy landscapes for the DMTM reaction
@@ -471,7 +472,8 @@ Next, we turn to the surface kinetics. The preset function ``run`` can be used t
     run(sim_system=sim_system,
         plot_results=True,
         save_results=True,
-        fig_path='')
+        fig_path='figures/',
+        csv_path='outputs/')
 
 .. figure:: source/dmtm/coverages_450.0K_1.0bar.png
    :figwidth: 3.2in
@@ -493,7 +495,10 @@ Alternately, the function ``run_temperatures`` can be used to integrate the ODEs
     run_temperatures(sim_system=sim_system,
                      temperatures=temperatures,
                      steady_state_solve=True,
-                     save_results=True)
+                     plot_results=True,
+                     save_results=True,
+                     fig_path='figures/',
+                     csv_path='outputs/')
 
 .. figure:: source/dmtm/coverages_vs_temperature.png
    :figwidth: 3.2in
@@ -509,7 +514,10 @@ Supplying a list of reaction names that should be considered when calculating th
                      temperatures=temperatures,
                      tof_terms=tof_terms,
                      steady_state_solve=True,
-                     save_results=True)
+                     plot_results=True,
+                     save_results=True,
+                     fig_path='figures/',
+                     csv_path='outputs/')
 
 .. figure:: source/dmtm/tof_vs_temperature.png
    :figwidth: 3.2in
@@ -529,10 +537,16 @@ The preset functions also include the function ``run_energy_span_temperatures`` 
 
     from pycatkin.functions.load_input import read_from_input_file
     from pycatkin.functions.presets import run_energy_span_temperatures
+    import numpy as np
+    
+    sim_system = read_from_input_file()
+    
+    temperatures = np.linspace(start=400, stop=800, num=20, endpoint=True)
     
     run_energy_span_temperatures(sim_system=sim_system,
                                  temperatures=temperatures,
-                                 save_results=True)
+                                 save_results=True,
+                                 csv_path='outputs/')
 
 Saving energies
 ----------------------------------
@@ -541,10 +555,20 @@ The preset functions ``save_state_energies``, ``save_energies`` and ``save_energ
 
     from pycatkin.functions.load_input import read_from_input_file
     from pycatkin.functions.presets import save_state_energies, save_energies, save_energies_temperatures
+    import numpy as np
     
-    save_state_energies(sim_system=sim_system)
-    save_energies(sim_system=sim_system)
+    sim_system = read_from_input_file()
+    
+    temperatures = np.linspace(start=400, stop=800, num=20, endpoint=True)
+    
+    save_state_energies(sim_system=sim_system,
+                        csv_path='outputs/')
+    
+    save_energies(sim_system=sim_system,
+                  csv_path='outputs/')
+    
     save_energies_temperatures(sim_system=sim_system,
-                               temperatures=temperatures)
+                               temperatures=temperatures,
+                               csv_path='outputs/')
 
 .. [1] Engedahl, *et al.* *J. Phys. Chem. C* 125, 27, 14681, 2021. doi: `10.1021/acs.jpcc.1c04062 <https://doi.org/10.1021/acs.jpcc.1c04062>`_.
