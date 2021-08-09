@@ -35,8 +35,8 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
     rates = np.zeros((len(temperatures), len(sim_system.reactions)))
     final = np.zeros((len(temperatures), len(sim_system.snames)))
     drcs = dict()
+    print('Running simulations for T in [%1.1f K, %1.1f K]...' % (temperatures[0], temperatures[-1]))
     for Tind, T in enumerate(temperatures):
-        print('* %1.0f K' % T)
         sim_system.params['temperature'] = T
         run(sim_system=sim_system, plot_results=plot_transient, save_results=save_transient,
             fig_path=fig_path, csv_path=csv_path)
@@ -57,9 +57,10 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
         rates[Tind, :] = sim_system.rates[:, 0] - sim_system.rates[:, 1]
         if tof_terms is not None:
             drcs[T] = sim_system.degree_of_rate_control(tof_terms, eps=eps)
+        print('* %1.0f K done' % T)
 
     if plot_results:
-        if fig_path is not None and fig_path is not '':
+        if fig_path is not None and fig_path != '':
             if not os.path.isdir(fig_path):
                 print('Directory does not exist. Will try creating it...')
                 os.mkdir(fig_path)
@@ -126,7 +127,7 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
                 plt.savefig(fig_path + 'tof_vs_temperature.png', format='png', dpi=600)
 
     if save_results:
-        if csv_path is not '':
+        if csv_path != '':
             if not os.path.isdir(csv_path):
                 print('Directory does not exist. Will try creating it...')
                 os.mkdir(csv_path)
@@ -168,7 +169,7 @@ def draw_states(sim_system, rotation='', fig_path=None):
 
     """
 
-    if fig_path is not None and fig_path is not '':
+    if fig_path is not None and fig_path != '':
         if not os.path.isdir(fig_path):
             print('Directory does not exist. Will try creating it...')
             os.mkdir(fig_path)
@@ -183,7 +184,7 @@ def draw_energy_landscapes(sim_system, etype='free', eunits='eV', legend_locatio
 
     """
 
-    if fig_path is not None and fig_path is not '':
+    if fig_path is not None and fig_path != '':
         if not os.path.isdir(fig_path):
             print('Directory does not exist. Will try creating it...')
             os.mkdir(fig_path)
@@ -203,13 +204,14 @@ def run_energy_span_temperatures(sim_system, temperatures, etype='free', save_re
     """
 
     if save_results:
-        if csv_path is not '':
+        if csv_path != '':
             if not os.path.isdir(csv_path):
                 print('Directory does not exist. Will try creating it...')
                 os.mkdir(csv_path)
 
     for k in sim_system.energy_landscapes.keys():
-        print('* Landscape %s:' % k)
+        print('Landscape %s:' % k)
+        print('-----------------')
         esm = dict()
         for Tind, T in enumerate(temperatures):
             sim_system.params['temperature'] = T
@@ -235,7 +237,7 @@ def save_energies(sim_system, csv_path=''):
 
     """
 
-    if csv_path is not '':
+    if csv_path != '':
         if not os.path.isdir(csv_path):
             print('Directory does not exist. Will try creating it...')
             os.mkdir(csv_path)
@@ -245,13 +247,15 @@ def save_energies(sim_system, csv_path=''):
     v = sim_system.params['verbose']
 
     evals = dict()
+    print('Saving reaction energies...')
     for r in sim_system.reactions.keys():
-        print('* Reaction %s:' % r)
 
         evals[r] = [sim_system.reactions[r].get_reaction_energy(T=T, p=p, verbose=v, etype='electronic')]
         evals[r].append(sim_system.reactions[r].get_reaction_energy(T=T, p=p, verbose=v, etype='free'))
         evals[r].append(sim_system.reactions[r].get_reaction_barriers(T=T, p=p, verbose=v, etype='electronic')[0])
         evals[r].append(sim_system.reactions[r].get_reaction_barriers(T=T, p=p, verbose=v, etype='free')[0])
+
+        print('* Reaction %s done' % r)
 
     df = pd.DataFrame(data=[[r] + evals[r] for r in sim_system.reactions.keys()],
                       columns=['Reaction', 'dEr (J/mol)', 'dGr (J/mol)', 'dEa (J/mol)', 'dGa (J/mol)'])
@@ -264,7 +268,7 @@ def save_energies_temperatures(sim_system, temperatures, csv_path=''):
 
     """
 
-    if csv_path is not '':
+    if csv_path != '':
         if not os.path.isdir(csv_path):
             print('Directory does not exist. Will try creating it...')
             os.mkdir(csv_path)
@@ -272,8 +276,8 @@ def save_energies_temperatures(sim_system, temperatures, csv_path=''):
     p = sim_system.params['pressure']
     v = sim_system.params['verbose']
 
+    print('Saving reaction energies...')
     for r in sim_system.reactions.keys():
-        print('* Reaction %s:' % r)
         evals = dict()
         for Tind, T in enumerate(temperatures):
             sim_system.params['temperature'] = T
@@ -288,6 +292,7 @@ def save_energies_temperatures(sim_system, temperatures, csv_path=''):
                           columns=['Temperature (K)', 'dEr (J/mol)', 'dGr (J/mol)', 'dEa (J/mol)', 'dGa (J/mol)'])
         df.to_csv(path_or_buf=csv_path + 'reaction_energies_and_barriers_%s.csv' % r,
                   sep=',', header=True, index=False)
+        print('* Reaction %s done' % r)
 
 
 def save_state_energies(sim_system, csv_path=''):
@@ -295,7 +300,7 @@ def save_state_energies(sim_system, csv_path=''):
 
     """
 
-    if csv_path is not '':
+    if csv_path != '':
         if not os.path.isdir(csv_path):
             print('Directory does not exist. Will try creating it...')
             os.mkdir(csv_path)
@@ -305,14 +310,16 @@ def save_state_energies(sim_system, csv_path=''):
     v = sim_system.params['verbose']
 
     evals = dict()
+    print('Saving state energies...')
     for s in sim_system.snames:
-        print('* State %s:' % s)
 
         evals[s] = [sim_system.states[s].get_free_energy(T=T, p=p, verbose=v)]
         evals[s] += [sim_system.states[s].Gelec if sim_system.states[s].Gelec is not None else None]
         evals[s] += [sim_system.states[s].Gvibr if sim_system.states[s].Gvibr is not None else None]
         evals[s] += [sim_system.states[s].Grota if sim_system.states[s].Grota is not None else None]
         evals[s] += [sim_system.states[s].Gtran if sim_system.states[s].Gtran is not None else None]
+
+        print('* State %s done' % s)
 
     df = pd.DataFrame(data=[[s] + evals[s] for s in sim_system.snames],
                       columns=['State', 'Free (eV)', 'Electronic (eV)', 'Vibrational (eV)', 'Translational (eV)',
@@ -328,7 +335,7 @@ def compare_energy_landscapes(sim_systems, etype='free', eunits='eV', legend_loc
 
     """
 
-    if fig_path is not None and fig_path is not '':
+    if fig_path is not None and fig_path != '':
         if not os.path.isdir(fig_path):
             print('Directory does not exist. Will try creating it...')
             os.mkdir(fig_path)
