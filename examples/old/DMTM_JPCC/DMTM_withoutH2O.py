@@ -32,7 +32,6 @@ T = 448.15  # Temperature (K)
 Apore = 3.8e-10 ** 2  # Pore area (m2) - taken from wikipedia for SSZ-13
 verbose = False  # Print messages
 use_jacobian = False  # Use Jacobian to solve SS and ODEs
-savexyz = False  # Save xyz files (not used)
 savefig = True
 
 # Location of outcars and frequencies
@@ -43,7 +42,7 @@ gas_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/vibratio
 
 # Location of results files and images
 results_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/DMTM_Cu/results/withoutH2O/'
-figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/DMTM_Cu/images/'
+figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/DMTM_Cu/images/withoutH2O/'
 
 print('--------------------------')
 print('System 1: DMTM without H2O')
@@ -56,7 +55,6 @@ print('Configuring states...')
 states = [State(state_type='adsorbate', name='2cu')]
 states += [State(state_type='adsorbate', name='Cu-pair')]
 states += [State(state_type='adsorbate', name='CuO2Cu')]
-# states += [State(state_type='adsorbate', name='CuOO-Cu')]
 states += [State(state_type='adsorbate', name='CuOOCu')]
 states += [State(state_type='adsorbate', name='s2Och4')]
 states += [State(state_type='adsorbate', name='sOsCH3OH')]
@@ -237,7 +235,7 @@ ax.set(yscale='log', xlabel='Temperature (K)', ylabel='Rate (1/s)', title=r'With
 ax.legend(frameon=False, loc='best')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'withoutH2O/tof_temperature.png', dpi=300)
+    plt.savefig(figures_dir + 'tof_temperature.png', dpi=300)
 
 fig, ax = plt.subplots(figsize=(6.6, 3.3))
 for i in range(final_cover.shape[1]):
@@ -246,7 +244,7 @@ ax.set(yscale='log', xlabel='Temperature (K)', ylabel='Coverage')
 ax.legend(frameon=False, loc='best')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'withoutH2O/cover_temperature.png', dpi=300)
+    plt.savefig(figures_dir + 'cover_temperature.png', dpi=300)
 
 fig, ax = plt.subplots(figsize=(6.6, 3.3))
 for i in range(final_rates.shape[1]):
@@ -255,7 +253,7 @@ ax.set(yscale='log', xlabel='Temperature (K)', ylabel='Rate (1/s)')
 ax.legend(frameon=False, loc='best')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'withoutH2O/rates_temperature.png', dpi=300)
+    plt.savefig(figures_dir + 'rates_temperature.png', dpi=300)
 
 cmap = plt.get_cmap("Accent", len(rnames))
 fig, ax = plt.subplots(figsize=(3.3, 3.3))
@@ -266,7 +264,7 @@ ax.set(xlabel='Temperature (K)', ylabel=r'$\chi$ CH$_3$OH formation', title=r'Wi
 ax.legend(frameon=False, loc='best')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'withoutH2O/dorc_temperature.png', dpi=300)
+    plt.savefig(figures_dir + 'dorc_temperature.png', dpi=300)
 
 cmap = plt.get_cmap("Accent", len(sys.adsorbate_indices))
 
@@ -291,7 +289,7 @@ for rind, r in enumerate(['r6', 'r7', 'r8', 'r9']):
 ax.legend(frameon=False)
 ax.set(xlabel='Temperature (K)', ylabel='dG (eV)', title='Without H2O')
 fig.tight_layout()
-plt.savefig(figures_dir + 'withoutH2O/dGs.png', format='png', dpi=300)
+plt.savefig(figures_dir + 'dGs.png', format='png', dpi=300)
 
 minima = dict()
 minima[0] = [states['2cu'], states['o2'], states['ch4'], states['ch4']]
@@ -332,17 +330,17 @@ ax.set(yscale='log', xlabel='Temperature (K)', ylabel='Rate (1/s)', title=r'With
 ax.legend(('MK', 'ES'), frameon=False, loc='best')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'withoutH2O/tof_cmp.png', dpi=300)
+    plt.savefig(figures_dir + 'tof_cmp.png', dpi=300)
 
-elen_path = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/pycatkin/examples/DMTM/data/energy/'
-vibs_path = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/pycatkin/examples/DMTM/data/vibrations/'
-for s in sys.snames:
-    if s is not 'h2o':
-        # sys.states[s].save_energy(path=elen_path)
-        # sys.states[s].save_vibrations(vibs_path=vibs_path)
-        if sys.states[s].state_type == 'gas':
-            print(s)
-            print(sys.states[s].mass)
-            print(sys.states[s].shape)
-            print(sys.states[s].inertia)
+# elen_path = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/pycatkin/examples/DMTM/data/energy/'
+# vibs_path = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/pycatkin/examples/DMTM/data/vibrations/'
+# for s in sys.snames:
+#     if s is not 'h2o':
+#         sys.states[s].save_energy(path=elen_path)
+#         sys.states[s].save_vibrations(vibs_path=vibs_path)
+#         if sys.states[s].state_type == 'gas':
+#             print(s)
+#             print(sys.states[s].mass)
+#             print(sys.states[s].shape)
+#             print(sys.states[s].inertia)
 

@@ -3,3 +3,4 @@ __pycache__/
 .idea/
 docs/_build/
 pycatkin.egg-info/
+/examples/DMTM/.ipynb_checkpoints

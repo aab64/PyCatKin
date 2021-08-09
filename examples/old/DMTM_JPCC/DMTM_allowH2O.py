@@ -31,19 +31,18 @@ T = 448.15  # Temperature (K)
 Apore = 3.8e-10 ** 2  # Pore area (m2) - taken from wikipedia for SSZ-13
 verbose = False  # Print messages
 use_jacobian = False  # Use Jacobian to solve SS and ODEs
-savexyz = False  # Save xyz files (not used)
 savefig = True
 
 # Load states
 print('Configuring states...')
 
 # Location of outcars and frequencies
-gas_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/energies/molecules/'
-gas_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/vibrations/molecules/'
+gas_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/energies/molecules/'
+gas_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/vibrations/molecules/'
 
 # Location of results files and images
-results_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/results/'
-figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/images/'
+results_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/DMTM_Cu/results/'
+figures_dir = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/Methanol/DMTM_Cu/images/allowH2O/'
 
 print('------------------------')
 print('System 3: DMTM with both')
@@ -55,7 +54,6 @@ print('- System 1: without H2O')
 states = [State(state_type='adsorbate', name='2cu')]
 states += [State(state_type='adsorbate', name='Cu-pair')]
 states += [State(state_type='adsorbate', name='CuO2Cu')]
-# states += [State(state_type='adsorbate', name='CuOO-Cu')]
 states += [State(state_type='adsorbate', name='CuOOCu')]
 states += [State(state_type='adsorbate', name='s2Och4')]
 states += [State(state_type='adsorbate', name='sOsCH3OH')]
@@ -83,7 +81,6 @@ print('- System 2: with H2O')
 states += [State(state_type='adsorbate', path='2CuH2O')]
 states += [State(state_type='adsorbate', path='Cu-pairH2O')]
 states += [State(state_type='adsorbate', path='CuO2CuH2O')]
-# states += [State(state_type='adsorbate', path='CuOO-CuH2O')]
 states += [State(state_type='adsorbate', path='CuOOCuH2O')]
 states += [State(state_type='adsorbate', path='s2Och4H2O')]
 states += [State(state_type='adsorbate', path='sOsCH3OHH2O')]
@@ -106,13 +103,13 @@ states = dict(zip(snames, states))
 frac = 0.67
 for s in states.keys():
     if 'H2O' in states[s].name:
-        ads_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/energies/withH2O/'
-        ads_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/vibrations/withH2O/'
+        ads_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/energies/withH2O/'
+        ads_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/vibrations/withH2O/'
         if states[s].state_type != 'gas':
             states[s].gasdata = {'fraction': [frac], 'state': [states['h2o']]}
     else:
-        ads_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/energies/withoutH2O/'
-        ads_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/vibrations/withoutH2O/'
+        ads_opt_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/energies/withoutH2O/'
+        ads_vib_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Cu/vibrations/withoutH2O/'
     opt_dir = gas_opt_dir if states[s].state_type == 'gas' else ads_opt_dir
     vib_dir = gas_vib_dir if states[s].state_type == 'gas' else ads_vib_dir
     states[s].path = opt_dir + states[s].name
@@ -146,18 +143,6 @@ reactions += [Reaction(reac_type='adsorption',
                        TS=None,
                        area=Apore,
                        name='r1')]
-# reactions += [Reaction(reac_type='Arrhenius',
-#                        reactants=[states['CuO2Cu']],
-#                        products=[states['CuOO-Cu']],
-#                        TS=[states['ts2']],
-#                        area=Apore,
-#                        name='r2')]
-# reactions += [Reaction(reac_type='Arrhenius',
-#                        reactants=[states['CuOO-Cu']],
-#                        products=[states['CuOOCu']],
-#                        TS=None,
-#                        area=Apore,
-#                        name='r3')]
 reactions += [Reaction(reac_type='Arrhenius',
                        reactants=[states['CuO2Cu']],
                        products=[states['CuOOCu']],
@@ -232,18 +217,6 @@ reactions += [Reaction(reac_type='adsorption',
                        TS=None,
                        area=Apore,
                        name='r1H2O')]
-# reactions += [Reaction(reac_type='Arrhenius',
-#                        reactants=[states['CuO2CuH2O']],
-#                        products=[states['CuOO-CuH2O']],
-#                        TS=None,
-#                        area=Apore,
-#                        name='r2H2O')]
-# reactions += [Reaction(reac_type='Arrhenius',
-#                        reactants=[states['CuOO-CuH2O']],
-#                        products=[states['CuOOCuH2O']],
-#                        TS=None,
-#                        area=Apore,
-#                        name='r3H2O')]
 reactions += [Reaction(reac_type='Arrhenius',
                        reactants=[states['CuO2CuH2O']],
                        products=[states['CuOOCuH2O']],
@@ -308,7 +281,14 @@ print('Done.')
 print('Configuring system...')
 
 reactor = InfiniteDilutionReactor()
-sys = System(reactions, reactor)
+sys = System()
+
+for s in states.keys():
+    sys.add_state(state=states[s])
+for r in reactions.keys():
+    sys.add_reaction(reaction=reactions[r])
+sys.add_reactor(reactor=reactor)
+sys.names_to_indices()
 
 print('Done.')
 
@@ -370,14 +350,14 @@ ax.set(yscale='log', xlabel='Temperature (K)', ylabel='Rate (1/s)')
 ax.legend(frameon=False, loc='best')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'allowH2O/tof_temperature.png', dpi=300)
+    plt.savefig(figures_dir + 'tof_temperature.png', dpi=300)
 
 fig, ax = plt.subplots(figsize=(3.3, 3.3))
 ax.plot(Ts, final_rates[:, 5] + final_rates[:, 9] + final_rates[:, 17] + final_rates[:, 21], 'o-', color='k')
 ax.set(yscale='log', xlabel='Temperature (K)', ylabel='Rate (1/s)')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'allowH2O/tof_temperature.png', dpi=300)
+    plt.savefig(figures_dir + 'tof_temperature.png', dpi=300)
 
 cmap = plt.get_cmap("Accent", len(rnames))
 fig, ax = plt.subplots(figsize=(3.3, 3.3))
@@ -388,7 +368,7 @@ ax.set(xlabel='Temperature (K)', ylabel=r'$\chi$ CH$_3$OH formation')
 ax.legend(frameon=False, loc='best')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'allowH2O/dorc_temperature.png', dpi=300)
+    plt.savefig(figures_dir + 'dorc_temperature.png', dpi=300)
 
 fig, ax = plt.subplots(figsize=(6.6, 3.3))
 for i in range(final_cover.shape[1]):
@@ -397,7 +377,7 @@ ax.set(yscale='log', xlabel='Temperature (K)', ylabel='Coverage')
 ax.legend(frameon=False, loc='best')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'allowH2O/cover_temperature.png', dpi=300)
+    plt.savefig(figures_dir + 'cover_temperature.png', dpi=300)
 
 fig, ax = plt.subplots(figsize=(3.3, 3.3))
 XX, TT = np.meshgrid(Xs, Ts)
@@ -407,4 +387,16 @@ cbar = fig.colorbar(CS)
 cbar.ax.set_ylabel(r'${\log}_{10}(\mathsf{Rate})$')
 fig.tight_layout()
 if savefig:
-    plt.savefig(figures_dir + 'allowH2O/rmap.svg', dpi=300, format='svg')
+    plt.savefig(figures_dir + 'rmap.svg', dpi=300, format='svg')
+
+elen_path = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/pycatkin/examples/DMTM/wetdata/energy/'
+vibs_path = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/pycatkin/examples/DMTM/wetdata/vibrations/'
+for s in sys.snames:
+    if s is 'h2o':
+        sys.states[s].save_energy(path=elen_path)
+        sys.states[s].save_vibrations(vibs_path=vibs_path)
+        if sys.states[s].state_type == 'gas':
+            print(s)
+            print(sys.states[s].mass)
+            print(sys.states[s].shape)
+            print(sys.states[s].inertia)
