@@ -15,7 +15,7 @@ def read_from_input_file(input_path='input.json'):
     Returns the simulator.
     """
 
-    print('Loading input file...')
+    print('Loading input file: %s.' % input_path)
 
     with open(input_path) as file:
         pck_system = json.load(file)
@@ -122,3 +122,4 @@ def read_from_input_file(input_path='input.json'):
     print('Done.')
 
     return sim_system
+

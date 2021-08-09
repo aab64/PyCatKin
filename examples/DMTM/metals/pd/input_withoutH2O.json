@@ -59,10 +59,6 @@
         {
             "state_type": "TS"
         },
-        "ts2":
-        {
-            "state_type": "TS"
-        },
         "rad1":
         {
             "state_type": "TS"
@@ -124,7 +120,7 @@
             "reac_type": "Arrhenius",
             "area": 1.444e-19,
             "reactants": ["sO2s"],
-            "TS": ["ts2"],
+            "TS": null,
             "products": ["sOOs"]
         },
         "r3":
@@ -223,7 +219,6 @@
                 ["ts1", "o2", "ch4", "ch4"],
                 ["s-pair", "o2", "ch4", "ch4"],
                 ["sO2s", "ch4", "ch4"],
-                ["ts2", "ch4", "ch4"],
                 ["sOOs", "ch4", "ch4"],
                 ["s2Och4", "ch4"],
                 ["rad1", "ch4"],

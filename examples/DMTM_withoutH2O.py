@@ -113,18 +113,6 @@ reactions += [Reaction(reac_type='adsorption',
                        TS=None,
                        area=Apore,
                        name='r1')]
-# reactions += [Reaction(reac_type='Arrhenius',
-#                        reactants=[states['CuO2Cu']],
-#                        products=[states['CuOO-Cu']],
-#                        TS=[states['ts2']],
-#                        area=Apore,
-#                        name='r2')]
-# reactions += [Reaction(reac_type='Arrhenius',
-#                        reactants=[states['CuOO-Cu']],
-#                        products=[states['CuOOCu']],
-#                        TS=None,
-#                        area=Apore,
-#                        name='r3')]
 reactions += [Reaction(reac_type='Arrhenius',
                        reactants=[states['CuO2Cu']],
                        products=[states['CuOOCu']],
@@ -189,7 +177,14 @@ print('Done.')
 print('Configuring system...')
 
 reactor = InfiniteDilutionReactor()
-sys = System(reactions=reactions, reactor=reactor)
+sys = System()
+
+for s in states.keys():
+    sys.add_state(state=states[s])
+for r in reactions.keys():
+    sys.add_reaction(reaction=reactions[r])
+sys.add_reactor(reactor=reactor)
+sys.names_to_indices()
 
 print('Done.')
 
@@ -304,7 +299,6 @@ minima[1] = [states['ts1'], states['o2'], states['ch4'], states['ch4']]
 minima[2] = [states['Cu-pair'], states['o2'], states['ch4'], states['ch4']]
 minima[3] = [states['CuO2Cu'], states['ch4'], states['ch4']]
 minima[4] = [states['ts2'], states['ch4'], states['ch4']]
-# minima[5] = [states['CuOO-Cu'], states['ch4'], states['ch4']]
 minima[5] = [states['CuOOCu'], states['ch4'], states['ch4']]
 minima[6] = [states['s2Och4'], states['ch4']]
 minima[7] = [states['ts3'], states['ch4']]
@@ -339,3 +333,16 @@ ax.legend(('MK', 'ES'), frameon=False, loc='best')
 fig.tight_layout()
 if savefig:
     plt.savefig(figures_dir + 'withoutH2O/tof_cmp.png', dpi=300)
+
+elen_path = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/pycatkin/examples/DMTM/data/energy/'
+vibs_path = 'D:/Users/Astrid/Dropbox/Chalmers/Simulations/microkinetics/pycatkin/examples/DMTM/data/vibrations/'
+for s in sys.snames:
+    if s is not 'h2o':
+        # sys.states[s].save_energy(path=elen_path)
+        # sys.states[s].save_vibrations(vibs_path=vibs_path)
+        if sys.states[s].state_type == 'gas':
+            print(s)
+            print(sys.states[s].mass)
+            print(sys.states[s].shape)
+            print(sys.states[s].inertia)
+

@@ -7,7 +7,6 @@ Examples
    :maxdepth: 2
    :caption: Contents:
    
+   dmtm
    cooxsurface
    cooxreactor
-   dmtm
-   etbd
