@@ -149,9 +149,89 @@ class Energy:
         plt.tick_params(axis='x', which='both',
                         bottom=False, top=False, labelbottom=False)
         fig.tight_layout()
-        if path:
+        if path is not None:
             fig.savefig(path + etype + '_energy_landscape.png',
-                        format='png', dpi=300)
+                        format='png', dpi=600)
+
+    def draw_energy_landscape_simple(self, T, p, fig, ax, linecolor='k', etype='free', eunits='eV',
+                                     verbose=False, show_labels=False):
+        """Records free and electronic energies of minima and
+        transition states relative to the first entry in minima
+        on the supplied figure axis.
+
+        Return the updated figure axis.
+        """
+
+        if self.energy_landscape is None:
+            self.construct_energy_landscape(T=T, p=p, verbose=verbose)
+        elif self.energy_landscape['T'] != T or self.energy_landscape['p'] != p:
+            self.construct_energy_landscape(T=T, p=p, verbose=verbose)
+
+        if show_labels:
+            assert(self.labels is not None)
+
+        if eunits == 'eV':
+            conv = 1.0
+        elif eunits == 'kcal/mol':
+            conv = eVtokcal
+        elif eunits == 'kJ/mol':
+            conv = eVtokJ
+        elif eunits == 'J/mol':
+            conv = eVtokJ * 1.0e3
+        else:
+            print('Specified conversion not possible, using eV')
+            conv = 1.0
+            eunits = 'eV'
+
+        xpoints = []
+        ypoints = []
+        for i in range(len(self.energy_landscape[etype].keys())):
+            toadd = 0.25 if self.energy_landscape['isTS'][i] else 0.25
+            if not self.energy_landscape['isTS'][i]:
+                xpoints += [i - toadd,
+                            i + toadd]
+                ypoints += [self.energy_landscape[etype][i] * conv,
+                            self.energy_landscape[etype][i] * conv]
+            else:
+                xs = [i - 1 + toadd,
+                      i]
+                ys = [self.energy_landscape[etype][i - 1],
+                      self.energy_landscape[etype][i]]
+                spl = CubicSpline(xs, ys, bc_type='clamped')
+                xint = np.linspace(start=xs[0], stop=xs[-1], num=100)
+                yint = spl(xint)
+                xpoints += [x for x in xint]
+                ypoints += [y * conv for y in yint]
+                xs = [i,
+                      i + 1 - toadd]
+                ys = [self.energy_landscape[etype][i],
+                      self.energy_landscape[etype][i + 1]]
+                spl = CubicSpline(xs, ys, bc_type='clamped')
+                xint = np.linspace(start=xs[0], stop=xs[-1], num=100)
+                yint = spl(xint)
+                xpoints += [x for x in xint]
+                ypoints += [y * conv for y in yint]
+
+        ax.plot(xpoints, ypoints, '-', color=linecolor)
+        for k in self.energy_landscape[etype].keys():
+            if self.energy_landscape['isTS'][k] == 1:
+                ax.plot(k, self.energy_landscape[etype][k] * conv, 's',
+                        color=linecolor)
+            else:
+                ax.plot(k, self.energy_landscape[etype][k] * conv, 's',
+                        color=linecolor)
+            if show_labels:
+                ax.text(k, self.energy_landscape[etype][k] * conv - 0.2 * conv,
+                        self.labels[k],
+                        ha='center', va='top',
+                        color=linecolor)
+        ax.set(xlabel='Reaction coordinate',
+               xticks=range(len(self.energy_landscape[etype].keys())),
+               ylabel='Relative ' + etype + ' energy (' + eunits + ')')
+        plt.tick_params(axis='x', which='both',
+                        bottom=False, top=False, labelbottom=False)
+        fig.tight_layout()
+        return fig, ax
 
     def evaluate_energy_span_model(self, T, p, etype='free', verbose=False, opath=None):
         """Energy span calculations.
@@ -228,7 +308,7 @@ class Energy:
         print('* Eapp = %.3g eV = %.3g kcal/mol = %.3g kJ/mol' %
               (Eapp / eVtokJ, Eapp * 1.0e3 / kcaltoJ, Eapp))
 
-        if opath:
+        if opath is not None:
             with open(opath, 'w') as tfile:
                 tfile.write(str(tof) + '\n')
                 tfile.write(', '.join([str(i) for i in num_i] + ['\n']))
@@ -241,5 +321,5 @@ class Energy:
 
         """
 
-        path = path if path else ''
+        path = path if path is not None else ''
         pickle.dump(self, open(path + 'energy_' + self.name + '.pckl', 'wb'))
