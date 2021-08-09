@@ -200,7 +200,7 @@ class State:
         assert(self.freq is not None)
         assert(self.i_freq is not None)
 
-        if vibs_path is not '':
+        if vibs_path != '':
             if not os.path.isdir(vibs_path):
                 print('Directory does not exist. Will try creating it...')
                 os.mkdir(vibs_path)
@@ -218,7 +218,7 @@ class State:
 
         assert(self.Gelec is not None)
 
-        if path is not '':
+        if path != '':
             if not os.path.isdir(path):
                 print('Directory does not exist. Will try creating it...')
                 os.mkdir(path)

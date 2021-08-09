@@ -253,7 +253,6 @@ class Energy:
                    if self.energy_landscape['isTS'][s] == 0]) - 1
 
         drxn = self.energy_landscape[etype][max(list(self.energy_landscape[etype].keys()))] * eVtokJ * 1.0e3
-        print('dGrxn = %1.2f eV' % (drxn * 1.0e-3 / eVtokJ))
 
         XTOFTi = np.zeros((nTi, nIj))
         ctri = 0

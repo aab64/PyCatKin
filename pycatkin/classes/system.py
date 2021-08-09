@@ -543,7 +543,7 @@ class System:
         T = self.params['temperature']
         p = self.params['pressure']
 
-        if path is not None and path is not '':
+        if path is not None and path != '':
             if not os.path.isdir(path):
                 print('Directory does not exist. Will try creating it...')
                 os.mkdir(path)
