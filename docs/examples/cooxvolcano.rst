@@ -1,7 +1,7 @@
 .. _cooxsurface:
-.. index:: CO oxidation on a surface
+.. index:: CO oxidation volcano plot
 
-CO oxidation on a surface
+CO oxidation volcano plot
 *************************************
 
-The infinite dilution case. TBC.
+TBC.
