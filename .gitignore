@@ -4,4 +4,4 @@ __pycache__/
 docs/_build/
 pycatkin.egg-info/
 /examples/DMTM/.ipynb_checkpoints
-/examples/COoxidation/.ipynb_checkpoints
+/examples/COOxReactor/.ipynb_checkpoints
