@@ -365,6 +365,12 @@ class State:
             self.get_atoms()
 
         path = path if path else ''
+
+        if path is not None and path != '':
+            if not os.path.isdir(path):
+                print('Directory does not exist. Will try creating it...')
+                os.mkdir(path)
+
         ase.io.write(path + self.name + '.pdb', self.atoms,
                      format='proteindatabank')
 
@@ -374,6 +380,12 @@ class State:
         """
 
         path = path if path else ''
+
+        if path is not None and path != '':
+            if not os.path.isdir(path):
+                print('Directory does not exist. Will try creating it...')
+                os.mkdir(path)
+
         pickle.dump(self, open(path + 'state_' + self.name + '.pckl', 'wb'))
 
     def view_atoms(self, rotation='', path=None):
@@ -386,6 +398,11 @@ class State:
             self.get_atoms()
 
         view(self.atoms)
+
+        if path is not None and path != '':
+            if not os.path.isdir(path):
+                print('Directory does not exist. Will try creating it...')
+                os.mkdir(path)
 
         if path:
             ase.io.write(path + self.name + '.png', self.atoms,

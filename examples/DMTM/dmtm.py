@@ -38,7 +38,7 @@ run(sim_system=sim_system,
     csv_path='outputs/')
 
 # Run simulations for a range of temperatures
-temperatures = np.linspace(start=400, stop=800, num=20, endpoint=True)
+temperatures = np.linspace(start=400, stop=800, num=17, endpoint=True)
 run_temperatures(sim_system=sim_system,
                  temperatures=temperatures,
                  steady_state_solve=True,

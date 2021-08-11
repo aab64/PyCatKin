@@ -8,5 +8,5 @@ Examples
    :caption: Contents:
    
    dmtm
-   cooxsurface
    cooxreactor
+   cooxvolcano

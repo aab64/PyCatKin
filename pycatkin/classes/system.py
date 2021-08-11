@@ -2,7 +2,7 @@ from pycatkin.classes.reactor import *
 import os
 import copy
 import pickle
-from scipy.integrate import solve_ivp
+from scipy.integrate import solve_ivp, ode
 from scipy.optimize import least_squares
 import numpy as np
 import matplotlib.pyplot as plt
@@ -116,7 +116,7 @@ class System:
                                    'yprod': yprod,
                                    'preac': preac,
                                    'pprod': pprod,
-                                   'site_density': 1.0 / self.reactions[r].area,
+                                   'site_density': 1.0 / self.reactions[r].area if self.reactions[r].area else 0.0,
                                    'scaling': self.reactions[r].scaling,
                                    'perturbation': 0.0}
             if self.adsorbate_indices is None:
@@ -152,7 +152,8 @@ class System:
         self.dynamic_indices = self.reactor.get_dynamic_indices(self.adsorbate_indices, self.gas_indices)
 
     def set_parameters(self, times=None, start_state=None, inflow_state=None, T=293.15, p=101325.0,
-                       rtol=1e-8, atol=1e-10, xtol=1e-8, ftol=1e-8, use_jacobian=True, verbose=False):
+                       use_jacobian=True, ode_solver='solve_ivp', nsteps=1e4, rtol=1e-8, atol=1e-10,
+                       xtol=1e-8, ftol=1e-8, verbose=False):
         """Store simulation conditions, solver tolerances and verbosity.
 
         """
@@ -168,6 +169,8 @@ class System:
         self.params['xtol'] = xtol
         self.params['ftol'] = ftol
         self.params['jacobian'] = use_jacobian
+        self.params['nsteps'] = int(nsteps)
+        self.params['ode_solver'] = ode_solver
         self.params['verbose'] = verbose
 
     def check_rate_constants(self):
@@ -344,14 +347,35 @@ class System:
                                                                                  T=self.params['temperature'])
 
         # Create ODE solver
-        sol = solve_ivp(fun=solfun, jac=jacfun if self.params['jacobian'] else None,
-                        t_span=(self.params['times'][0], self.params['times'][-1]),
-                        y0=yinit, method='BDF',
-                        rtol=self.params['rtol'], atol=self.params['atol'])
-        if self.params['verbose']:
-            print(sol.message)
-        self.times = sol.t
-        self.solution = np.transpose(sol.y)
+        if self.params['ode_solver'] == 'solve_ivp':
+            sol = solve_ivp(fun=solfun, jac=jacfun if self.params['jacobian'] else None,
+                            t_span=(self.params['times'][0], self.params['times'][-1]),
+                            y0=yinit, method='BDF',
+                            rtol=self.params['rtol'], atol=self.params['atol'])
+            if self.params['verbose']:
+                print(sol.message)
+            self.times = sol.t
+            self.solution = np.transpose(sol.y)
+        elif self.params['ode_solver'] == 'ode':
+            sol = ode(f=solfun, jac=jacfun if self.params['jacobian'] else None)
+            sol.set_integrator('lsoda', method='bdf', rtol=self.params['rtol'], atol=self.params['atol'])
+            sol.set_initial_value(yinit, self.params['times'][0])
+            self.times = np.concatenate((np.zeros(1),
+                                         np.logspace(start=np.log10(self.params['times'][0]
+                                                                    if self.params['times'][0] else 1.0e-8),
+                                                     stop=np.log10(self.params['times'][-1]),
+                                                     num=self.params['nsteps'],
+                                                     endpoint=True)))
+            self.solution = np.zeros((self.params['nsteps'] + 1,
+                                      len(self.snames)))
+            self.solution[0, :] = yinit
+            i = 1
+            while sol.successful() and sol.t < self.params['times'][-1]:
+                sol.integrate(self.times[i])
+                self.solution[i, :] = sol.y
+                i += 1
+        else:
+            raise RuntimeError('Unknown ODE solver specified. Please use solve_ivp or ode, or add a new option here.')
 
         if self.params['verbose']:
             print('=========\nFinal conditions:\n')

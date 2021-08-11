@@ -29,13 +29,13 @@ def read_from_input_file(input_path='input.json'):
     else:
         raise RuntimeError('Input file contains no states.')
 
-    if 'scaling_relation_states' in pck_system.keys():
+    if 'scaling relation states' in pck_system.keys():
         print('Reading scaling relation states:')
         if states is None:
             states = dict()
-        for s in pck_system['scaling_relation_states'].keys():
+        for s in pck_system['scaling relation states'].keys():
             print('* %s' % s)
-            states[s] = Scaling(name=s, **pck_system['scaling_relation_states'][s])
+            states[s] = Scaling(name=s, **pck_system['scaling relation states'][s])
 
     if 'system' in pck_system.keys():
         print('Reading system:')
@@ -69,6 +69,7 @@ def read_from_input_file(input_path='input.json'):
     else:
         raise RuntimeError('Input file contains no system details.')
 
+    reactions = None
     if 'reactions' in pck_system.keys():
         print('Reading reactions:')
         reactions = dict()
@@ -79,28 +80,51 @@ def read_from_input_file(input_path='input.json'):
             reactions[r].products = [sim_system.states[s] for s in reactions[r].products]
             if reactions[r].TS is not None:
                 reactions[r].TS = [sim_system.states[s] for s in reactions[r].TS]
+
+    if 'manual reactions' in pck_system.keys():
+        if reactions is None:
+            print('Reading reactions:')
+            reactions = dict()
+        for r in pck_system['manual reactions'].keys():
+            print('* %s' % r)
+            reactions[r] = UserDefinedReaction(name=r, **pck_system['manual reactions'][r])
+            reactions[r].reactants = [sim_system.states[s] for s in reactions[r].reactants]
+            reactions[r].products = [sim_system.states[s] for s in reactions[r].products]
+            if reactions[r].TS is not None:
+                reactions[r].TS = [sim_system.states[s] for s in reactions[r].TS]
+
+    if reactions is not None:
         for r in reactions.keys():
             for s in reactions[r].reactants + reactions[r].products:
                 if isinstance(s, Scaling):
                     for sr in s.scaling_reactions.keys():
-                        s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
+                        if isinstance(s.scaling_reactions[sr]['reaction'], str):
+                            s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
             if reactions[r].TS is not None:
                 for s in reactions[r].TS:
                     if isinstance(s, Scaling):
                         for sr in s.scaling_reactions.keys():
-                            s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
+                            if isinstance(s.scaling_reactions[sr]['reaction'], str):
+                                s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
             sim_system.add_reaction(reaction=reactions[r])
 
     if 'reactor' in pck_system.keys():
         print('Reading reactor:')
-        if pck_system['reactor'] == 'InfiniteDilutionReactor':
-            print('* InfiniteDilutionReactor')
-            reactor = InfiniteDilutionReactor()
-        elif pck_system['reactor'] == 'CSTReactor':
-            print('* CSTReactor')
-            reactor = CSTReactor(**pck_system['reactor']['CSTReactor'])
+        if not isinstance(pck_system['reactor'], dict):
+            if pck_system['reactor'] == 'InfiniteDilutionReactor':
+                print('* InfiniteDilutionReactor')
+                reactor = InfiniteDilutionReactor()
+            else:
+                raise TypeError('Only InfiniteDilutionReactor can be specified without reactor parameters.')
         else:
-            raise TypeError('Unknown reactor option, please choose InfiniteDilutionReactor or CSTReactor.')
+            if 'InfiniteDilutionReactor' in pck_system['reactor'].keys():
+                print('* InfiniteDilutionReactor')
+                reactor = InfiniteDilutionReactor()
+            elif 'CSTReactor' in pck_system['reactor'].keys():
+                print('* CSTReactor')
+                reactor = CSTReactor(**pck_system['reactor']['CSTReactor'])
+            else:
+                raise TypeError('Unknown reactor option, please choose InfiniteDilutionReactor or CSTReactor.')
         sim_system.add_reactor(reactor=reactor)
         sim_system.names_to_indices()
     else:

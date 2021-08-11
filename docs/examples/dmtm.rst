@@ -227,7 +227,7 @@ With this information, we can specify the states::
         },...
     }
 
-The ``gas_data`` entry for states *s2OCH4* and *sOCH4* specifies that 2/3 of the gas entropy should be retained. 
+The ``gas_data`` entry for states *s2OCH4* and *sOCH4* (adsorbed methane) specifies that 2/3 of the gas entropy should be retained. 
 
 Next, let's consider reactions. The DMTM mechanism is specified by a sequence of reactions (assumed to be Arrhenius-type), adsorptions and desorptions. For each, we need to provide the reaction type, ``reac_type``, the ``area`` of the catalyst site (here, taken to be the area of the pore), and lists of ``reactants``, ``TS`` (transition states, if not barrierless) and ``products``. For barrierless reactions, the ``TS`` should be set to ``null`` in the input file. Thus the reactions section of our input file::
 
@@ -490,7 +490,7 @@ Alternately, the function ``run_temperatures`` can be used to integrate the ODEs
     
     sim_system = read_from_input_file()
     
-    temperatures = np.linspace(start=400, stop=800, num=20, endpoint=True)
+    temperatures = np.linspace(start=400, stop=800, num=17, endpoint=True)
     
     run_temperatures(sim_system=sim_system,
                      temperatures=temperatures,
@@ -541,7 +541,7 @@ The preset functions also include the function ``run_energy_span_temperatures`` 
     
     sim_system = read_from_input_file()
     
-    temperatures = np.linspace(start=400, stop=800, num=20, endpoint=True)
+    temperatures = np.linspace(start=400, stop=800, num=17, endpoint=True)
     
     run_energy_span_temperatures(sim_system=sim_system,
                                  temperatures=temperatures,
@@ -559,7 +559,7 @@ The preset functions ``save_state_energies``, ``save_energies`` and ``save_energ
     
     sim_system = read_from_input_file()
     
-    temperatures = np.linspace(start=400, stop=800, num=20, endpoint=True)
+    temperatures = np.linspace(start=400, stop=800, num=17, endpoint=True)
     
     save_state_energies(sim_system=sim_system,
                         csv_path='outputs/')

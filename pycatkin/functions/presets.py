@@ -1,3 +1,4 @@
+from pycatkin.classes.scaling import *
 from pycatkin.constants.physical_constants import *
 import matplotlib.pyplot as plt
 import numpy as np
@@ -43,7 +44,7 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
         final_time = sim_system.params['times'][-1]
         if steady_state_solve:
             # while (max(abs(sim_system.species_odes(sim_system.solution[-1])[sim_system.dynamic_indices])) > 1.0e-10
-            #        and sim_system.params['times'][-1] < 1.0e14):
+            #        and sim_system.params['times'][-1] < 1.0e15):
             #     print('System not steady, increasing final time to %1.2e s' % sim_system.params['times'][-1])
             #     sim_system.params['times'][-1] *= 2.0
             #     run(sim_system=sim_system)
@@ -139,7 +140,7 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
         rheader = ['Temperature (K)'] + list(sim_system.reactions.keys())
         cheader = ['Temperature (K)'] + [s for i, s in enumerate(sim_system.snames)
                                          if i in sim_system.adsorbate_indices]
-        pheader = ['Temperature (K)'] + [s for i, s in enumerate(sim_system.snames)
+        pheader = ['Temperature (K)'] + ['p' + s + ' (bar)' for i, s in enumerate(sim_system.snames)
                                          if i in sim_system.gas_indices]
 
         df = pd.DataFrame(np.concatenate((np.reshape(temperatures, (len(temperatures), 1)),
@@ -174,7 +175,8 @@ def draw_states(sim_system, rotation='', fig_path=None):
             print('Directory does not exist. Will try creating it...')
             os.mkdir(fig_path)
     for s in sim_system.snames:
-        sim_system.states[s].view_atoms(rotation=rotation, path=fig_path)
+        if not isinstance(sim_system.states[s], Scaling):
+            sim_system.states[s].view_atoms(rotation=rotation, path=fig_path)
 
 
 def draw_energy_landscapes(sim_system, etype='free', eunits='eV', legend_location='upper right',
@@ -363,3 +365,30 @@ def compare_energy_landscapes(sim_systems, etype='free', eunits='eV', legend_loc
 
     if fig_path is not None:
         fig.savefig(fig_path + etype + '_energy_landscapes.png', format='png', dpi=600)
+
+
+def plot_data_simple(fig=None, ax=None, xdata=None, ydata=None, label=None,
+                     linestyle='-', color='k',
+                     xlabel=None, ylabel=None, title=None, addlegend=False, legendloc='best',
+                     fig_path=None, fig_name='figure'):
+    """Generic function to plot a set of data and save the figure.
+
+     """
+
+    if fig_path is not None and fig_path != '':
+        if not os.path.isdir(fig_path):
+            print('Directory does not exist. Will try creating it...')
+            os.mkdir(fig_path)
+    if fig is None or ax is None:
+        fig, ax = plt.subplots(figsize=(3.2, 3.2))
+    ax.plot(xdata, ydata, linestyle, color=color, label=label)
+    ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
+    if addlegend:
+        ax.legend(loc=legendloc, frameon=False)
+    fig.tight_layout()
+
+    if fig_path is not None:
+        fig.savefig(fig_path + fig_name + '.png', format='png', dpi=600)
+
+    return fig, ax
+

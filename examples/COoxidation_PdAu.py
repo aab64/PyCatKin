@@ -248,7 +248,15 @@ for v, considered_reactions in enumerate(reactionsets):
         reactor = CSTReactor(residence_time=4.5, volume=180.0e-9, catalyst_area=Acat_Pd / 3250)
     else:
         reactor = CSTReactor(residence_time=4.5, volume=180.0e-9, catalyst_area=Acat_Au / 1250)
-    sys = System(reactions={key: reactions[key] for key in considered_reactions}, reactor=reactor)
+    # sys = System(reactions={key: reactions[key] for key in considered_reactions}, reactor=reactor)
+
+    sys = System()
+    for s in states.keys():
+        sys.add_state(state=states[s])
+    for r in considered_reactions:
+        sys.add_reaction(reaction=reactions[r])
+    sys.add_reactor(reactor=reactor)
+    sys.names_to_indices()
 
     cleanname = [[reacs[i].name for i in range(len(reacs)) if 'Clean' in reacs[i].name]
                  for reacs in [reactions[k].reactants for k in considered_reactions]][0][0]

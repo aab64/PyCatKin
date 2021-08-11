@@ -1,0 +1,127 @@
+{
+    "states":
+    {
+        "s":
+        {
+            "state_type": "surface",
+            "path": "data/Pd111"
+        },
+        "sCO":
+        {
+            "state_type": "adsorbate",
+            "path": "data/CO.Pd111"
+        },
+        "sO":
+        {
+            "state_type": "adsorbate",
+            "path": "data/O.Pd111"
+        },
+        "CO":
+        {
+            "state_type": "gas",
+            "sigma": 1,
+            "path": "data/CO"
+        },
+        "O2":
+        {
+            "state_type": "gas",
+            "sigma": 2,
+            "path": "data/O2"
+        },
+        "CO2":
+        {
+            "state_type": "gas",
+            "sigma": 2,
+            "path": "data/CO2"
+        }
+    },
+    
+    "scaling relation states":
+    {
+        "SRTS":
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 0.7,
+                "intercept": 0.02
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "CO_ads",
+                    "multiplicity": 1.0
+                },
+                "O":
+                {
+                    "reaction": "O2_ads",
+                    "multiplicity": 0.5
+                }
+            },
+            "dereference": true
+        }
+    },
+    
+    "reactions":
+    {
+        "CO_ads":
+        {
+            "reac_type": "adsorption",
+            "area": 1.3e-19,
+            "reactants": ["CO", "s"],
+            "TS": null,
+            "products": ["sCO"]
+        },
+        "O2_ads":
+        {
+            "reac_type": "adsorption",
+            "area": 1.3e-19,
+            "reactants": ["O2", "s", "s"],
+            "TS": null,
+            "products": ["sO", "sO"]
+        },
+        "CO_ox":
+        {
+            "reac_type": "Arrhenius",
+            "area": 5.1e-19,
+            "reactants": ["sCO", "sO"],
+            "TS": ["SRTS"],
+            "products": ["s", "s", "CO2"],
+            "reversible": false           
+        }
+    },
+    
+    "reactor":
+    {
+        "CSTReactor":
+        {
+            "residence_time": 4.5,
+            "volume": 180.0e-9,
+            "catalyst_area": 3.82e-09
+        }
+    },
+    
+    "system":
+    {
+        "times": [0.0, 3600.0],
+        "T": 423.0,
+        "p": 1.0e5,
+        "start_state":
+        {
+            "s": 1.0
+        },
+        "inflow_state":
+        {
+            "O2": 0.08,
+            "CO": 0.02
+        },
+        "verbose": false,
+        "use_jacobian": true,
+        "ode_solver": "ode",
+        "nsteps": 1.0e5,
+        "rtol": 1.0e-8,
+        "atol": 1.0e-10,
+        "xtol": 1.0e-12
+    }
+}
