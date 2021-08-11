@@ -16,7 +16,7 @@ and is built automatically after each push.
 
 The following papers used PyCatKin:
 
-- [Boje, *et al.*, *ChemRxiv* **(2020)**](https://doi.org/10.26434/chemrxiv.13118420.v2)  
+- [Boje, *et al.*, *Catal. Sci. Technol.* **(2021)**](https://doi.org/10.1039/D1CY00419K)  
 - [Tiburski, *et al.*, *ACS Nano* **(2021)**](https://pubs.acs.org/doi/10.1021/acsnano.1c01537)  
 - [Engedahl, *et al.*, *J. Phys. Chem. C* **(2021)**](https://doi.org/10.1021/acs.jpcc.1c04062)  
 
@@ -30,4 +30,4 @@ Please post any issues on the Git repo, and we will try to reply ASAP.
 
 
 ---  
-2021/06/23
+2021/08/11
