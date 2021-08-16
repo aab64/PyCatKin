@@ -23,6 +23,8 @@ The following papers used PyCatKin:
 ## Developers
 
 - Astrid Boje, Chalmers University of Technology, Sweden.
+- Henrik Str&ouml;m, Chalmers University of Technology, Sweden.
+- Anders Hellman, Chalmers University of Technology, Sweden.
 
 ## Troubles / Ideas / Questions?
 
