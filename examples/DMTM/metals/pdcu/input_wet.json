@@ -4,175 +4,181 @@
         "2s-h2o":
         {
             "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/2s-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/2s-h2o_frequencies.dat"
         },
         "s-pair-h2o":
         {
             "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/s-pair-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/s-pair-h2o_frequencies.dat"
         },
         "sO2s-h2o":
         {
             "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/sO2s-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/sO2s-h2o_frequencies.dat"
         },
         "sOOs-h2o":
         {
             "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/sOOs-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/sOOs-h2o_frequencies.dat"
         },
         "s2Och4-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
             {
-                "fraction": [0.67, 0.67],
-                "state": ["ch4", "h2o"]
-            }
+                "fraction": [0.67],
+                "state": ["ch4"]
+            },
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/s2Och4-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/s2Och4-h2o_frequencies.dat"
         },
         "sOsCH3OH-h2o":
         {
             "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/sOsCH3OH-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/sOsCH3OH-h2o_frequencies.dat"
         },
         "sO-h2o":
         {
             "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/sO-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/sO-h2o_frequencies.dat"
         },
         "sOch4-h2o":
         {
             "state_type": "adsorbate",
             "gasdata":
             {
-                "fraction": [0.67, 0.67],
-                "state": ["ch4", "h2o"]
-            }
+                "fraction": [0.67],
+                "state": ["ch4"]
+            },
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/sOch4-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/sOch4-h2o_frequencies.dat"
         },
         "sOHsCH3-h2o":
         {
             "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/sOHsCH3-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/sOHsCH3-h2o_frequencies.dat"
         },
         "sCH3OH-h2o":
         {
             "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/sCH3OH-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/sCH3OH-h2o_frequencies.dat"
         },
         "s-h2o":
         {
             "state_type": "adsorbate",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/s-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/s-h2o_frequencies.dat"
         },
         "ts1-h2o":
         {
             "state_type": "TS",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/ts1-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/ts1-h2o_frequencies.dat"
         },
         "ts2-h2o":
         {
             "state_type": "TS",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/ts2-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/ts2-h2o_frequencies.dat"
         },
         "rad1-h2o":
         {
             "state_type": "TS",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/rad1-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/rad1-h2o_frequencies.dat"
         },
         "rad2-h2o":
         {
             "state_type": "TS",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/rad2-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/rad2-h2o_frequencies.dat"
         },
         "ts5-h2o":
         {
             "state_type": "TS",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/ts5-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/ts5-h2o_frequencies.dat"
         },
         "ts6-h2o":
         {
             "state_type": "TS",
-            "gasdata":
-            {
-                "fraction": [0.67],
-                "state": ["h2o"]
-            }
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/wetdata/energies/ts6-h2o_energy.dat",
+            "vibs_path": "pdcu/wetdata/vibrations/ts6-h2o_frequencies.dat"
         },
         "o2":
         {
             "state_type": "gas",
-            "sigma": 2
+            "sigma": 2,
+            "mass": 31.998,
+            "inertia": [0, 12.16520785, 12.16520785],
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/data/energies/o2_energy.dat",
+            "vibs_path": "pdcu/data/vibrations/o2_frequencies.dat"
         },
         "ch4":
         {
             "state_type": "gas",
-            "sigma": 12
+            "sigma": 12,
+            "mass": 16.043,
+            "inertia": [3.24529923, 3.24529923, 3.24529923],
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/data/energies/ch4_energy.dat",
+            "vibs_path": "pdcu/data/vibrations/ch4_frequencies.dat"
         },
         "ch3oh":
         {
             "state_type": "gas",
-            "sigma": 1
-        },
-        "h2o":
-        {
-            "state_type": "gas",
-            "sigma": 2
+            "sigma": 1,
+            "mass": 32.042,
+            "inertia": [4.02482703, 20.67354772, 21.42593813],
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "pdcu/data/energies/ch3oh_energy.dat",
+            "vibs_path": "pdcu/data/vibrations/ch3oh_frequencies.dat"
         }
     },
     
@@ -272,7 +278,7 @@
     
     "system":
     {
-        "times": [0.0, 1.0e6],
+        "times": [0.0, 1.0e10],
         "T": 400.0,
         "p": 100000.0,
         "start_state":
@@ -284,8 +290,10 @@
         },
         "verbose": false,
         "use_jacobian": true,
-        "atol": 1.0e-8,
-        "rtol": 1.0e-6
+        "atol": 1.0e-10,
+        "rtol": 1.0e-8,
+        "nsteps": 1.0e6,
+        "ode_solver": "ode"
     },
     
     "energy landscapes":
@@ -315,7 +323,14 @@
                 ["ts1-h2o", "ch3oh", "ch3oh"],
                 ["2s-h2o", "ch3oh", "ch3oh"]
             ],
-            "labels": null
+            "labels":
+            [
+                "2s", "ts1", "s-pair",
+                "sO2s", "ts2", "sOOs",
+                "s2Och4", "rad1", "sOsCH3OH", "sO",
+                "sOch4", "rad2", "sOHsCH3", "ts5", "sCH3OH",
+                "s", "ts6", "s-pair.1", "ts1.1", "2s.1"
+            ]
         }
     }
 }

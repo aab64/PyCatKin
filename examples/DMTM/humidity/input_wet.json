@@ -6,40 +6,40 @@
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/2CuH2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/2CuH2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/2CuH2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/2CuH2O_frequencies.dat"
         },
         "Cu-pairH2O":
         {
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/Cu-pairH2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/Cu-pairH2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/Cu-pairH2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/Cu-pairH2O_frequencies.dat"
         },
         "CuO2CuH2O":
         {
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/CuO2CuH2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/CuO2CuH2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/CuO2CuH2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/CuO2CuH2O_frequencies.dat"
         },
         "CuOOCuH2O":
         {
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/CuOOCuH2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/CuOOCuH2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/CuOOCuH2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/CuOOCuH2O_frequencies.dat"
         },
         "s2OCH4H2O":
         {
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/s2OCH4H2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/s2OCH4H2O_frequencies.dat",
+            "path": "humidity/wetdata/energies/s2OCH4H2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/s2OCH4H2O_frequencies.dat",
             "gasdata":
             {
                 "fraction": [0.67],
@@ -51,24 +51,24 @@
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/sOsCH3OHH2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/sOsCH3OHH2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/sOsCH3OHH2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/sOsCH3OHH2O_frequencies.dat"
         },
         "sOH2O":
         {
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/sOH2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/sOH2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/sOH2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/sOH2O_frequencies.dat"
         },
         "sOCH4H2O":
         {
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/sOCH4H2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/sOCH4H2O_frequencies.dat",
+            "path": "humidity/wetdata/energies/sOCH4H2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/sOCH4H2O_frequencies.dat",
             "gasdata":
             {
                 "fraction": [0.67],
@@ -80,64 +80,64 @@
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/sOHsCH3H2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/sOHsCH3H2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/sOHsCH3H2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/sOHsCH3H2O_frequencies.dat"
         },
         "sCH3OHH2O":
         {
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/sCH3OHH2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/sCH3OHH2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/sCH3OHH2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/sCH3OHH2O_frequencies.dat"
         },
         "sH2O":
         {
             "state_type": "adsorbate",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/sH2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/sH2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/sH2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/sH2O_frequencies.dat"
         },
         "TS1H2O":
         {
             "state_type": "TS",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/TS1H2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/TS1H2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/TS1H2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/TS1H2O_frequencies.dat"
         },
         "TS2H2O":
         {
             "state_type": "TS",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/TS2H2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/TS2H2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/TS2H2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/TS2H2O_frequencies.dat"
         },
         "TS3H2O":
         {
             "state_type": "TS",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/TS3H2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/TS3H2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/TS3H2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/TS3H2O_frequencies.dat"
         },
         "TS4H2O":
         {
             "state_type": "TS",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/TS4H2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/TS4H2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/TS4H2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/TS4H2O_frequencies.dat"
         },
         "TS5H2O":
         {
             "state_type": "TS",
             "energy_source": "datafile",
             "freq_source": "datafile",
-            "path": "wetdata/energies/TS5H2O_energy.dat",
-            "vibs_path": "wetdata/vibrations/TS5H2O_frequencies.dat"
+            "path": "humidity/wetdata/energies/TS5H2O_energy.dat",
+            "vibs_path": "humidity/wetdata/vibrations/TS5H2O_frequencies.dat"
         },
         "O2":
         {

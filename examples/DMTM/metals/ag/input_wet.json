@@ -1,0 +1,325 @@
+{
+    "states":
+    {
+        "2s-h2o":
+        {
+            "state_type": "adsorbate",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/2s-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/2s-h2o_frequencies.dat"
+        },
+        "s-pair-h2o":
+        {
+            "state_type": "adsorbate",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/s-pair-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/s-pair-h2o_frequencies.dat"
+        },
+        "sO2s-h2o":
+        {
+            "state_type": "adsorbate",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/sO2s-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/sO2s-h2o_frequencies.dat"
+        },
+        "sOOs-h2o":
+        {
+            "state_type": "adsorbate",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/sOOs-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/sOOs-h2o_frequencies.dat"
+        },
+        "s2Och4-h2o":
+        {
+            "state_type": "adsorbate",
+            "gasdata":
+            {
+                "fraction": [0.67],
+                "state": ["ch4"]
+            },
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/s2Och4-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/s2Och4-h2o_frequencies.dat"
+        },
+        "sOsCH3OH-h2o":
+        {
+            "state_type": "adsorbate",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/sOsCH3OH-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/sOsCH3OH-h2o_frequencies.dat"
+        },
+        "sO-h2o":
+        {
+            "state_type": "adsorbate",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/sO-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/sO-h2o_frequencies.dat"
+        },
+        "sOch4-h2o":
+        {
+            "state_type": "adsorbate",
+            "gasdata":
+            {
+                "fraction": [0.67],
+                "state": ["ch4"]
+            },
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/sOch4-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/sOch4-h2o_frequencies.dat"
+        },
+        "sOHsCH3-h2o":
+        {
+            "state_type": "adsorbate",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/sOHsCH3-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/sOHsCH3-h2o_frequencies.dat"
+        },
+        "sCH3OH-h2o":
+        {
+            "state_type": "adsorbate",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/sCH3OH-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/sCH3OH-h2o_frequencies.dat"
+        },
+        "s-h2o":
+        {
+            "state_type": "adsorbate",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/s-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/s-h2o_frequencies.dat"
+        },
+        "ts1-h2o":
+        {
+            "state_type": "TS",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/ts1-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/ts1-h2o_frequencies.dat"
+        },
+        "ts2-h2o":
+        {
+            "state_type": "TS",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/ts2-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/ts2-h2o_frequencies.dat"
+        },
+        "rad1-h2o":
+        {
+            "state_type": "TS",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/rad1-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/rad1-h2o_frequencies.dat"
+        },
+        "rad2-h2o":
+        {
+            "state_type": "TS",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/rad2-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/rad2-h2o_frequencies.dat"
+        },
+        "ts5-h2o":
+        {
+            "state_type": "TS",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/ts5-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/ts5-h2o_frequencies.dat"
+        },
+        "ts6-h2o":
+        {
+            "state_type": "TS",
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/wetdata/energies/ts6-h2o_energy.dat",
+            "vibs_path": "ag/wetdata/vibrations/ts6-h2o_frequencies.dat"
+        },
+        "o2":
+        {
+            "state_type": "gas",
+            "sigma": 2,
+            "mass": 31.998,
+            "inertia": [0, 12.16520785, 12.16520785],
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/data/energies/o2_energy.dat",
+            "vibs_path": "ag/data/vibrations/o2_frequencies.dat"
+        },
+        "ch4":
+        {
+            "state_type": "gas",
+            "sigma": 12,
+            "mass": 16.043,
+            "inertia": [3.24529923, 3.24529923, 3.24529923],
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/data/energies/ch4_energy.dat",
+            "vibs_path": "ag/data/vibrations/ch4_frequencies.dat"
+        },
+        "ch3oh":
+        {
+            "state_type": "gas",
+            "sigma": 1,
+            "mass": 32.042,
+            "inertia": [4.02482703, 20.67354772, 21.42593813],
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "ag/data/energies/ch3oh_energy.dat",
+            "vibs_path": "ag/data/vibrations/ch3oh_frequencies.dat"
+        }
+    },
+    
+    "reactions":
+    {
+        "r0":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["2s-h2o"],
+            "TS": ["ts1-h2o"],
+            "products": ["s-pair-h2o"]
+        },
+        "r1":
+        {
+            "reac_type": "adsorption",
+            "area": 1.444e-19,
+            "reactants": ["s-pair-h2o", "o2"],
+            "TS": null,
+            "products": ["sO2s-h2o"]
+        },
+        "r3":
+        {
+            "reac_type": "adsorption",
+            "area": 1.444e-19,
+            "reactants": ["sO2s-h2o", "ch4"],
+            "TS": null,
+            "products": ["s2Och4-h2o"]
+        },
+        "r4":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["s2Och4-h2o"],
+            "TS": ["rad1-h2o"],
+            "products": ["sOsCH3OH-h2o"]
+        },
+        "r5":
+        {
+            "reac_type": "desorption",
+            "area": 1.444e-19,
+            "reactants": ["sOsCH3OH-h2o"],
+            "TS": null,
+            "products": ["sO-h2o", "ch3oh"]
+        },
+        "r6":
+        {
+            "reac_type": "adsorption",
+            "area": 1.444e-19,
+            "reactants": ["sO-h2o", "ch4"],
+            "TS": null,
+            "products": ["sOch4-h2o"]
+        },
+        "r7":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["sOch4-h2o"],
+            "TS": null,
+            "products": ["sOHsCH3-h2o"]
+        },
+        "r8":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["sOHsCH3-h2o"],
+            "TS": ["ts5-h2o"],
+            "products": ["sCH3OH-h2o"]
+        },
+        "r9":
+        {
+            "reac_type": "desorption",
+            "area": 1.444e-19,
+            "reactants": ["sCH3OH-h2o"],
+            "TS": null,
+            "products": ["s-h2o", "ch3oh"]
+        },
+        "r10":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["s-h2o"],
+            "TS": ["ts6-h2o"],
+            "products": ["s-pair-h2o"]
+        }
+    },
+    
+    "reactor": "InfiniteDilutionReactor",
+    
+    "system":
+    {
+        "times": [0.0, 1.0e10],
+        "T": 400.0,
+        "p": 100000.0,
+        "start_state":
+        {
+            "o2": 0.1,
+            "ch4": 0.02,
+            "ch3oh": 1.0e-11,
+            "2s-h2o": 1.0
+        },
+        "verbose": false,
+        "use_jacobian": true,
+        "atol": 1.0e-10,
+        "rtol": 1.0e-8,
+        "nsteps": 1.0e6,
+        "ode_solver": "ode"
+    },
+    
+    "energy landscapes":
+    {
+        "full_pes":
+        {
+            "minima":
+            [
+                ["2s-h2o", "o2", "ch4", "ch4"],
+                ["ts1-h2o", "o2", "ch4", "ch4"],
+                ["s-pair-h2o", "o2", "ch4", "ch4"],
+                ["sO2s-h2o", "ch4", "ch4"],
+                ["s2Och4-h2o", "ch4"],
+                ["rad1-h2o", "ch4"],
+                ["sOsCH3OH-h2o", "ch4"],
+                ["sO-h2o", "ch4", "ch3oh"],
+                ["sOch4-h2o", "ch3oh"],
+                ["sOHsCH3-h2o", "ch3oh"],
+                ["ts5-h2o", "ch3oh"],
+                ["sCH3OH-h2o", "ch3oh"],
+                ["s-h2o", "ch3oh", "ch3oh"],
+                ["ts6-h2o", "ch3oh", "ch3oh"],
+                ["s-pair-h2o", "ch3oh", "ch3oh"],
+                ["ts1-h2o", "ch3oh", "ch3oh"],
+                ["2s-h2o", "ch3oh", "ch3oh"]
+            ],
+            "labels":
+            [
+                "2s", "ts1", "s-pair",
+                "sO2s",
+                "s2Och4", "rad1", "sOsCH3OH", "sO",
+                "sOch4", "sOHsCH3", "ts5", "sCH3OH",
+                "s", "ts6", "s-pair.1", "ts1.1", "2s.1"
+            ]
+        }
+    }
+}

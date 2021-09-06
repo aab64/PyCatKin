@@ -578,6 +578,14 @@
             "reactants": ["sH2O"],
             "TS": ["TS5H2O"],
             "products": ["Cu-pairH2O"]
+        },
+        "r22":
+        {
+            "reac_type": "adsorption",
+            "area": 1.4e-19,
+            "reactants": ["2Cu", "H2O"],
+            "TS": null,
+            "products": ["2CuH2O"]
         }
     },
     

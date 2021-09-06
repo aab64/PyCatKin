@@ -1,0 +1,662 @@
+{
+    "states":
+    {
+        "sO":
+        {
+            "state_type": "adsorbate"
+        },
+        "sOsCH3OH0":
+        {
+            "state_type": "adsorbate"
+        },
+        "2s_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "s-pair_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "sO2s_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "sOOs_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "s2Och4_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "sOsCH3OH_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "sO_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "sOch4_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "sOHsCH3_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "sCH3OH_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "s_mk":
+        {
+            "state_type": "adsorbate"
+        },
+        "ts1_mk":
+        {
+            "state_type": "TS"
+        },
+        "ts2_mk":
+        {
+            "state_type": "TS"
+        },
+        "rad1_mk":
+        {
+            "state_type": "TS"
+        },
+        "rad2_mk":
+        {
+            "state_type": "TS"
+        },
+        "ts5_mk":
+        {
+            "state_type": "TS"
+        },
+        "ts6_mk":
+        {
+            "state_type": "TS"
+        },
+        "o2_mk":
+        {
+            "state_type": "gas",
+            "sigma": 2,
+            "mass": 31.998,
+            "inertia": [0, 12.16520785, 12.16520785],
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "../data/energies/O2_energy.dat",
+            "vibs_path": "../data/vibrations/O2_frequencies.dat"
+        },
+        "ch4_mk":
+        {
+            "state_type": "gas",
+            "sigma": 12,
+            "mass": 16.043,
+            "inertia": [3.24529923, 3.24529923, 3.24529923],
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "../data/energies/CH4_energy.dat",
+            "vibs_path": "../data/vibrations/CH4_frequencies.dat"
+        },
+        "ch3oh_mk":
+        {
+            "state_type": "gas",
+            "sigma": 1,
+            "mass": 32.042,
+            "inertia": [4.02482703, 20.67354772, 21.42593813],
+            "energy_source": "datafile",
+            "freq_source": "datafile",
+            "path": "../data/energies/CH3OH_energy.dat",
+            "vibs_path": "../data/vibrations/CH3OH_frequencies.dat"
+        }
+    },
+
+    "scaling relation states":
+    {
+        "2s":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.0,
+                "intercept": 0.0
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "s-pair":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.0894,
+                "intercept": -0.0524
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "sO2s":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.889,
+                "intercept": 0.773
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "sOOs":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 1.40,
+                "intercept": 2.44
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "s2Och4":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 1.09,
+                "intercept": 0.947
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "sOsCH3OH":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.951,
+                "intercept": -1.25
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "sOch4":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 1.03,
+                "intercept": -0.196
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "sOHsCH3":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.739,
+                "intercept": -2.01
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "sCH3OH":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.288,
+                "intercept": -3.54
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "s":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.344,
+                "intercept": -2.02
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "s-pair.1":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.0894,
+                "intercept": -2.72
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "ts1":
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 0.0174,
+                "intercept": 0.359
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "ts2":
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 0.963,
+                "intercept": 2.09
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "rad1":
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 0.929,
+                "intercept": 1.22
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "rad2":
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 0.761,
+                "intercept": 0.145
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "ts5":
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 0.361,
+                "intercept": -1.72
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        },
+        "ts6":
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 0.0846,
+                "intercept": -1.91
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "rsO"
+                }
+            },
+            "dereference": false
+        }
+    },
+
+    "reaction derived reactions":
+    {
+        "r0_rdr":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["2s_mk"],
+            "TS": ["ts1_mk"],
+            "products": ["s-pair_mk"],
+            "base_reaction": "r0"
+        },
+        "r1_rdr":
+        {
+            "reac_type": "adsorption",
+            "area": 1.444e-19,
+            "reactants": ["s-pair_mk", "o2_mk"],
+            "TS": null,
+            "products": ["sO2s_mk"],
+            "base_reaction": "r1"
+        },
+        "r2_rdr":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["sO2s_mk"],
+            "TS": ["ts2_mk"],
+            "products": ["sOOs_mk"],
+            "base_reaction": "r2"
+        },
+        "r3_rdr":
+        {
+            "reac_type": "adsorption",
+            "area": 1.444e-19,
+            "reactants": ["sOOs_mk", "ch4_mk"],
+            "TS": null,
+            "products": ["s2Och4_mk"],
+            "base_reaction": "r3"
+        },
+        "r4_rdr":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["s2Och4_mk"],
+            "TS": ["rad1_mk"],
+            "products": ["sOsCH3OH_mk"],
+            "base_reaction": "r4"
+        },
+        "r5_rdr":
+        {
+            "reac_type": "desorption",
+            "area": 1.444e-19,
+            "reactants": ["sOsCH3OH_mk"],
+            "TS": null,
+            "products": ["sO_mk", "ch3oh_mk"],
+            "base_reaction": "r5"
+        },
+        "r6_rdr":
+        {
+            "reac_type": "adsorption",
+            "area": 1.444e-19,
+            "reactants": ["sO_mk", "ch4_mk"],
+            "TS": null,
+            "products": ["sOch4_mk"],
+            "base_reaction": "r6"
+        },
+        "r7_rdr":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["sOch4_mk"],
+            "TS": ["rad2_mk"],
+            "products": ["sOHsCH3_mk"],
+            "base_reaction": "r7"
+        },
+        "r8_rdr":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["sOHsCH3_mk"],
+            "TS": ["ts5_mk"],
+            "products": ["sCH3OH_mk"],
+            "base_reaction": "r8"
+        },
+        "r9_rdr":
+        {
+            "reac_type": "desorption",
+            "area": 1.444e-19,
+            "reactants": ["sCH3OH_mk"],
+            "TS": null,
+            "products": ["s_mk", "ch3oh_mk"],
+            "base_reaction": "r9"
+        },
+        "r10_rdr":
+        {
+            "reac_type": "Arrhenius",
+            "area": 1.444e-19,
+            "reactants": ["s_mk"],
+            "TS": ["ts6_mk"],
+            "products": ["s-pair_mk"],
+            "base_reaction": "r10"
+        }
+    },
+
+    "reactions":
+    {
+        "r0":
+        {
+            "reac_type": "base",
+            "reactants": ["2s"],
+            "TS": ["ts1"],
+            "products": ["s-pair"]
+        },
+        "r1":
+        {
+            "reac_type": "base",
+            "reactants": ["s-pair"],
+            "TS": null,
+            "products": ["sO2s"]
+        },
+        "r2":
+        {
+            "reac_type": "base",
+            "reactants": ["sO2s"],
+            "TS": ["ts2"],
+            "products": ["sOOs"]
+        },
+        "r3":
+        {
+            "reac_type": "base",
+            "reactants": ["sOOs"],
+            "TS": null,
+            "products": ["s2Och4"]
+        },
+        "r4":
+        {
+            "reac_type": "base",
+            "reactants": ["s2Och4"],
+            "TS": ["rad1"],
+            "products": ["sOsCH3OH"]
+        },
+        "r5":
+        {
+            "reac_type": "base",
+            "reactants": ["sOsCH3OH"],
+            "TS": null,
+            "products": ["sO"]
+        },
+        "r6":
+        {
+            "reac_type": "base",
+            "reactants": ["sO"],
+            "TS": null,
+            "products": ["sOch4"]
+        },
+        "r7":
+        {
+            "reac_type": "base",
+            "reactants": ["sOch4"],
+            "TS": ["rad2"],
+            "products": ["sOHsCH3"]
+        },
+        "r8":
+        {
+            "reac_type": "base",
+            "reactants": ["sOHsCH3"],
+            "TS": ["ts5"],
+            "products": ["sCH3OH"]
+        },
+        "r9":
+        {
+            "reac_type": "base",
+            "reactants": ["sCH3OH"],
+            "TS": null,
+            "products": ["s"]
+        },
+        "r10":
+        {
+            "reac_type": "base",
+            "reactants": ["s"],
+            "TS": ["ts6"],
+            "products": ["s-pair.1"]
+        }
+    },
+
+    "manual reactions":
+    {
+        "rsO":
+        {
+            "reac_type": "ghost",
+            "area": 1.444e-19,
+            "reactants": ["sOsCH3OH0"],
+            "TS": null,
+            "products": ["sO"],
+            "scaling": 0.0
+        }
+    },
+    
+    "reactor": "InfiniteDilutionReactor",
+    
+    "system":
+    {
+        "times": [0.0, 1.0e12],
+        "T": 500.0,
+        "p": 100000.0,
+        "start_state":
+        {
+            "o2_mk": 0.1,
+            "ch4_mk": 0.02,
+            "ch3oh_mk": 1.0e-11,
+            "2s_mk": 1.0
+        },
+        "verbose": false,
+        "use_jacobian": true,
+        "atol": 1.0e-8,
+        "rtol": 1.0e-6,
+        "ode_solver": "ode",
+        "nsteps": 1e6
+    },
+
+    "energy landscapes":
+    {
+        "full_pes":
+        {
+            "minima":
+            [
+                ["2s"],
+                ["ts1"],
+                ["s-pair"],
+                ["sO2s"],
+                ["ts2"],
+                ["sOOs"],
+                ["s2Och4"],
+                ["rad1"],
+                ["sOsCH3OH"],
+                ["sO"],
+                ["sOch4"],
+                ["rad2"],
+                ["sOHsCH3"],
+                ["ts5"],
+                ["sCH3OH"],
+                ["s"],
+                ["ts6"],
+                ["s-pair.1"]
+            ],
+            "labels":
+            [
+                "2s", "ts1", "s-pair",
+                "sO2s", "ts2", "sOOs",
+                "s2Och4", "rad1", "sOsCH3OH", "sO",
+                "sOch4", "rad2", "sOHsCH3", "ts5", "sCH3OH",
+                "s", "ts6", "s-pair.1"
+            ]
+        }
+    }
+}
