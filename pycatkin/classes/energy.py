@@ -254,13 +254,13 @@ class Energy:
 
         drxn = self.energy_landscape[etype][max(list(self.energy_landscape[etype].keys()))] * eVtokJ * 1.0e3
 
-        XTOFTi = np.zeros((nTi, nIj))
+        XTOFTi = np.zeros((nTi, nIj - 1))
         ctri = 0
         ctrj = 0
         for i in range(nTi + nIj):
             if self.energy_landscape['isTS'][i]:
                 Ti = self.energy_landscape[etype][i] * eVtokJ * 1.0e3
-                for j in range(nTi + nIj):
+                for j in range(1, nTi + nIj):
                     if not self.energy_landscape['isTS'][j]:
                         Ij = self.energy_landscape[etype][j] * eVtokJ * 1.0e3
                         dGij = drxn if i >= j else 0.0
@@ -275,14 +275,14 @@ class Energy:
                  for i in range(nTi)]
         num_j = [sum([(np.exp(vals / (R * T)) / den)
                       for vals in XTOFTi[:, j]])
-                 for j in range(nIj)]
+                 for j in range(nIj - 1)]
 
         iTDTS = [i for i in range(len(num_i)) if num_i[i] == max(num_i)][0]
         iTDTS = [k for k in self.energy_landscape['isTS'].keys()
                  if self.energy_landscape['isTS'][k] == 1][iTDTS]
         iTDI = [j for j in range(len(num_j)) if num_j[j] == max(num_j)][0]
-        iTDI = [k for k in self.energy_landscape['isTS'].keys()
-                 if self.energy_landscape['isTS'][k] == 0][iTDI]
+        iTDI = [k for k in list(self.energy_landscape['isTS'].keys())[1::]
+                if self.energy_landscape['isTS'][k] == 0][iTDI]
 
         TDTS = self.labels[iTDTS]
         TDI = self.labels[iTDI]
@@ -292,7 +292,7 @@ class Energy:
         lTi = [self.labels[lab] for lab in self.energy_landscape['isTS'].keys()
                if self.energy_landscape['isTS'][lab] == 1]
         lIj = [self.labels[lab] for lab in self.energy_landscape['isTS'].keys()
-               if self.energy_landscape['isTS'][lab] == 0][0:-1]
+               if self.energy_landscape['isTS'][lab] == 0][1:-1]
 
         Espan = self.energy_landscape[etype][iTDTS] - self.energy_landscape[etype][iTDI]
         Eapp = np.log((h * tof) / (kB * T)) * (-R * T) * 1.0e-3
