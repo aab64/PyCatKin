@@ -273,11 +273,6 @@ class ReactionDerivedReaction(Reaction):
                                                       products=products, TS=TS, area=area, name=name, scaling=scaling)
         assert (base_reaction is not None)
         self.base_reaction = base_reaction
-        if reversible != base_reaction.reversible:
-            revcheck = lambda s: 'reversible' if s else 'irreversible'
-            print('Warning! ReactionDerivedReaction is defined as %s but base Reaction is %s. Will use %s' %
-                  (revcheck(reversible), revcheck(base_reaction.reversible), revcheck(base_reaction.reversible)))
-            self.reversible = base_reaction.reversible
 
     def calc_reaction_energy(self, T, p, verbose=False):
         """Computes reaction energies and barriers in J/mol.
