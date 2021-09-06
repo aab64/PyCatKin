@@ -12,7 +12,7 @@ mpl.rcParams['lines.markersize'] = 6
 mpl.rcParams['lines.linewidth'] = 1.5
 
 
-def run(sim_system, plot_results=False, save_results=False,
+def run(sim_system, steady_state_solve=False, plot_results=False, save_results=False,
         fig_path=None, csv_path=''):
     """Runs the ODE solver and optionally plots/saves
     the results.
@@ -23,6 +23,8 @@ def run(sim_system, plot_results=False, save_results=False,
         sim_system.plot_transient(path=fig_path)
     if save_results:
         sim_system.write_results(path=csv_path)
+    if steady_state_solve:
+        sim_system.find_steady(store_steady=True)
 
 
 def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_terms=None, eps=5.0e-2,
@@ -44,9 +46,9 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
         final_time = sim_system.params['times'][-1]
         if steady_state_solve:
             # while (max(abs(sim_system.species_odes(sim_system.solution[-1])[sim_system.dynamic_indices])) > 1.0e-10
-            #        and sim_system.params['times'][-1] < 1.0e15):
+            #        and sim_system.params['times'][-1] < 1.0e11):
+            #     sim_system.params['times'][-1] = sim_system.params['times'][-1] ** 2.0
             #     print('System not steady, increasing final time to %1.2e s' % sim_system.params['times'][-1])
-            #     sim_system.params['times'][-1] *= 2.0
             #     run(sim_system=sim_system)
             sim_system.find_steady(store_steady=True)
             final[Tind, :] = sim_system.full_steady
@@ -160,6 +162,144 @@ def run_temperatures(sim_system, temperatures, steady_state_solve=False, tof_ter
             vals[:, 0] = temperatures
             for Tind, T in enumerate(temperatures):
                 vals[Tind, 1::] = np.array(list(drcs[T].values()))
+            df = pd.DataFrame(vals, columns=dheader)
+            df.to_csv(path_or_buf=dfile, sep=',', header=True, index=False)
+
+
+def run_parameters(sim_system, parameters, params_name, steady_state_solve=False, tof_terms=None, eps=5.0e-2,
+                   plot_results=False, save_results=False, plot_transient=False, save_transient=False,
+                   fig_path=None, csv_path=''):
+    """Runs the ODE solver for a range of parameter values
+    and optionally plots/saves the results.
+
+    """
+
+    rates = np.zeros((len(parameters), len(sim_system.reactions)))
+    final = np.zeros((len(parameters), len(sim_system.snames)))
+    drcs = dict()
+    print('Running simulations for %s in [%1.3f, %1.3f]...' % (params_name, parameters[0], parameters[-1]))
+    for pind, param in enumerate(parameters):
+        if 'start_state' in params_name:
+            sim_system.params['start_state'][params_name.split('start_state_')[1]] = param
+        elif 'inflow_state' in params_name:
+            sim_system.params['inflow_state'][params_name.split('inflow_state_')[1]] = param
+        else:
+            sim_system.params[params_name] = param
+        run(sim_system=sim_system, plot_results=plot_transient, save_results=save_transient,
+            fig_path=fig_path, csv_path=csv_path)
+        final_time = sim_system.params['times'][-1]
+        if steady_state_solve:
+            sim_system.find_steady(store_steady=True)
+            final[pind, :] = sim_system.full_steady
+            sim_system.params['times'][-1] = final_time
+        else:
+            final[pind, :] = sim_system.solution[-1]
+        sim_system.reaction_terms(final[pind, :])
+        rates[pind, :] = sim_system.rates[:, 0] - sim_system.rates[:, 1]
+        if tof_terms is not None:
+            drcs[param] = sim_system.degree_of_rate_control(tof_terms, eps=eps)
+        print('* %1.3f done' % param)
+
+    if plot_results:
+        if fig_path is not None and fig_path != '':
+            if not os.path.isdir(fig_path):
+                print('Directory does not exist. Will try creating it...')
+                os.mkdir(fig_path)
+
+        cmap = plt.get_cmap("tab20", len(sim_system.adsorbate_indices))
+        fig, ax = plt.subplots(figsize=(3.2, 3.2))
+        for i, sname in enumerate(sim_system.snames):
+            if i in sim_system.adsorbate_indices and max(final[:, i]) > 0.01:
+                ax.plot(parameters, final[:, i], label=sname,
+                        color=cmap(sim_system.adsorbate_indices.index(i)))
+        ax.legend(loc='best', frameon=False, ncol=1)
+        ax.set(xlabel=params_name,
+               ylabel='Coverage', ylim=(-0.1, 1.1))
+        fig.tight_layout()
+        if fig_path is not None:
+            plt.savefig(fig_path + 'coverages_vs_%s.png' % params_name, format='png', dpi=600)
+
+        cmap = plt.get_cmap("tab20", len(sim_system.gas_indices))
+        fig, ax = plt.subplots(figsize=(3.2, 3.2))
+        for i, sname in enumerate(sim_system.snames):
+            if i in sim_system.gas_indices:
+                ax.plot(parameters, final[:, i], label=sname,
+                        color=cmap(sim_system.gas_indices.index(i)))
+        ax.legend(loc='best', frameon=False, ncol=1)
+        ax.set(xlabel=params_name,
+               ylabel='Pressure (bar)')
+        fig.tight_layout()
+        if fig_path is not None:
+            plt.savefig(fig_path + 'pressures_vs_%s.png' % params_name, format='png', dpi=600)
+
+        cmap = plt.get_cmap("tab20", len(sim_system.reactions))
+        fig, ax = plt.subplots(figsize=(3.2, 3.2))
+        for i, rname in enumerate(sim_system.reactions.keys()):
+            ax.plot(parameters, rates[:, i], label=rname, color=cmap(i))
+        ax.legend(loc='best', frameon=False, ncol=1)
+        yvals = ax.get_ylim()
+        ax.set(xlabel=params_name,
+               ylabel='Rate (1/s)', yscale='log', ylim=(max(1e-10, yvals[0]), yvals[1]))
+        fig.tight_layout()
+        if fig_path is not None:
+            plt.savefig(fig_path + 'surfrates_vs_%s.png' % params_name, format='png', dpi=600)
+
+        if tof_terms is not None:
+            fig, ax = plt.subplots(figsize=(3.2, 3.2))
+            for rind, rname in enumerate(sim_system.reactions.keys()):
+                drc = [drcs[i][rname] for i in parameters]
+                if max([abs(d) for d in drc]) > 0.01:
+                    ax.plot(parameters, drc, label=rname, color=cmap(rind))
+            ax.set(xlabel=params_name,
+                   ylabel='Degree of rate control')
+            ax.legend(loc='best', frameon=False)
+            fig.tight_layout()
+            if fig_path is not None:
+                plt.savefig(fig_path + 'drc_vs_%s.png' % params_name, format='png', dpi=600)
+
+            fig, ax = plt.subplots(figsize=(3.2, 3.2))
+            ax.plot(parameters,
+                    np.sum(rates[:, [list(sim_system.reactions.keys()).index(i) for i in tof_terms]], axis=1),
+                    color='k')
+            ax.set(xlabel=params_name,
+                   ylabel='TOF (1/s)', yscale='log')
+            fig.tight_layout()
+            if fig_path is not None:
+                plt.savefig(fig_path + 'tof_vs_%s.png' % params_name, format='png', dpi=600)
+
+    if save_results:
+        if csv_path != '':
+            if not os.path.isdir(csv_path):
+                print('Directory does not exist. Will try creating it...')
+                os.mkdir(csv_path)
+
+        rfile = csv_path + 'rates_vs_%s.csv' % params_name
+        cfile = csv_path + 'coverages_vs_%s.csv' % params_name
+        pfile = csv_path + 'pressures_vs_%s.csv' % params_name
+
+        rheader = [params_name] + list(sim_system.reactions.keys())
+        cheader = [params_name] + [s for i, s in enumerate(sim_system.snames)
+                                   if i in sim_system.adsorbate_indices]
+        pheader = [params_name] + ['p' + s + ' (bar)' for i, s in enumerate(sim_system.snames)
+                                   if i in sim_system.gas_indices]
+
+        df = pd.DataFrame(np.concatenate((np.reshape(parameters, (len(parameters), 1)),
+                                          rates), axis=1), columns=rheader)
+        df.to_csv(path_or_buf=rfile, sep=',', header=True, index=False)
+        df = pd.DataFrame(np.concatenate((np.reshape(parameters, (len(parameters), 1)),
+                                          final[:, sim_system.adsorbate_indices]), axis=1), columns=cheader)
+        df.to_csv(path_or_buf=cfile, sep=',', header=True, index=False)
+        df = pd.DataFrame(np.concatenate((np.reshape(parameters, (len(parameters), 1)),
+                                          final[:, sim_system.gas_indices]), axis=1), columns=pheader)
+        df.to_csv(path_or_buf=pfile, sep=',', header=True, index=False)
+
+        if tof_terms is not None:
+            dfile = csv_path + 'drcs_vs_%s.csv' % params_name
+            dheader = [params_name] + list(sim_system.reactions.keys())
+            vals = np.zeros((len(parameters), len(list(sim_system.reactions.keys())) + 1))
+            vals[:, 0] = parameters
+            for pind, param in enumerate(parameters):
+                vals[pind, 1::] = np.array(list(drcs[param].values()))
             df = pd.DataFrame(vals, columns=dheader)
             df.to_csv(path_or_buf=dfile, sep=',', header=True, index=False)
 
@@ -330,8 +470,35 @@ def save_state_energies(sim_system, csv_path=''):
               sep=',', header=True, index=False)
 
 
+def save_pes_energies(sim_system, csv_path=''):
+    """Save the state energies for the current temperature.
+
+    """
+
+    if csv_path != '':
+        if not os.path.isdir(csv_path):
+            print('Directory does not exist. Will try creating it...')
+            os.mkdir(csv_path)
+
+    T = sim_system.params['temperature']
+    p = sim_system.params['pressure']
+    v = sim_system.params['verbose']
+
+    evals = dict()
+    print('Saving state energies...')
+    for k in sim_system.energy_landscapes.keys():
+        sim_system.energy_landscapes[k].construct_energy_landscape(T=T, p=p, verbose=v)
+        for s in sim_system.energy_landscapes[k].energy_landscape['free'].keys():
+            evals[s] = [sim_system.energy_landscapes[k].energy_landscape['free'][s],
+                        sim_system.energy_landscapes[k].energy_landscape['electronic'][s]]
+        df = pd.DataFrame(data=[[sim_system.energy_landscapes[k].labels[s]] + evals[s] for s in evals.keys()],
+                          columns=['State', 'Free (eV)', 'Electronic (eV)'])
+        df.to_csv(path_or_buf=csv_path + str(k) + '_energy_landscape_%1.1fK_%1.1fbar.csv' % (T, p / bartoPa),
+                  sep=',', header=True, index=False)
+
+
 def compare_energy_landscapes(sim_systems, etype='free', eunits='eV', legend_location=None,
-                              show_labels=False, fig_path=None):
+                              show_labels=False, fig_path=None, cmap=None):
     """Draws the energy landscapes for a number of systems using the parameters
     saved to sim_system.params and optionally saves them.
 
@@ -343,7 +510,8 @@ def compare_energy_landscapes(sim_systems, etype='free', eunits='eV', legend_loc
             os.mkdir(fig_path)
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    cmap = plt.get_cmap("tab20", len(sim_systems))
+    if cmap is None:
+        cmap = plt.get_cmap("tab20", len(sim_systems))
 
     for sind, sim_system in enumerate(sim_systems.values()):
         for k in sim_system.energy_landscapes.keys():
