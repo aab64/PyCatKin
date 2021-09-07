@@ -514,6 +514,20 @@ class System:
 
         return xi
 
+    def activity(self, tof_terms, ss_solve=False):
+        """Calculate the activity from the TOF
+
+        Returns the activity."""
+
+        self.conditions = None  # Force rate constants to be recalculated
+
+        tof = self.run_and_return_tof(tof_terms=tof_terms, ss_solve=ss_solve)
+
+        activity = (np.log((h * tof) / (kB * self.params['temperature'])) *
+                    (R * self.params['temperature'])) * 1.0e-3 / eVtokJ
+
+        return activity
+
     def write_results(self, path=''):
         """Write reaction rates, coverages and pressures to file.
         File written to current directory unless otherwise specified.
