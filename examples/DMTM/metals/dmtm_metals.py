@@ -58,6 +58,11 @@ for study in ['dry', 'wet']:
                          fig_path=figures_dir,
                          csv_path=results_dir)
 
+        for temperature in [500, 650, 800]:
+            sim_systems[study][metal].params['temperature'] = temperature
+            save_pes_energies(sim_system=sim_systems[study][metal],
+                              csv_path=results_dir)
+
     # Scaling relation
     descriptor = 'sO'
     locs = [[0, 0], [0, 1], [0, 2], [0, 3],
@@ -125,7 +130,9 @@ for study in ['dry', 'wet']:
         dfvals['R2'][k] = r**2
         dfvals['MAE'][k] = np.mean(abs(ytofit - yfit))
         dfvals['MAX'][k] = np.max(abs(ytofit - yfit))
-        ax[locs[kind][0]][locs[kind][1]].text(xmax, ymin, '$y=%1.2fx+%1.2f$' % (slope, intercept),
+        ax[locs[kind][0]][locs[kind][1]].text(xmax - 0.1, ymin, '$y=%1.2fx+%1.2f$' % (slope, intercept),
+                                              ha='right', va='bottom', color=gclr)
+        ax[locs[kind][0]][locs[kind][1]].text(xmax - 0.1, ymin + 0.75, state_names[kind],
                                               ha='right', va='bottom', color=gclr)
 
         ax[locs[kind][0]][locs[kind][1]].set(xlim=(xmin, xmax), ylim=(ymin, ymax),
@@ -133,7 +140,7 @@ for study in ['dry', 'wet']:
     fig.tight_layout()
     fig.subplots_adjust(wspace=0, hspace=0)
     plt.savefig(base_out_dir + 'images/%s/SR_dE%s_vs_dEstate.png' % (study, descriptor), format='png', dpi=600)
-    plt.savefig(base_out_dir + 'images/%s/SR_dE%s_vs_dEstate.eps' % (study, descriptor), format='eps', dpi=600)
+    # plt.savefig(base_out_dir + 'images/%s/SR_dE%s_vs_dEstate.eps' % (study, descriptor), format='eps', dpi=600)
     df = pd.DataFrame(dfvals)
     df.to_csv(path_or_buf=base_out_dir + 'results/%s/scaling.csv' % study)
 
@@ -181,4 +188,4 @@ ax[1].tick_params(axis='y', which='both',
 fig.tight_layout()
 fig.subplots_adjust(wspace=0)
 plt.savefig(base_out_dir + 'images/tof_vs_temperature_vs_metals.png', format='png', dpi=600)
-plt.savefig(base_out_dir + 'images/tof_vs_temperature_vs_metals.eps', format='eps', dpi=600)
+# plt.savefig(base_out_dir + 'images/tof_vs_temperature_vs_metals.eps', format='eps', dpi=600)
