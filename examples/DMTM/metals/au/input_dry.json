@@ -290,8 +290,8 @@
         },
         "verbose": false,
         "use_jacobian": true,
-        "atol": 1.0e-10,
-        "rtol": 1.0e-8,
+        "atol": 1.0e-8,
+        "rtol": 1.0e-6,
         "nsteps": 1.0e6,
         "ode_solver": "ode"
     },

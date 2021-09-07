@@ -50,7 +50,7 @@ else:
     reactor = CSTReactor(residence_time=4.5, volume=180.0e-9, catalyst_area=Acat_Pd)
 
 # Systems
-npts = 20
+npts = 10
 besCO = np.linspace(start=-2.5, stop=0.5, num=npts, endpoint=True)
 besO = np.linspace(start=-2.5, stop=0.5, num=npts, endpoint=True)
 act = np.zeros((npts, npts))
@@ -155,7 +155,13 @@ for iCO, bCO in enumerate(besCO):
 
         # Let's get started...
         print('Configuring system with bCO=%1.2f eV and bO=%1.2f eV...' % (bCO, bO))
-        sys = System(reactions=reactions, reactor=reactor)
+        sys = System()
+        for s in states.keys():
+            sys.add_state(state=states[s])
+        for r in reactions.keys():
+            sys.add_reaction(reaction=reactions[r])
+        sys.add_reactor(reactor=reactor)
+        sys.names_to_indices()
 
         # Solve
         print('Solving ODEs...')
@@ -163,31 +169,42 @@ for iCO, bCO in enumerate(besCO):
                            use_jacobian=use_jacobian, verbose=verbose)
         sys.solve_odes()
 
+        for r in sys.reactions.keys():
+            print(r)
+            try:
+                print('dGr = %1.2f' % (sys.reactions[r].get_reaction_energy(T=600, p=1e5, etype='electronic') * 1e-3 / eVtokJ))
+            except:
+                print('irreversible')
+            try:
+                print('dGa = %1.2f' % (sys.reactions[r].get_reaction_barriers(T=600, p=1e5, etype='electronic')[0] * 1e-3 / eVtokJ))
+            except:
+                print('barrierless')
+
         print('Finding steady-state solution...')
         # sys.find_steady(store_steady=True)
         # sys.reaction_terms(sys.full_steady)
 
-        tof = sys.rates[-1, 0]
-        if tof < 1.0e-40:
-            tof = 1.0e-40
-        tofs[iCO, iO] = tof
-        act[iCO, iO] = 1.0e-3 * np.log((h * tof) / (kB * T)) * (R * T) / eVtokJ
-        print('Done.')
-
-print("--- %s seconds ---" % (time.time() - start_time))
-
-ending = ''
-if isinstance(reactor, CSTReactor):
-    ending = '_cstr'
-
-fig, ax = plt.subplots(figsize=(4.3, 3.2))
-CS = ax.contourf(besO, besCO, act, levels=25, cmap=plt.cm.RdYlBu_r)
-cbar = fig.colorbar(CS)
-cbar.ax.set_ylabel('Activity (eV)')
-ax.set(ylabel=r'$E_{\mathsf{CO}}$ (eV)', xlabel=r'$E_{\mathsf{O}}$ (eV)',
-       xlim=(-2.5, 0.5), ylim=(-2.5, 0.5),
-       xticks=(-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5),
-       yticks=(-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5))
-fig.tight_layout()
-fig.savefig(figures_dir + 'be_activity' + ending + '.png', format='png', dpi=600)
-fig.show()
+#         tof = sys.rates[-1, 0]
+#         if tof < 1.0e-40:
+#             tof = 1.0e-40
+#         tofs[iCO, iO] = tof
+#         act[iCO, iO] = 1.0e-3 * np.log((h * tof) / (kB * T)) * (R * T) / eVtokJ
+#         print('Done.')
+#
+# print("--- %s seconds ---" % (time.time() - start_time))
+#
+# ending = ''
+# if isinstance(reactor, CSTReactor):
+#     ending = '_cstr'
+#
+# fig, ax = plt.subplots(figsize=(4.3, 3.2))
+# CS = ax.contourf(besO, besCO, act, levels=25, cmap=plt.cm.RdYlBu_r)
+# cbar = fig.colorbar(CS)
+# cbar.ax.set_ylabel('Activity (eV)')
+# ax.set(ylabel=r'$E_{\mathsf{CO}}$ (eV)', xlabel=r'$E_{\mathsf{O}}$ (eV)',
+#        xlim=(-2.5, 0.5), ylim=(-2.5, 0.5),
+#        xticks=(-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5),
+#        yticks=(-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5))
+# fig.tight_layout()
+# fig.savefig(figures_dir + 'be_activity' + ending + '.png', format='png', dpi=600)
+# fig.show()
