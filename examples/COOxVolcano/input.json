@@ -1,0 +1,164 @@
+ {
+    "states":
+    {
+        "s":
+        {
+            "state_type": "surface"
+        },
+        "sCO":
+        {
+            "state_type": "adsorbate"
+        },
+        "sO":
+        {
+            "state_type": "adsorbate"
+        },
+        "CO":
+        {
+            "state_type": "gas",
+            "sigma": 1,
+            "mass": 28
+        },
+        "O2":
+        {
+            "state_type": "gas",
+            "sigma": 2,
+            "mass": 32
+        },
+        "CO2":
+        {
+            "state_type": "gas",
+            "sigma": 2,
+            "mass": 44
+        }
+    },
+    
+    "scaling relation states":
+    {
+        "SRTS_ox":
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 0.7,
+                "intercept": 0.02
+            },
+            "scaling_reactions":
+            {
+                "CO":
+                {
+                    "reaction": "CO_ads",
+                    "multiplicity": 1.0
+                },
+                "O":
+                {
+                    "reaction": "2O_ads",
+                    "multiplicity": 0.5
+                }
+            },
+            "dereference": false
+        },
+        "SRTS_O2":
+        {
+            "state_type": "TS",
+            "scaling_coeffs":
+            {
+                "gradient": 1.39,
+                "intercept": 1.56
+            },
+            "scaling_reactions":
+            {
+                "O":
+                {
+                    "reaction": "2O_ads",
+                    "multiplicity": 0.5
+                }
+            },
+            "dereference": false
+        },
+        "sO2":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.89,
+                "intercept": 0.17
+            },
+            "scaling_reactions":
+            {
+                "O":
+                {
+                    "reaction": "2O_ads",
+                    "multiplicity": 0.5
+                }
+            },
+            "dereference": false
+        }
+    },
+
+    "manual reactions":
+    {
+        "O2_ads":
+        {
+            "reac_type": "adsorption",
+            "area": 3.14e-20,
+            "reactants": ["O2", "s"],
+            "TS": null,
+            "products": ["sO2"]
+        },
+        "CO_ox":
+        {
+            "reac_type": "Arrhenius",
+            "area": 3.14e-20,
+            "reactants": ["sCO", "sO"],
+            "TS": ["SRTS_ox"],
+            "products": ["s", "s", "CO2"],
+            "reversible": false           
+        },
+        "O2_2O":
+        {
+            "reac_type": "Arrhenius",
+            "area": 3.14e-20,
+            "reactants": ["sO2", "s"],
+            "TS": ["SRTS_O2"],
+            "products": ["sO", "sO"],
+            "reversible": false
+        },
+        "CO_ads":
+        {
+            "reac_type": "adsorption",
+            "area": 3.14e-20,
+            "reactants": ["CO", "s"],
+            "TS": null,
+            "products": ["sCO"]
+        },
+        "2O_ads":
+        {
+            "reac_type": "ghost",
+            "area": 3.14e-20,
+            "reactants": ["O2", "s", "s"],
+            "TS": null,
+            "products": ["sO", "sO"],
+            "scaling": 0.0
+        }
+    },
+
+    "reactor": "InfiniteDilutionReactor",
+    
+    "system":
+    {
+        "times": [0.0, 3600.0],
+        "T": 600.0,
+        "p": 1.0e5,
+        "start_state":
+        {
+            "s": 1.0,
+            "CO": 0.67,
+            "O2": 0.33
+        },
+        "verbose": false,
+        "use_jacobian": true,
+        "ode_solver": "ode",
+        "nsteps": 1.0e5
+    }
+}
