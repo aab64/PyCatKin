@@ -119,78 +119,86 @@ class State:
             if not freq:
                 if self.vibs_path is not None:
                     freq_path = self.vibs_path + '/log.vib'
-                else:
-                    assert(self.path is not None)
+                elif self.path is not None:
                     freq_path = self.path + '/log.vib'
-
-                if os.path.isfile(freq_path):
-                    if verbose:
-                        print('Checking log.vib for frequencies')
-                    with open(freq_path, 'r') as fd:
-                        lines = fd.readlines()
-                    initat = 0
-                    endat = 0
-                    for lind, line in enumerate(lines):
-                        if '#' in line:
-                            initat = lind + 2
-                            endat = 0
-                        if lind > initat and not endat and '---' in line:
-                            endat = lind - 1
-                    freq = [(float(line.strip().split()[1]) * 1e-3 / (h * JtoeV))
-                            for line in lines[initat:endat + 1]
-                            if 'i' not in line]
-                    i_freq = [(float(line.strip().split()[1].split('i')[0]) * 1e-3 / (h * JtoeV))
-                              for line in lines[initat:endat + 1]
-                              if 'i' in line]
                 else:
-                    if verbose:
-                        print('Checking OUTCAR for frequencies')
-                    assert(self.path is not None)
-                    index = -8
-                    freq_path = self.path + '/OUTCAR'
-                    if not os.path.isfile(freq_path):
-                        freq_path = self.path
-                    assert(os.path.isfile(freq_path))
-                    freq = []
-                    i_freq = []
-                    firstcopy = 0
-                    with open(freq_path, 'r') as fd:
-                        lines = fd.readlines()
-                    for line in lines:
-                        data = line.split()
-                        if 'THz' in data:
-                            if (firstcopy + 1) == int(data[0]):
-                                fHz = float(data[index]) * 1.0e12
-                                if 'f/i=' not in data and 'f/i' not in data:
-                                    freq.append(fHz)
-                                else:
-                                    i_freq.append(fHz)
-                                firstcopy = int(data[0])
-                            else:
-                                break
-            if self.truncate_freq:
-                for f in range(len(freq)):
-                    if (freq[f] * h * JtoeV * 1e3) < 12.4:
-                        freq[f] = 12.4 * 1e-3 / (h * JtoeV)
-                        if verbose:
-                            print('Truncating small freq %1.2f to 12.4 meV' %
-                                  (freq[f] * h * JtoeV * 1e3))
-                # Check correct DOF
-                n_freq = len(freq)
-                n_dof = len(freq) + len(i_freq)  # 3 * N_moving_atoms
-                if self.state_type == 'gas':
-                    n_dof -= 3  # Translational DOF
-                if n_freq < n_dof:
-                    if verbose:
-                        print('Incorrect number of frequencies! n_dof = %1.0f and n_freq = %1.0f' %
-                              (n_dof, n_freq))
-                        print('Adding %1.0f extra frequencies of 12.4 meV...' %
-                              (n_dof - n_freq))
-                    freq += [12.4 * 1e-3 / (h * JtoeV)
-                             for f in range(n_dof - n_freq)]
+                    freq_path = None
 
-            self.freq = np.array(sorted(freq, reverse=True))
-            self.i_freq = np.array(i_freq)
+                if freq_path is not None:
+                    if os.path.isfile(freq_path):
+                        if verbose:
+                            print('Checking log.vib for frequencies')
+                        with open(freq_path, 'r') as fd:
+                            lines = fd.readlines()
+                        initat = 0
+                        endat = 0
+                        for lind, line in enumerate(lines):
+                            if '#' in line:
+                                initat = lind + 2
+                                endat = 0
+                            if lind > initat and not endat and '---' in line:
+                                endat = lind - 1
+                        freq = [(float(line.strip().split()[1]) * 1e-3 / (h * JtoeV))
+                                for line in lines[initat:endat + 1]
+                                if 'i' not in line]
+                        i_freq = [(float(line.strip().split()[1].split('i')[0]) * 1e-3 / (h * JtoeV))
+                                  for line in lines[initat:endat + 1]
+                                  if 'i' in line]
+                    else:
+                        if verbose:
+                            print('Checking OUTCAR for frequencies')
+                        assert(self.path is not None)
+                        index = -8
+                        freq_path = self.path + '/OUTCAR'
+                        if not os.path.isfile(freq_path):
+                            freq_path = self.path
+                        assert(os.path.isfile(freq_path))
+                        freq = []
+                        i_freq = []
+                        firstcopy = 0
+                        with open(freq_path, 'r') as fd:
+                            lines = fd.readlines()
+                        for line in lines:
+                            data = line.split()
+                            if 'THz' in data:
+                                if (firstcopy + 1) == int(data[0]):
+                                    fHz = float(data[index]) * 1.0e12
+                                    if 'f/i=' not in data and 'f/i' not in data:
+                                        freq.append(fHz)
+                                    else:
+                                        i_freq.append(fHz)
+                                    firstcopy = int(data[0])
+                                else:
+                                    break
+            if freq is not None:
+                if self.truncate_freq:
+                    for f in range(len(freq)):
+                        if (freq[f] * h * JtoeV * 1e3) < 12.4:
+                            freq[f] = 12.4 * 1e-3 / (h * JtoeV)
+                            if verbose:
+                                print('Truncating small freq %1.2f to 12.4 meV' %
+                                      (freq[f] * h * JtoeV * 1e3))
+                    # Check correct DOF
+                    n_freq = len(freq)
+                    n_dof = len(freq) + len(i_freq)  # 3 * N_moving_atoms
+                    if self.state_type == 'gas':
+                        n_dof -= 3  # Translational DOF
+                    if n_freq < n_dof:
+                        if verbose:
+                            print('Incorrect number of frequencies! n_dof = %1.0f and n_freq = %1.0f' %
+                                  (n_dof, n_freq))
+                            print('Adding %1.0f extra frequencies of 12.4 meV...' %
+                                  (n_dof - n_freq))
+                        freq += [12.4 * 1e-3 / (h * JtoeV)
+                                 for f in range(n_dof - n_freq)]
+
+                self.freq = np.array(sorted(freq, reverse=True))
+                self.i_freq = np.array(i_freq)
+            else:
+                if verbose:
+                    print('Warning. Could not find any frequencies.')
+                self.freq = np.zeros((1, 1))
+                self.i_freq = []
 
     def save_vibrations(self, vibs_path=''):
         """Save vibrations to a file (in Hz).
@@ -275,8 +283,11 @@ class State:
         nfreqs = self.freq.shape[0] - ntrunc
         use_freq = copy.deepcopy(self.freq[0:nfreqs])
 
-        self.Gvibr = (0.5 * h * sum(use_freq) +
-                      kB * T * sum(np.log(1 - np.exp(-use_freq * h / (kB * T))))) * JtoeV
+        if sum(use_freq) != 0.0:
+            self.Gvibr = (0.5 * h * sum(use_freq) +
+                          kB * T * sum(np.log(1 - np.exp(-use_freq * h / (kB * T))))) * JtoeV
+        else:
+            self.Gvibr = 0.0
 
     def calc_translational_contrib(self, T, p, verbose=False):
         """Calculates translational contribution to free energy.
@@ -407,3 +418,74 @@ class State:
         if path:
             ase.io.write(path + self.name + '.png', self.atoms,
                          format='png', rotation=rotation)
+
+
+class ScalingState(State):
+
+    def __init__(self, state_type=None, name=None, path=None, vibs_path=None, sigma=None,
+                 mass=None, inertia=None, gasdata=None, add_to_energy=None, path_to_pickle=None,
+                 read_from_alternate=None, truncate_freq=True, energy_source=None, freq_source=None,
+                 scaling_coeffs=None, scaling_reactions=None, dereference=False):
+        """Initialises scaling relation state class.
+
+        """
+
+        super(ScalingState, self).__init__(state_type=state_type, name=name, path=path, vibs_path=vibs_path,
+                                           sigma=sigma, mass=mass, inertia=inertia, gasdata=gasdata,
+                                           add_to_energy=add_to_energy, path_to_pickle=path_to_pickle,
+                                           read_from_alternate=read_from_alternate, truncate_freq=truncate_freq,
+                                           energy_source=energy_source, freq_source=freq_source)
+        self.scaling_coeffs = scaling_coeffs
+        self.scaling_reactions = scaling_reactions
+        self.dereference = dereference
+
+    def calc_electronic_energy(self, verbose=False):
+        """Calculates potential energy from scaling relation.
+
+        Saves value in eV."""
+
+        assert(self.scaling_reactions is not None)
+        assert(self.scaling_coeffs is not None)
+
+        self.Gelec = self.scaling_coeffs['intercept']
+
+        for r in self.scaling_reactions.values():
+            dEIS = r['reaction'].get_reaction_energy(T=0,
+                                                     p=1.0e5,
+                                                     verbose=verbose,
+                                                     etype='electronic') / (eVtokJ * 1.0e3)
+            if self.dereference:
+                ref_EIS = sum([reac.Gelec for reac in r['reaction'].reactants])
+            else:
+                ref_EIS = 0.0
+            if 'multiplicity' not in r.keys():
+                r['multiplicity'] = 1.0
+            self.Gelec += r['multiplicity'] * (self.scaling_coeffs['gradient'] * dEIS + ref_EIS)
+
+        if verbose:
+            print((self.name + ' elec: %1.2f eV') % self.Gelec)
+
+    def save_pickle(self, path=None):
+        """Save the state as a pickle object.
+
+        """
+
+        path = path if path else ''
+        name = self.name if self.name else 'unnamed'
+
+        pickle.dump(self, open(path + 'scaling_state_' + name + '.pckl', 'wb'))
+
+    def save_pdb(self, path=None):
+        """Saves the atoms object as a pdb structure file.
+
+        """
+
+        print('Scaling state %s has no atoms to save.' % self.name)
+
+    def view_atoms(self, rotation='', path=None):
+        """Views the atoms object using the ASE visualizer.
+        If path is not None, saves as a png.
+
+        """
+
+        print('Scaling state %s has no atoms to view.' % self.name)

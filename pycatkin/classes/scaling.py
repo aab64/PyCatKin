@@ -42,6 +42,7 @@ class Scaling:
             self.mass = None
             self.inertia = None
             self.shape = None
+            self.gasdata = None
             self.sigma = sigma
             if self.state_type == 'gas':
                 assert(self.sigma is not None)
@@ -68,11 +69,16 @@ class Scaling:
             else:
                 ref_EIS = 0.0
                 ref_GIS = 0.0
+            if 'multiplicity' not in r.keys():
+                r['multiplicity'] = 1.0
             self.Gelec += r['multiplicity'] * (self.scaling_coeffs['gradient'] * dEIS + ref_EIS)
             self.Gfree += r['multiplicity'] * (-ref_EIS - dEIS + dGIS + ref_GIS)
-        if self.add_to_energy:
-            self.Gelec += self.add_to_energy
         self.Gfree += self.Gelec
+
+        # Temporary fix for entropy!
+        self.Gfree = self.Gelec
+        if self.add_to_energy:
+            self.Gfree += self.add_to_energy
 
         if verbose:
             print((self.name + ' elec: %1.2f eV') % self.Gelec)
@@ -94,9 +100,6 @@ class Scaling:
 
         self.add_to_energy = modifier
 
-        if self.Gelec:
-            self.Gelec += self.add_to_energy
-
     def save_pickle(self, path=None):
         """Save the state as a pickle object.
 
@@ -106,3 +109,18 @@ class Scaling:
         name = self.name if self.name else 'unnamed'
 
         pickle.dump(self, open(path + 'scaling_state_' + name + '.pckl', 'wb'))
+
+    def save_pdb(self, path=None):
+        """Saves the atoms object as a pdb structure file.
+
+        """
+
+        print('Scaling state %s has no atoms to save.' % self.name)
+
+    def view_atoms(self, rotation='', path=None):
+        """Views the atoms object using the ASE visualizer.
+        If path is not None, saves as a png.
+
+        """
+
+        print('Scaling state %s has no atoms to view.' % self.name)

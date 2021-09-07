@@ -3,7 +3,7 @@ from pycatkin.classes.state import *
 from pycatkin.classes.reaction import *
 from pycatkin.classes.system import *
 from pycatkin.classes.reactor import *
-from pycatkin.classes.scaling import *
+# from pycatkin.classes.scaling import *
 from pycatkin.classes.energy import *
 
 
@@ -35,7 +35,7 @@ def read_from_input_file(input_path='input.json'):
             states = dict()
         for s in pck_system['scaling relation states'].keys():
             print('* %s' % s)
-            states[s] = Scaling(name=s, **pck_system['scaling relation states'][s])
+            states[s] = ScalingState(name=s, **pck_system['scaling relation states'][s])
 
     if 'system' in pck_system.keys():
         print('Reading system:')
@@ -111,13 +111,13 @@ def read_from_input_file(input_path='input.json'):
     if reactions is not None:
         for r in reactions.keys():
             for s in reactions[r].reactants + reactions[r].products:
-                if isinstance(s, Scaling):
+                if isinstance(s, ScalingState):
                     for sr in s.scaling_reactions.keys():
                         if isinstance(s.scaling_reactions[sr]['reaction'], str):
                             s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
             if reactions[r].TS is not None:
                 for s in reactions[r].TS:
-                    if isinstance(s, Scaling):
+                    if isinstance(s, ScalingState):
                         for sr in s.scaling_reactions.keys():
                             if isinstance(s.scaling_reactions[sr]['reaction'], str):
                                 s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
