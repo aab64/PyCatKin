@@ -6,7 +6,7 @@ This folder contains the source files and examples for using Python Catalysis Ki
 
 ## Using the tool
 
-There are several case studies in the *examples* folder demonstrating different use cases. Note that these examples cannot be run by a user at present because they require data that is not shared here. This will be addressed in future when the user inputs are streamlined. 
+There are several case studies in the *examples* folder demonstrating different use cases. Note that some of these examples (used in the publications below) cannot be run by a user because they require data that is not shared here.
 
 ## Documentation
 The documentation is hosted on [pycatkin.readthedocs.io](https://pycatkin.readthedocs.io/)
@@ -23,6 +23,8 @@ The following papers used PyCatKin:
 ## Developers
 
 - Astrid Boje, Chalmers University of Technology, Sweden.
+- Henrik Str&ouml;m, Chalmers University of Technology, Sweden.
+- Anders Hellman, Chalmers University of Technology, Sweden.
 
 ## Troubles / Ideas / Questions?
 
