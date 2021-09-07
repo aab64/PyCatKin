@@ -59,7 +59,8 @@
                     "multiplicity": 0.5
                 }
             },
-            "dereference": true
+            "dereference": true,
+            "use_descriptor_as_reactant": true
         }
     },
     

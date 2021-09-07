@@ -54,7 +54,7 @@ With this information, we can specify the states which include the clean surface
 
 The above specifies the Pd111 states. The input file for AuPd will be equivalent but with the paths set to "data/AuPd", "data/CO.AuPd" and "data/O.AuPd" for the adsorbates. 
 
-Note that we have not defined a transition state for the reaction. Here, we will introduce a ``Scaling`` class state using the keyword ``scaling relation states`` and call it *SRTS*. Scaling relation states are defined by providing a dictionary of ``scaling_coeffs``, the gradient and intercept of the scaling relationm and a dictionary of ``scaling_reactions``, the reactions that specify the binding energies the scaling relation depends on. Note that the Falsig scaling relation depends on the binding energy of O, but we have defined the adsorption reaction for O\ :sub:`2`, which will lead to two bound oxygen atoms; thus, we need to specify a ``multiplicity`` of 0.5::
+Note that we have not defined a transition state for the reaction. Here, we will introduce a ``ScalingState`` class state using the keyword ``scaling relation states`` and call it *SRTS*. Scaling relation states are defined by providing a dictionary of ``scaling_coeffs``, the gradient and intercept of the scaling relation and a dictionary of ``scaling_reactions``, the reactions that specify the binding energies the scaling relation depends on. Note that the Falsig scaling relation depends on the binding energy of O, but we will define the adsorption reaction for O\ :sub:`2`, which will lead to two bound oxygen atoms; thus, we need to specify a ``multiplicity`` of 0.5::
 
     {
        "scaling relation states":
@@ -80,12 +80,13 @@ Note that we have not defined a transition state for the reaction. Here, we will
                         "multiplicity": 0.5
                     }
                 },
-                "dereference": true
+                "dereference": true,
+                "use_descriptor_as_reactant": true
             }
         },...
     }
 
-The setting ``dereference=True`` is required in this example because we will need to subtract the absolute energies of the transition state and adsorbates to calculate the reaction barrier.
+The setting ``dereference=True`` is required in this example because we will need to subtract the absolute energies of the transition state and adsorbates to calculate the reaction barrier. The setting ``use_descriptor_as_reactant=True`` tells the code to use define the entropy of the transition state using the entropy of the states in the ``scaling_reactions``. This works in this case because the scaling relation is defined in terms of the same species as the reaction step it specifies. In general, however, it is best to specify the entropy separately and leave this setting at its default value of ``False``. 
 
 Next, we will specify the reactions. The chosen CO oxidation mechanism is very simple, consisting of barrierless ``adsorption`` reactions for CO and O\ :sub:`2`, with O\ :sub:`2` adsorbing dissociatively, and an ``Arrhenius`` oxidation reaction to produce CO\ :sub:`2`, which is assumed to desorb spontaneously and irreversibly. Thus the reactions section of our input file::
 

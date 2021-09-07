@@ -6,6 +6,13 @@ Direct methane to methanol
 
 Here we will consider the direct conversion of methane to methanol (DMTM) on the zeolite catalyst Cu-SSZ-13, using DFT data from Engedahl *et al.* [1]_
 
+.. figure:: source/dmtm/cycle.png
+   :figwidth: 5in
+   :align: center
+   :alt: Cycle
+
+   Catalytic cycle showing steps in the direct conversion of methane to methanol over Cu-SSZ-13.
+
 Creating an input file
 -------------------------------------
 

@@ -55,8 +55,7 @@
                     "reaction": "2O_ads",
                     "multiplicity": 0.5
                 }
-            },
-            "dereference": false
+            }
         },
         "SRTS_O2":
         {
@@ -73,8 +72,7 @@
                     "reaction": "2O_ads",
                     "multiplicity": 0.5
                 }
-            },
-            "dereference": false
+            }
         },
         "sO2":
         {
@@ -91,8 +89,7 @@
                     "reaction": "2O_ads",
                     "multiplicity": 0.5
                 }
-            },
-            "dereference": false
+            }
         }
     },
 
