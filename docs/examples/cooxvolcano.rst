@@ -305,13 +305,17 @@ The comments (a)-(e) in the code fragment below explain which reaction energies 
 This done, the activity can be plotted as a function of the binding energies to inspect the volcano for CO oxidation::
 
     import matplotlib.pyplot as plt
+    import os
+    
+    if not os.path.isdir('figures'):
+        os.mkdir('figures')
     
     fig, ax = plt.subplots(figsize=(4, 3))
     CS = ax.contourf(be, be, activity, levels=25, cmap=plt.get_cmap("RdYlBu_r"))
     fig.colorbar(CS).ax.set_ylabel('Activity (eV)')
     ax.set(xlabel=r'$E_{\mathsf{O}}$ (eV)', ylabel=r'$E_{\mathsf{CO}}$ (eV)')
     fig.tight_layout()
-    fig.savefig('activity.png', format='png', dpi=600)
+    fig.savefig('figures/activity.png', format='png', dpi=600)
 
 .. figure:: source/cooxvolcano/activity.png
    :figwidth: 4in
