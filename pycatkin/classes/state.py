@@ -338,7 +338,7 @@ class State:
 
         Saves value in eV."""
 
-        self.calc_electronic_energy()
+        self.calc_electronic_energy(verbose=verbose)
         self.calc_vibrational_contrib(T=T, verbose=verbose)
         self.calc_translational_contrib(T=T, p=p, verbose=verbose)
         self.calc_rotational_contrib(T=T, verbose=verbose)
@@ -359,6 +359,15 @@ class State:
         self.calc_free_energy(T=T, p=p, verbose=verbose)
 
         return self.Gfree
+
+    def get_potential_energy(self, verbose=False):
+        """Returns the potential energy in eV.
+
+        """
+
+        self.calc_electronic_energy(verbose=verbose)
+
+        return self.Gelec
 
     def set_energy_modifier(self, modifier):
         """Sets modifier to the energy.

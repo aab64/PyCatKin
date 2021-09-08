@@ -266,45 +266,41 @@ All that remains is to load the input file and configure the reaction energies a
     SCOg = 2.0487e-3
     SO2g = 2.1261e-3
     
+    # Note the temperature and pressure
+    T = sim_system.params['temperature']
+    p = sim_system.params['pressure']
+    
+    # Loop over energies and compute the activity
     activity = np.zeros((len(be), len(be)))
 
-The comments (a)-(f) in the code fragment below explain which reaction energies are being specified at each stage. First, we specify the potential energy and free energy of the CO adsorption (a) and atomic oxygen adsorption (b) steps. These steps will be used by the code to determine the potential energies of the scaling relation states *sO2*, *SRTS_O2* and *SRTS_ox* but we need to add an energy modifier to account for the entropy of adsorption of the gas molecules to obtain consistent reaction energies. This is achieved in part (c) using the state method ``set_energy_modifier``. Finally, we can use the scaling relation states to define the remaining reaction energy for diatomic oxygen adsorption (d) and the reaction barriers for CO oxidation (e) and oxygen dissociation (f). And then, compute the activity using the system method ``activity`` and specifying which reaction rate we are interested in (the CO oxidation rate, *CO_ox*)::
+The comments (a)-(e) in the code fragment below explain which reaction energies are being specified at each stage. First, we specify the potential energy and free energy of the CO adsorption (a) and atomic oxygen adsorption (b) steps. These reaction energies can then be used to determine the relative potential energies of the scaling relation states *sO2*, *SRTS_O2* and *SRTS_ox*. Then, the scaling relation states can be used to define the reaction energy for diatomic oxygen adsorption (c) and the reaction barriers for CO oxidation (d) and oxygen dissociation (e). And finally, we can compute the activity using the ``System`` class method ``activity`` and specifying which reaction rate we are interested in (the CO oxidation rate, *CO_ox*)::
 
-    for iCO, bCO in enumerate(be):
-        for iO, bO in enumerate(be):
-
+    for iCO, ECO in enumerate(be):
+        for iO, EO in enumerate(be):
+            
             # (a) Set CO adsorption energy and entropy
-            sim_system.reactions['CO_ads'].dErxn_user = bCO
-            sim_system.reactions['CO_ads'].dGrxn_user = bCO + SCOg * sim_system.params['temperature']
-
+            sim_system.reactions['CO_ads'].dErxn_user = ECO
+            sim_system.reactions['CO_ads'].dGrxn_user = ECO + SCOg * T
+            
             # (b) Set O adsorption energy and entropy
-            sim_system.reactions['2O_ads'].dErxn_user = 2.0 * bO
-            sim_system.reactions['2O_ads'].dGrxn_user = 2.0 * bO + SO2g * sim_system.params['temperature']
-
-            # (c) Add adsorption entropy change for gases
-            sim_system.states['sO2'].set_energy_modifier(modifier=SO2g * sim_system.params['temperature'])
-            sim_system.states['SRTS_O2'].set_energy_modifier(modifier=SO2g * sim_system.params['temperature'])
-            sim_system.states['SRTS_ox'].set_energy_modifier(modifier=(0.5 * SO2g * sim_system.params['temperature'] +
-                                                                       SCOg * sim_system.params['temperature']))
-
-            # (d) Set O2 adsorption free energy
-            sim_system.reactions['O2_ads'].dGrxn_user = sim_system.states['sO2'].get_free_energy(
-                T=sim_system.params['temperature'],
-                p=sim_system.params['pressure'])
-
-            # (e) Set CO oxidation free energy barrier
-            sim_system.reactions['CO_ox'].dGa_fwd_user = sim_system.states['SRTS_ox'].get_free_energy(
-                T=sim_system.params['temperature'],
-                p=sim_system.params['pressure']) - (sim_system.reactions['CO_ads'].dGrxn_user +
-                                                    0.5 * sim_system.reactions['2O_ads'].dGrxn_user)
-
-            # (f) Set O2 dissociation free energy barrier
-            sim_system.reactions['O2_2O'].dGa_fwd_user = sim_system.states['SRTS_O2'].get_free_energy(
-                T=sim_system.params['temperature'],
-                p=sim_system.params['pressure']) - sim_system.reactions['O2_ads'].dGrxn_user
-
+            sim_system.reactions['2O_ads'].dErxn_user = 2.0 * EO
+            sim_system.reactions['2O_ads'].dGrxn_user = 2.0 * EO + SO2g * T
+            
+            # (c) Set O2 adsorption energy and entropy
+            EO2 = sim_system.states['sO2'].get_potential_energy()
+            sim_system.reactions['O2_ads'].dErxn_user = EO2
+            sim_system.reactions['O2_ads'].dGrxn_user = EO2 + SO2g * T
+            
+            # (d) Set CO oxidation barrier
+            ETS_CO_ox = sim_system.states['SRTS_ox'].get_potential_energy()
+            sim_system.reactions['CO_ox'].dEa_fwd_user = np.max((ETS_CO_ox - (ECO + EO), 0.0))
+            
+            # (e) Set O2 dissociation barrier
+            ETS_O2_2O = sim_system.states['SRTS_O2'].get_potential_energy()
+            sim_system.reactions['O2_2O'].dEa_fwd_user = np.max((ETS_O2_2O - EO2, 0.0))
+            
             # Now compute and save the activity
-            activity[iCO, iO] = sim_system.activity(tof_terms=['CO_ox']) 
+            activity[iCO, iO] = sim_system.activity(tof_terms=['CO_ox'])
 
 This done, the activity can be plotted as a function of the binding energies to inspect the volcano for CO oxidation::
 

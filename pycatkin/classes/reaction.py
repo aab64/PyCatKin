@@ -209,6 +209,9 @@ class UserDefinedReaction(Reaction):
                 assert(self.dErxn is not None)
                 self.dGrxn = self.dErxn
 
+        self.dEa_fwd = None
+        self.dGa_fwd = None
+
         if self.dEa_fwd_user is not None:
             if isinstance(self.dEa_fwd_user, dict):
                 self.dEa_fwd = self.dEa_fwd_user[T] * eVtokJ * 1.0e3
@@ -216,9 +219,6 @@ class UserDefinedReaction(Reaction):
                 self.dEa_fwd = self.dEa_fwd_user * eVtokJ * 1.0e3
             if self.reversible:
                 self.dEa_rev = (self.dEa_fwd - self.dErxn)
-        else:
-            self.dEa_fwd = 0.0
-            self.dEa_rev = 0.0
 
         if self.dGa_fwd_user is not None:
             if isinstance(self.dGa_fwd_user, dict):
@@ -227,9 +227,6 @@ class UserDefinedReaction(Reaction):
                 self.dGa_fwd = self.dGa_fwd_user * eVtokJ * 1.0e3
             if self.reversible:
                 self.dGa_rev = (self.dGa_fwd - self.dGrxn)
-        else:
-            self.dGa_fwd = 0.0
-            self.dGa_rev = 0.0
 
         if self.dEa_fwd is None and self.dGa_fwd is not None:
             self.dEa_fwd = self.dGa_fwd
@@ -237,6 +234,11 @@ class UserDefinedReaction(Reaction):
         elif self.dEa_fwd is not None and self.dGa_fwd is None:
             self.dGa_fwd = self.dEa_fwd
             self.dGa_rev = self.dEa_rev
+        elif self.dEa_fwd is None and self.dGa_fwd is None:
+            self.dEa_fwd = 0.0
+            self.dEa_rev = 0.0
+            self.dGa_fwd = 0.0
+            self.dGa_rev = 0.0
 
         if verbose:
             print('---------------------')
