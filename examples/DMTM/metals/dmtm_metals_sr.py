@@ -59,7 +59,7 @@ for Ti, temperature in enumerate([500, 650, 800]):
         sim_systems[study] = dict()
         results_dir = base_out_dir + 'results/%s/' % study
         figures_dir = base_out_dir + 'images/%s/' % study
-        input_file = 'input_%s_sr_subset.json' % study
+        input_file = 'input_%s_sr.json' % study
         sys = read_from_input_file(input_path=input_file)
         sys.params['temperature'] = temperature
 
@@ -78,14 +78,15 @@ for Ti, temperature in enumerate([500, 650, 800]):
             sys.states[m[0]].set_energy_modifier(modifier=modifier)
 
         # bsOs = np.zeros(len(all_metals))
-        bsOs = np.linspace(start=-5, stop=0, num=50, endpoint=True)
+        bsOs = np.linspace(start=-5, stop=0, num=10, endpoint=True)
+        bsOs = [-4, -3, -2, -1.5, -1, -0.5]
         tofs = np.zeros(len(bsOs))
 
         for bind, metal in enumerate(bsOs):
             bsO = metal
         # for bind, metal in enumerate(all_metals):
 
-            sim_systems[study][metal] = dict()
+            # sim_systems[study][metal] = dict()
             # sim_systems[study][metal]['DFT'] = read_from_input_file(input_path='%s/input_%s.json' % (metal, study))
             # sim_systems[study][metal]['DFT'].params['temperature'] = temperature
 
@@ -103,10 +104,13 @@ for Ti, temperature in enumerate([500, 650, 800]):
             #     sim_systems[study][metal]['DFT'].states['ch4'].Gelec)
             print('%s: %1.2f' % (metal, bsO))
 
-            sim_systems[study][metal]['scaling'] = copy.deepcopy(sys)
-            sim_systems[study][metal]['scaling'].states['sO'].Gelec = bsO
+            sys.states['sO'].Gelec = bsO
+            sys.reactions['rsO'].dErxn_user = bsO
+
+            # sim_systems[study][metal]['scaling'] = copy.deepcopy(sys)
+            # sim_systems[study][metal]['scaling'].states['sO'].Gelec = bsO
             # sim_systems[study][metal]['scaling'].states['sO'].freq = np.array((0, 0))
-            sim_systems[study][metal]['scaling'].reactions['rsO'].dErxn_user = bsO
+            # sim_systems[study][metal]['scaling'].reactions['rsO'].dErxn_user = bsO
             #
             # def cmap(ind):
             #     if not ind:
@@ -133,54 +137,129 @@ for Ti, temperature in enumerate([500, 650, 800]):
             #                           fig_path=figures_dir + '%s/' % metal,
             #                           cmap=cmap)
 
-            run(sim_system=sim_systems[study][metal]['scaling'],
-                plot_results=False,
-                save_results=False,
-                steady_state_solve=True,
-                fig_path=figures_dir + 'sr/%s/' % metal,
-                csv_path=results_dir + 'sr/%s/' % metal)
-            
-            sim_systems[study][metal]['scaling'].reaction_terms(y=sim_systems[study][metal]['scaling'].full_steady)
-            i5 = list(sim_systems[study][metal]['scaling'].reactions.keys()).index('r5_rdr')
-            i9 = list(sim_systems[study][metal]['scaling'].reactions.keys()).index('r9_rdr')
-            tofs[bind] = (sim_systems[study][metal]['scaling'].rates[i5, 0] -
-                          sim_systems[study][metal]['scaling'].rates[i5, 1]) + (
-                    sim_systems[study][metal]['scaling'].rates[i9, 0] -
-                    sim_systems[study][metal]['scaling'].rates[i9, 1])
+            # run(sim_system=sim_systems[study][metal]['scaling'],
+            #     plot_results=False,
+            #     save_results=False,
+            #     steady_state_solve=True,
+            #     fig_path=figures_dir + 'sr/%s/' % metal,
+            #     csv_path=results_dir + 'sr/%s/' % metal)
+            #
+            # sim_systems[study][metal]['scaling'].reaction_terms(y=sim_systems[study][metal]['scaling'].full_steady)
+            # i5 = list(sim_systems[study][metal]['scaling'].reactions.keys()).index('r5_rdr')
+            # i9 = list(sim_systems[study][metal]['scaling'].reactions.keys()).index('r9_rdr')
+            # tofs[bind] = (sim_systems[study][metal]['scaling'].rates[i5, 0] -
+            #               sim_systems[study][metal]['scaling'].rates[i5, 1]) + (
+            #         sim_systems[study][metal]['scaling'].rates[i9, 0] -
+            #         sim_systems[study][metal]['scaling'].rates[i9, 1])
+            #
+            # run(sim_system=sys,
+            #     plot_results=False,
+            #     save_results=False,
+            #     steady_state_solve=True,
+            #     fig_path=figures_dir + 'sr/%s/' % metal,
+            #     csv_path=results_dir + 'sr/%s/' % metal)
+
+            # run_temperatures(sim_system=sys,
+            #                  temperatures=np.linspace(start=temperature,
+            #                                           stop=temperature,
+            #                                           num=1,
+            #                                           endpoint=True),
+            #                  plot_results=False,
+            #                  save_results=True,
+            #                  steady_state_solve=True,
+            #                  eps=1.0e-3,
+            #                  tof_terms=['r5_rdr', 'r9_rdr'],
+            #                  csv_path=results_dir + 'sr/%s/%1.0f/' % (metal, temperature))
+            #
+            # sys.reaction_terms(y=sys.full_steady)
+            # i5 = list(sys.reactions.keys()).index('r5_rdr')
+            # i9 = list(sys.reactions.keys()).index('r9_rdr')
+            # tofs[bind] = (sys.rates[i5, 0] - sys.rates[i5, 1]) + (sys.rates[i9, 0] - sys.rates[i9, 1])
+
             bsOs[bind] = bsO
         inds = np.argsort(bsOs)
 
-        ax[0 if study == 'wet' else 1][Ti].plot(bsOs[inds], tofs[inds],
-                                                marker='o' if study == 'wet' else 'v',
-                                                color='k' if study == 'wet' else 'k',
-                                                linestyle=':' if study == 'wet' else '-',
-                                                label=study, markevery=[])
+        # ax[0 if study == 'wet' else 1][Ti].plot(bsOs[inds], tofs[inds],
+        #                                         marker='o' if study == 'wet' else 'v',
+        #                                         color='k' if study == 'wet' else 'k',
+        #                                         linestyle=':' if study == 'wet' else '-',
+        #                                         label=study, markevery=[])
 
-    mEsOs = []
-    for mind, metal in enumerate(all_metals):
-        for sind, study in enumerate(['dry', 'wet']):
-            results_dir = base_out_dir + 'results/%s/%s/' % (study, metal)
-            descriptor = 'sO' if study == 'dry' else 'sO-h2o'
-            df = pd.read_csv(results_dir + 'full_pes_energy_landscape_%1.1fK_1.0bar.csv' % sys.params['temperature'])
-            EsO = df['Electronic (eV)'][list(df['State']).index('sO')]
-            mEsOs.append(EsO)
-            df = pd.read_csv(results_dir + 'rates_vs_temperature.csv')
-            Tind = list(df['Temperature (K)']).index(sys.params['temperature'])
-            ax[0 if study == 'wet' else 1][Ti].plot(EsO, df['r5'][Tind] + df['r9'][Tind],
-                                                    color=meclrs[all_metals.index(metal)],
-                                                    marker='o' if study == 'wet' else 'v')
+#     mEsOs = []
+#     for mind, metal in enumerate(all_metals):
+#         for sind, study in enumerate(['dry', 'wet']):
+#             results_dir = base_out_dir + 'results/%s/%s/' % (study, metal)
+#             descriptor = 'sO' if study == 'dry' else 'sO-h2o'
+#             df = pd.read_csv(results_dir + 'full_pes_energy_landscape_%1.1fK_1.0bar.csv' % sys.params['temperature'])
+#             EsO = df['Electronic (eV)'][list(df['State']).index('sO')]
+#             mEsOs.append(EsO)
+#             df = pd.read_csv(results_dir + 'rates_vs_temperature.csv')
+#             Tind = list(df['Temperature (K)']).index(sys.params['temperature'])
+#             ax[0 if study == 'wet' else 1][Ti].plot(EsO, df['r5'][Tind] + df['r9'][Tind],
+#                                                     color=meclrs[all_metals.index(metal)],
+#                                                     marker='o' if study == 'wet' else 'v')
+#
+# ax[0][0].set(ylabel='TOF (1/s)', yscale='log', ylim=(1e-16, 1e3))
+# ax[1][0].set(ylabel='TOF (1/s)', yscale='log', ylim=(1e-16, 1e3),
+#              xlabel='E$_{*O}$ (eV)', xticks=(-6, -4, -2), xlim=(-7, 0))
+# ax[1][1].set(xlabel='E$_{*O}$ (eV)', xticks=(-6, -4, -2), xlim=(-7, 0))
+# ax[1][2].set(xlabel='E$_{*O}$ (eV)', xticks=(-6, -4, -2), xlim=(-7, 0))
+# # ax[0][0].legend(loc='best', frameon=False)
+# ax[0][0].set(title='500 K')
+# ax[0][1].set(title='650 K')
+# ax[0][2].set(title='800 K')
+#
+# fig.tight_layout()
+# fig.subplots_adjust(wspace=0, hspace=0)
+# fig.savefig(base_out_dir + 'images/scaling_tof.png', format='png', dpi=600)
+# fig.savefig(base_out_dir + 'images/scaling_tof.eps', format='eps', dpi=600)
 
-ax[0][0].set(ylabel='TOF (1/s)', yscale='log', ylim=(1e-16, 1e3))
-ax[1][0].set(ylabel='TOF (1/s)', yscale='log', ylim=(1e-16, 1e3),
-             xlabel='E$_{*O}$ (eV)', xticks=(-6, -4, -2), xlim=(-7, 0))
-ax[1][1].set(xlabel='E$_{*O}$ (eV)', xticks=(-6, -4, -2), xlim=(-7, 0))
-ax[1][2].set(xlabel='E$_{*O}$ (eV)', xticks=(-6, -4, -2), xlim=(-7, 0))
-# ax[0][0].legend(loc='best', frameon=False)
-ax[0][0].set(title='500 K')
-ax[0][1].set(title='650 K')
-ax[0][2].set(title='800 K')
+cmap = plt.get_cmap("tab20", 11)
+for study in ['dry', 'wet']:
+    results_dir = base_out_dir + 'results/%s/' % study
+    figures_dir = base_out_dir + 'images/%s/' % study
+    fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(6.4, 3.2), sharey='row')
+    for ti, temperature in enumerate([500, 650, 800]):
+        for mi, metal in enumerate([-4, -3, -2, -1.5, -1]):
+            df = pd.read_csv(results_dir + 'sr/%s/%1.0f/drcs_vs_temperature.csv' % (metal, temperature))
+            rnames = [r for r in df.columns[1::].values if r != 'rsO']
+            drcs = [df[c].values[0] for c in rnames]
+            for xi, x in enumerate(np.linspace(start=mi, stop=mi + 1 - 0.5 / (len(rnames) + 1), num=len(rnames))):
+                ax[ti].bar(x + 0.5 / (len(rnames) + 1), drcs[xi], width=1 / (len(rnames) + 1), color=cmap(xi),
+                           label=rnames[xi].split('_')[0] if mi == 0 else '')
+            ax[ti].plot((mi + 1, mi + 1), (-1, 1), ':', color='lightgrey')
+            ax[ti].plot((0, 5), (1, 1), ':', color='lightgrey')
+        ax[ti].set(title='%1.0f K' % temperature, xlabel='*O energy [eV]', ylim=(0, 1.5), xlim=(0, 5),
+                   xticks=(0.5, 1.5, 2.5, 3.5, 4.5), xticklabels=(-4, -3, -2, -1.5, -1))
+    ax[0].set(ylabel='DRC')
+    ax[1].legend(ncol=3, mode='expand', loc='upper center')
+    fig.tight_layout()
+    fig.savefig(base_out_dir + 'images/drc_%s.png' % study, format='png', dpi=600)
 
-fig.tight_layout()
-fig.subplots_adjust(wspace=0, hspace=0)
-fig.savefig(base_out_dir + 'images/scaling_tof.png', format='png', dpi=600)
-fig.savefig(base_out_dir + 'images/scaling_tof.eps', format='eps', dpi=600)
+cmap = plt.get_cmap("tab20", 12)
+for study in ['dry', 'wet']:
+    results_dir = base_out_dir + 'results/%s/' % study
+    figures_dir = base_out_dir + 'images/%s/' % study
+    fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(6.4, 3.2), sharey='row')
+    for ti, temperature in enumerate([500, 650, 800]):
+        labs = []
+        for mi, metal in enumerate([-4, -3, -2, -1.5, -1]):
+            df = pd.read_csv(results_dir + 'sr/%s/%1.0f/coverages_vs_temperature.csv' % (metal, temperature))
+            rnames = [r for r in df.columns[1::].values if '0' not in r]
+            drcs = [df[c].values[0] for c in rnames]
+            for xi, x in enumerate(np.linspace(start=mi, stop=mi + 1 - 0.5 / (len(rnames) + 1), num=len(rnames))):
+                if drcs[xi] > 0.02:
+                    ax[ti].bar(x + 0.5 / (len(rnames) + 1), drcs[xi], width=1 / (len(rnames) + 1), color=cmap(xi),
+                               label=rnames[xi].split('_')[0] if rnames[xi].split('_')[0] not in labs else '')
+                    if rnames[xi].split('_')[0] not in labs:
+                        labs += [rnames[xi].split('_')[0]]
+            ax[ti].plot((mi + 1, mi + 1), (-1, 1), ':', color='lightgrey')
+            ax[ti].plot((0, 5), (1, 1), ':', color='lightgrey')
+        ax[ti].set(title='%1.0f K' % temperature, xlabel='*O energy [eV]', ylim=(0, 1.5), xlim=(0, 5),
+                   xticks=(0.5, 1.5, 2.5, 3.5, 4.5), xticklabels=(-4, -3, -2, -1.5, -1))
+    ax[0].set(ylabel='Coverage')
+    ax[0].legend(ncol=1, loc='upper center')
+    ax[1].legend(ncol=1, loc='upper center')
+    ax[2].legend(ncol=1, loc='upper center')
+    fig.tight_layout()
+    fig.savefig(base_out_dir + 'images/coverage_%s.png' % study, format='png', dpi=600)

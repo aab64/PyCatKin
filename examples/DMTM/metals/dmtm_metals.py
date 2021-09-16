@@ -189,3 +189,22 @@ fig.tight_layout()
 fig.subplots_adjust(wspace=0)
 plt.savefig(base_out_dir + 'images/tof_vs_temperature_vs_metals.png', format='png', dpi=600)
 # plt.savefig(base_out_dir + 'images/tof_vs_temperature_vs_metals.eps', format='eps', dpi=600)
+
+# me = 'ni'
+# study = 'wet'
+# base_dir = 'D:/Users/Astrid/Documents/Chalmers/Data/Methanol/DMTM_Metals/vibrations/%s/%s/' % (study, me)
+# for s in all_states:
+#     if study == 'wet':
+#         s += '-h2o'
+#     if sim_systems[study][me].states[s].state_type != 'gas' and sim_systems[study]['fe'].states[s].Gelec is not None:
+#         sim_systems[study][me].states[s].freq = None
+#         sim_systems[study][me].states[s].i_freq = None
+#         sim_systems[study][me].states[s].vibs_path = base_dir + s
+#         # assert(os.path.isfile(sim_systems['dry']['fe'].states[s].vibs_path))
+#         sim_systems[study][me].states[s].freq_source = None
+#         sim_systems[study][me].states[s].get_free_energy(T=500, p=1e5, verbose=False)
+#         print(s + ': %1.0f' % len(sim_systems[study][me].states[s].freq))
+#         sim_systems[study][me].states[s].save_vibrations(vibs_path='%s/%sdata/vibrations/' % (me,
+#                                                                                               study
+#                                                                                               if study == 'wet'
+#                                                                                               else ''))
