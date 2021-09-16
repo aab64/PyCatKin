@@ -249,7 +249,7 @@ and for each species, :math:`j`, the differential equation governing its rate of
         \sum_i \nu_{ij}r_i
     \end{equation}
 
-where :math:`\nu_{ij}` is the stoichiometry of species :math:`j` in reaction :math:`i`. In order to conserve the number of surface sites, with :math:`\theta^{\textsf{tot}}` the normalized number of sites,
+where :math:`\nu_{ij}` is the stoichiometry of species :math:`j` in reaction :math:`i`. In order to conserve the number of surface sites, with :math:`\theta^{\textsf{tot}}` the normalised number of sites,
 
 .. math::
    :nowrap:
@@ -354,7 +354,7 @@ and can be estimated numerically using finite differences to describe the deriva
 Reactor models
 ---------------------
 
-Here, we consider a continuously stirred tank reactor (CSTR) model in which the mixture is assumed to be spatially homogeneous. A CSTR is parameterized by its residence time, :math:`\tau` (i.e., the reactor volume, :math:`V`, divided by the flow rate, :math:`Q`) and, for heterogeneous reactions occuring on a solid catalyst surface, the total number of catalyst sites (i.e., the site density, :math:`\rho_{\text{cat}}`, times the catalyst area, :math:`A_{\text{cat}}`):
+Here, we consider a continuously stirred tank reactor (CSTR) model in which the mixture is assumed to be spatially homogeneous. A CSTR is parameterized by its residence time, :math:`\tau` (i.e., the reactor volume, :math:`V`, divided by the flow rate, :math:`Q`) and, for heterogeneous reactions occurring on a solid catalyst surface, the total number of catalyst sites (i.e., the site density, :math:`\rho_{\text{cat}}`, times the catalyst area, :math:`A_{\text{cat}}`):
 
 .. math::
    :nowrap:

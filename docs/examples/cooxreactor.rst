@@ -4,7 +4,29 @@
 CO oxidation in a reactor
 *************************************
 
-Here we will consider the CO oxidation reaction on neat Pd and an AuPd alloy, using DFT data from Tiburski *et al.* [1]_
+Here, we will consider the CO oxidation reaction on neat Pd and an AuPd alloy, using DFT data from Tiburski *et al.* [1]_ Three elementary steps are considered, accounting for reversible adsorption of CO and dissociative adsorption of oxygen, and irreversible conversion of adsorbed CO and oxygen to carbon dioxide. Where s represents a free catalyst site:
+
+.. math::
+   :nowrap:
+   
+    \begin{align}
+        \textsf{CO} + 
+        \textsf{s}
+        &\leftrightarrow
+        \textsf{sCO}
+        \\
+        {\textsf{O}}_{2} + 
+        2\textsf{s}
+        &\leftrightarrow
+        2\textsf{sO}
+        \\
+        \textsf{sO} + 
+        \textsf{sCO}
+        &\rightarrow
+        {\textsf{CO}}_{2} + 
+        2\textsf{s}
+        \textsf{.}
+    \end{align}
 
 Creating an input file
 -------------------------------------
