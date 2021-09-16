@@ -461,7 +461,7 @@ class ScalingState(State):
         self.Gelec = self.scaling_coeffs['intercept']
 
         for r in self.scaling_reactions.values():
-            dEIS = r['reaction'].get_reaction_energy(T=0,
+            dEIS = r['reaction'].get_reaction_energy(T=273,
                                                      p=1.0e5,
                                                      verbose=verbose,
                                                      etype='electronic') / (eVtokJ * 1.0e3)
