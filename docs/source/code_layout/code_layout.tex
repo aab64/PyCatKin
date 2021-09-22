@@ -14,129 +14,130 @@
 \begin{document}
 	\begin{tikzpicture}[x=1cm, y=1cm, >=latex]
 		\def\xleft{0}
-		\def\xright{16}
+		\def\xright{14}
 		\def\ydown{0}
-		\def\yup{8.5}
-		\def\xmid{8}
-		\def\ymid{4.25}
+		\def\yup{7}
+		\def\xmid{7}
+		\def\ymid{3.25}
 		\draw[draw=none, use as bounding box] (\xleft, \ydown) rectangle (\xright, \yup);
 		\clip (\xleft-0.1, \ydown-0.1) rectangle (\xright+0.1, \yup+0.1);
 		
-		\def\rlen{1.8cm}
+		\def\rlen{1.5cm}
 		\def\rwid{0.6cm}
-		\def\blen{1.7cm}
+		\def\blen{1.5cm}
 		\def\rsep{0.85cm}
-		\def\isep{1.cm}
+		\def\isep{0.6cm}
 		\def\rupp{1.5}
 		\def\bmark{\textcolor{cgrey}{$\bullet$ }}
 			
-		\draw[fill=cgrey!10, draw=cgrey, thick] ([xshift=0.15cm, yshift=-0.8*\isep]\xleft, \ymid) rectangle ([xshift=-0.15cm, yshift=1.7*\isep]\xright, \ymid);
+		\draw[anchor=center, fill=cgrey!10, draw=cgrey, thick] ([xshift=-6.9cm, yshift=-1.1*\rwid]\xmid, \ymid) rectangle ([xshift=6.9cm, yshift=1.1*\rwid + \rupp*\rsep]\xmid, \ymid);
 		
-		% Boxes
-		\node[anchor=west, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (energy) at ([xshift=0.3cm]\xleft, \ymid)
+		% Classes
+		\node[anchor=south] at ([xshift=-4cm, yshift=\rupp*\rsep+0.25*\rwid]\xmid, \ymid)
+			{\textcolor{cgrey}{\footnotesize{\textbf{CLASSES}}}};
+		\node[anchor=center, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (system) at ([yshift=\rupp*\rsep]\xmid, \ymid)
+			{\footnotesize{System}};
+		\node[anchor=center, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (energy) at ([xshift=-6cm]\xmid, \ymid)
 			{\footnotesize{Energy}};
-	
-		\node[anchor=west, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (state) at ([xshift=\rsep]energy.east)
-			{\footnotesize{State}};	
-
-		\node[anchor=west, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (reaction) at ([xshift=\rsep]state.east)
+		\node[anchor=center, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (state) at ([xshift=-2cm]\xmid, \ymid)
+			{\footnotesize{State}};
+		\node[anchor=center, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (reaction) at ([xshift=2cm]\xmid, \ymid)
 			{\footnotesize{Reaction}};
-		
-		\node[anchor=west, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (scaling) at ([xshift=\rsep]reaction.east)
-			{\footnotesize{Scaling}};		
-		
-		\node[anchor=west, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (system) at ([xshift=\rsep, yshift=\rupp*\rsep]scaling.east)
-			{\footnotesize{System}};		
-		
-		\node[anchor=west, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (reactor) at ([xshift=\rsep, yshift=-1*\rupp*\rsep]system.east)
-			{\footnotesize{Reactor}};
-				
+		\node[anchor=center, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (reactor) at ([xshift=6cm]\xmid, \ymid)
+			{\footnotesize{Reactor}};	
 %		\node[anchor=west, fill=cnavy!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid] (uncertainty) at ([xshift=\rsep]energy.east)
-%		{Uncertainty};
-		
+%			{Uncertainty};
+	
+		% Arrows
+		\path[thick, ->, dashed] ([xshift=-0.1*\rlen]system.south) edge[out=270, in=90] node [left] {} ([xshift=0.1*\rlen]state.north);
+		\path[thick, ->, dashed] (state.east) edge[out=0, in=180] node [left] {} (reaction.west);
+		\path[thick, ->, dashed] (state.west) edge[out=180, in=0] node [left] {} (energy.east);
+		\draw[thick, ->] 
+			 (reaction.north) --
+			 ([yshift=\rupp*\rsep-0.73*\rwid]reaction.north) -- 
+			 ([xshift=-2cm+0.5*\rlen, yshift=\rupp*\rsep-0.73*\rwid]reaction.north);
+		\draw[thick, ->] 
+			(reactor.north) --
+			([yshift=\rupp*\rsep-0.27*\rwid]reactor.north) -- 
+			([xshift=-6cm+0.5*\rlen, yshift=\rupp*\rsep-0.27*\rwid]reactor.north);
+		\draw[thick, ->] 
+			(state.north) --
+			([yshift=\rupp*\rsep-0.73*\rwid]state.north) -- 
+			([xshift=2cm-0.5*\rlen, yshift=\rupp*\rsep-0.73*\rwid]state.north);
+		\draw[thick, ->] 
+			(energy.north) --
+			([yshift=\rupp*\rsep-0.27*\rwid]energy.north) -- 
+			([xshift=6cm-0.5*\rlen, yshift=\rupp*\rsep-0.27*\rwid]energy.north);	
+
 		% Inputs
 		\node[anchor=south west] at (\xleft, \ydown)
-			{\footnotesize{\textcolor{orange!50}{\textbf{INPUTS}}}};		
+			{\textcolor{orange!50}{\footnotesize{\textbf{INPUTS}}}
+		};
 		\node[anchor=north, fill=white, draw=orange!50, ultra thick, text width=\blen] (Ein) at ([yshift=-1*\isep]energy.south)
-			{
-				\footnotesize{name\\states\\temperature\\pressure\\labels}
-			};
+			{\footnotesize{\bmark minima\\
+					\bmark labels}
+		};
 		\node[anchor=north, fill=white, draw=orange!50, ultra thick, text width=\blen] (Sin) at ([yshift=-1*\isep]state.south)
-			{
-				\footnotesize{name\\type\\data}
-			};
+			{\footnotesize{\bmark type\\
+			\bmark data path\\
+			\bmark scaling params}
+		};
 		\node[anchor=north, fill=white, draw=orange!50, ultra thick, text width=\blen] (Rin) at ([yshift=-1*\isep]reaction.south)
-			{
-				\footnotesize{name\\type\\states\\site area\\scaling\\reversible?}
-			};
-		\node[anchor=north, fill=white, draw=orange!50, ultra thick, text width=\blen] (Scin) at ([yshift=-1*\isep]scaling.south)
-			{
-				\footnotesize{name\\states\\params}
-			};
-		\node[anchor=north, fill=white, draw=orange!50, ultra thick, text width=\blen] (Syin) at ([yshift=-1*\isep, xshift=\rsep+\rlen]scaling.south)
-			{
-				\footnotesize{ICs\\BCs\\guess\\params}
-			};
+			{\footnotesize{\bmark type\\
+			\bmark species\\
+			\bmark site area\\
+			\bmark scaling\\
+			\bmark reverse?}
+		};
 		\node[anchor=north, fill=white, draw=orange!50, ultra thick, text width=\blen] (Rein) at ([yshift=-1*\isep]reactor.south)
-			{
-				\footnotesize{name\\type\\volume\\catalyst area\\flow params}
-			};	
+			{\footnotesize{\bmark type\\
+			\bmark cat area\\
+			\bmark volume\\
+			\bmark flow params}
+		};
+		\node[anchor=north, fill=white, draw=orange!50, ultra thick, text width=\blen] (Syin) at ([yshift=-1*\isep-\rupp*\rsep]system.south)
+			{\footnotesize{\bmark ICs/BCs\\
+			\bmark time\\
+			\bmark solver params}
+		};
 
 		% Input arrows
-		\draw[ultra thick, ->, orange!50] (Ein.north) -- (energy.south);
-		\draw[ultra thick, ->, orange!50] (Sin.north) -- (state.south);
-		\draw[ultra thick, ->, orange!50] (Rin.north) -- (reaction.south);
-		\draw[ultra thick, ->, orange!50] (Scin.north) -- (scaling.south);
-		\draw[ultra thick, ->, orange!50] (Syin.north) -- (system.south);
-		\draw[ultra thick, ->, orange!50] (Rein.north) -- (reactor.south);
-	
-		\node[anchor=south, fill=yellow!20, draw=black, thick, minimum width=\rlen, minimum height=\rwid, text width=\rlen-0.25cm, align=center] (constants) at ([xshift=-0.5*\rsep, yshift=0.6*\rsep]reaction.west)
-			{\footnotesize{Rate\\constants}};
-		\draw[thick, ->, dashed] (constants.south) -- ([xshift=-0.5*\rsep, yshift=0.25*\rwid]reaction.west) -- ([yshift=0.25*\rwid]reaction.west);
+		\draw[ultra thick, ->, orange!50, opacity=1, dotted] ([xshift=-0.1*\rlen]Ein.north) -- ([xshift=-0.1*\rlen]energy.south);
+		\draw[ultra thick, ->, orange!50, opacity=1, dotted] ([xshift=-0.1*\rlen]Sin.north) -- ([xshift=-0.1*\rlen]state.south);
+		\draw[ultra thick, ->, orange!50, opacity=1, dotted] ([xshift=0.1*\rlen]Rin.north) -- ([xshift=0.1*\rlen]reaction.south);
+		\draw[ultra thick, ->, orange!50, opacity=1, dotted] ([xshift=0.1*\rlen]Rein.north) -- ([xshift=0.1*\rlen]reactor.south);
+		\draw[ultra thick, ->, orange!50, opacity=1, dotted] (Syin.north) -- (system.south);
 		
 		% Outputs
 		\node[anchor=north east] at (\xright, \yup)
-			{\footnotesize{\textcolor{cgreen!50}{\textbf{OUTPUTS}}}};
-
-		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Eout) at ([yshift=1.72*\isep]energy.north)
-			{
-				\footnotesize{PES\\ES TOF\\ES XTOF}
-			};
-		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Sout) at ([yshift=1.72*\isep]state.north)
-			{
-				\footnotesize{atoms\\energy terms}
-			};
-		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Rout) at ([yshift=1.72*\isep]reaction.north)
-			{
-				\footnotesize{rate constants\\reaction energy and barrier}
-			};
-		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Scout) at ([yshift=1.72*\isep]scaling.north)
-			{
-				\footnotesize{energy terms}
-			};
-		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Syout) at ([yshift=1.72*\isep, xshift=\rsep+\rlen]scaling.north)
-			{
-				\footnotesize{ODE solver\\SS solver\\DRC\\files}
-			};
-		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Reout) at ([yshift=1.72*\isep]reactor.north)
-			{
-				\footnotesize{ODEs}
-			};
+			{\textcolor{cgreen!50}{\footnotesize{\textbf{OUTPUTS}}}
+		};
+		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Eout) at ([yshift=\isep+\rupp*\rsep]energy.north)
+			{\footnotesize{\bmark PES\\
+			\bmark ESM}
+		};
+		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Sout) at ([yshift=\isep+\rupp*\rsep]state.north)
+			{\footnotesize{\bmark atoms\\
+			\bmark energy terms}
+		};	
+		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Rout) at ([yshift=\isep+\rupp*\rsep]reaction.north)
+			{\footnotesize{\bmark rate\\constants\\
+			\bmark energies}
+		};
+		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Reout) at ([yshift=\isep+\rupp*\rsep]reactor.north)
+			{\footnotesize{\bmark ODEs}
+		};
+		\node[anchor=south, fill=white, draw=cgreen!50, ultra thick, text width=\blen] (Syout) at ([yshift=\isep]system.north)
+			{\footnotesize{\bmark ODE/SS solution\\
+			\bmark DRC}
+		};
 		
 		% Output arrows
-		\draw[ultra thick, <-, cgreen!50] (Eout.south) -- (energy.north);
-		\draw[ultra thick, <-, cgreen!50] (Sout.south) -- (state.north);
-		\draw[ultra thick, <-, cgreen!50] (Rout.south) -- (reaction.north);
-		\draw[ultra thick, <-, cgreen!50] (Scout.south) -- (scaling.north);
-		\draw[ultra thick, <-, cgreen!50] (Syout.south) -- (system.north);
-		\draw[ultra thick, <-, cgreen!50] (Reout.south) -- (reactor.north);	
+		\draw[ultra thick, <-, cgreen!50, opacity=1, dotted] ([xshift=-0.1*\rlen]Eout.south) -- ([xshift=-0.1*\rlen]energy.north);
+		\draw[ultra thick, <-, cgreen!50, opacity=1, dotted] ([xshift=-0.1*\rlen]Sout.south) -- ([xshift=-0.1*\rlen]state.north);
+		\draw[ultra thick, <-, cgreen!50, opacity=1, dotted] ([xshift=0.1*\rlen]Rout.south) -- ([xshift=0.1*\rlen]reaction.north);
+		\draw[ultra thick, <-, cgreen!50, opacity=1, dotted] ([xshift=0.1*\rlen]Reout.south) -- ([xshift=0.1*\rlen]reactor.north);
+		\draw[ultra thick, <-, cgreen!50, opacity=1, dotted] (Syout.south) -- (system.north);
 	
-		% Arrows
-		\draw[thick, ->] (state.west) -- (energy.east);
-		\draw[thick, ->] (state.east) -- (reaction.west);
-		\draw[thick, ->] (scaling.west) -- (reaction.east);
-		\path[thick, ->] (reaction.north) edge[out=90, in=180] node [left] {} (system.west);
-		\path[thick, ->] (reactor.north) edge[out=90, in=360] node [left] {} (system.east);
-		
 	\end{tikzpicture}
 \end{document}
