@@ -107,14 +107,6 @@
             "path": "co/wetdata/energies/ts1-h2o_energy.dat",
             "vibs_path": "co/wetdata/vibrations/ts1-h2o_frequencies.dat"
         },
-        "ts2-h2o":
-        {
-            "state_type": "TS",
-            "energy_source": "datafile",
-            "freq_source": "datafile",
-            "path": "co/wetdata/energies/ts2-h2o_energy.dat",
-            "vibs_path": "co/wetdata/vibrations/ts2-h2o_frequencies.dat"
-        },
         "rad1-h2o":
         {
             "state_type": "TS",

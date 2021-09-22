@@ -138,8 +138,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 0.02,
-                "intercept": -0.22
+                "gradient": 0.05,
+                "intercept": -0.16
             },
             "scaling_reactions":
             {
@@ -157,8 +157,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 1.11,
-                "intercept": 1.58
+                "gradient": 1.17,
+                "intercept": 1.72
             },
             "scaling_reactions":
             {
@@ -176,8 +176,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 1.40,
-                "intercept": 2.44
+                "gradient": 1.45,
+                "intercept": 2.52
             },
             "scaling_reactions":
             {
@@ -195,8 +195,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 1.41,
-                "intercept": 2.07
+                "gradient": 1.19,
+                "intercept": 1.44
             },
             "scaling_reactions":
             {
@@ -214,8 +214,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 0.91,
-                "intercept": -1.37
+                "gradient": 0.95,
+                "intercept": -1.28
             },
             "scaling_reactions":
             {
@@ -233,8 +233,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 1.03,
-                "intercept": -0.21
+                "gradient": 1.07,
+                "intercept": -0.13
             },
             "scaling_reactions":
             {
@@ -252,8 +252,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 0.65,
-                "intercept": -2.18
+                "gradient": 0.66,
+                "intercept": -2.16
             },
             "scaling_reactions":
             {
@@ -271,8 +271,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 0.19,
-                "intercept": -3.73
+                "gradient": 0.21,
+                "intercept": -3.68
             },
             "scaling_reactions":
             {
@@ -290,8 +290,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 0.18,
-                "intercept": -2.36
+                "gradient": 0.25,
+                "intercept": -2.20
             },
             "scaling_reactions":
             {
@@ -309,8 +309,8 @@
             "state_type": "adsorbate",
             "scaling_coeffs":
             {
-                "gradient": 0.02,
-                "intercept": -2.89
+                "gradient": 0.05,
+                "intercept": -2.83
             },
             "scaling_reactions":
             {
@@ -328,8 +328,8 @@
             "state_type": "TS",
             "scaling_coeffs":
             {
-                "gradient": 0.06,
-                "intercept": 0.55
+                "gradient": 0.10,
+                "intercept": 0.65
             },
             "scaling_reactions":
             {
@@ -347,8 +347,8 @@
             "state_type": "TS",
             "scaling_coeffs":
             {
-                "gradient": 0.96,
-                "intercept": 2.09
+                "gradient": 0.99,
+                "intercept": 2.15
             },
             "scaling_reactions":
             {
@@ -366,8 +366,8 @@
             "state_type": "TS",
             "scaling_coeffs":
             {
-                "gradient": 1.18,
-                "intercept": 2.13
+                "gradient": 1.26,
+                "intercept": 2.35
             },
             "scaling_reactions":
             {
@@ -385,8 +385,8 @@
             "state_type": "TS",
             "scaling_coeffs":
             {
-                "gradient": 0.82,
-                "intercept": 0.30
+                "gradient": 0.52,
+                "intercept": -0.62
             },
             "scaling_reactions":
             {
@@ -404,8 +404,8 @@
             "state_type": "TS",
             "scaling_coeffs":
             {
-                "gradient": 0.37,
-                "intercept": -1.75
+                "gradient": 0.38,
+                "intercept": -1.71
             },
             "scaling_reactions":
             {
@@ -423,8 +423,8 @@
             "state_type": "TS",
             "scaling_coeffs":
             {
-                "gradient": 0.10,
-                "intercept": -1.77
+                "gradient": 0.13,
+                "intercept": -1.69
             },
             "scaling_reactions":
             {
@@ -641,7 +641,7 @@
     "system":
     {
         "times": [0.0, 1.0e12],
-        "T": 400.0,
+        "T": 500.0,
         "p": 100000.0,
         "start_state":
         {
@@ -655,7 +655,7 @@
         "atol": 1.0e-10,
         "rtol": 1.0e-8,
         "ode_solver": "ode",
-        "nsteps": 1e6
+        "nsteps": 2e6
     },
 
     "energy landscapes":
