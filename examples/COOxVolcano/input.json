@@ -35,6 +35,23 @@
     
     "scaling relation states":
     {
+        "sO2":
+        {
+            "state_type": "adsorbate",
+            "scaling_coeffs":
+            {
+                "gradient": 0.89,
+                "intercept": 0.17
+            },
+            "scaling_reactions":
+            {
+                "O":
+                {
+                    "reaction": "2O_ads",
+                    "multiplicity": 0.5
+                }
+            }
+        },
         "SRTS_ox":
         {
             "state_type": "TS",
@@ -73,28 +90,19 @@
                     "multiplicity": 0.5
                 }
             }
-        },
-        "sO2":
-        {
-            "state_type": "adsorbate",
-            "scaling_coeffs":
-            {
-                "gradient": 0.89,
-                "intercept": 0.17
-            },
-            "scaling_reactions":
-            {
-                "O":
-                {
-                    "reaction": "2O_ads",
-                    "multiplicity": 0.5
-                }
-            }
         }
     },
 
     "manual reactions":
     {
+        "CO_ads":
+        {
+            "reac_type": "adsorption",
+            "area": 3.14e-20,
+            "reactants": ["CO", "s"],
+            "TS": null,
+            "products": ["sCO"]
+        },
         "O2_ads":
         {
             "reac_type": "adsorption",
@@ -120,14 +128,6 @@
             "TS": ["SRTS_O2"],
             "products": ["sO", "sO"],
             "reversible": false
-        },
-        "CO_ads":
-        {
-            "reac_type": "adsorption",
-            "area": 3.14e-20,
-            "reactants": ["CO", "s"],
-            "TS": null,
-            "products": ["sCO"]
         },
         "2O_ads":
         {
