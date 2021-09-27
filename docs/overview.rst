@@ -273,7 +273,29 @@ if there is a single site type, or
         \textsf{,}
     \end{equation}
 
-if there are multiple site types :math:`S_k`. Reaction rate constants are typically taken to have an Arrhenius form, with the pre-factor determined from transition state theory,
+if there are multiple site types :math:`S_k`. This is achieved naturally by tracking all clean surface site types in the same manner as adsorbates. Then, the Jacobian for this system of differential equations is:
+
+.. math::
+   :nowrap:
+   
+    \begin{equation}
+        \frac{\partial}{\partial{\theta}_n}
+        \frac{\partial{\theta}_j}{\partial t}
+        =
+        \sum_i \nu_{ij}\frac{\partial r_i}{\partial{\theta}_n}
+        =
+        \sum_i \nu_{ij}
+        \left[
+        k_i^{\text{f}}\prod_m p_{im}\sum_q
+        \delta_{qn}
+        \prod_{m\ne q}\theta_{im}-
+        k_i^{\text{r}}\prod_l p_{il}\sum_s
+        \delta_{sn}
+        \prod_{l\ne s}\theta_{il}
+        \right]
+    \end{equation}
+
+Reaction rate constants are typically taken to have an Arrhenius form, with the pre-factor determined from transition state theory,
 
 .. math::
    :nowrap:
@@ -335,21 +357,7 @@ The degree of rate control (DRC) is computed from the overall reaction rate,
         \textsf{,}
     \end{equation}
 
-and can be estimated numerically using finite differences to describe the derivative. The apparent activation energy (:math:`E^{\textsf{app}}`) can be estimated from, 
-
-.. math::
-   :nowrap:
-   
-    \begin{equation}
-        \Delta E^{\textsf{app}}
-        = 
-        RT^2
-        {\left(
-        \frac{\partial \ln r}
-        {\partial T}
-        \right)}
-        \textsf{.}
-    \end{equation}
+and can be estimated numerically using finite differences to perturb the rate constants and describe the derivative. 
 
 Reactor models
 ---------------------
@@ -405,10 +413,11 @@ The central subpackage modules are defined as shown in the figure below:
 
 The modules have the following functions:
     - **State**: A microscopic state, which can be either a surface, adsorbant(s) or gas molecule(s). Information stored can include mass and inertia, energetic terms, structure.
-    - **Scaling**: A microscopic state, which can be either a surface, adsorbant(s) or gas molecule(s). Superficially the same as an instance of State; however, energetic terms are defined by scaling relation.
+    - **ScalingState**: A microscopic state, which can be either a surface, adsorbant(s) or gas molecule(s). Superficially the same as an instance of State; however, energetic terms are defined by scaling relation.
     - **Energy**: An ordered collection of states defining a reaction energy landscape (which can be drawn). Energy span model calculations can be performed using its member functions.
     - **Reaction**: An elementary surface reaction. Defined by lists of reactant, product and transition state states, the site area on which the reaction occurs and the scaling (for example due to a non-unity sticking coefficient). Used to compute reaction energies and barriers, and thus, reaction rate constants. 
     - **Reactor**: The system being studied. Can be either a CSTR or an infinite dilution reactor. Provides information about the boundary conditions (mass transport).
-    - **System**: Defined by a reactor and a set of reactions, with parameters for initial and boundary conditions, and solver tolerances. Used to solve for transient or steady-state profiles of relevant species and to save results.
+    - **System**: Defined by a set of states, a set of reactions, and a reactor, with parameters for initial and boundary conditions, and solver tolerances. Used to solve for transient or steady-state profiles of relevant species, compute the DRC, and to save results.
+    - **Uncertainty**: Defined by a system, the mean and variance of Gaussian distribution, and the number of samples. Used to estimate the propogation of uncertainty in the energy landscape to the kinetics with a correlated error model. 
 
-The reaction rate constants are defined in the functions subpackage and the constants are defined in the constants subpackage. 
+The reaction rate constants, input parser and some preset simulations are defined in the functions subpackage and the physical constants are defined in the constants subpackage. 
