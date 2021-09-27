@@ -234,3 +234,43 @@ plt.savefig(base_out_dir + 'images/tof_vs_temperature_vs_metals.eps', format='ep
 #                                                                                                    study
 #                                                                                                    if study == 'wet'
 #                                                                                                    else ''))
+
+# for study in ['dry', 'wet']:
+#     locs = [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5],
+#             [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5],
+#             [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5]]
+#     fig, ax = plt.subplots(ncols=6, nrows=3, figsize=(8, 4), sharex='all', sharey='all')
+#     for sind, s in enumerate(all_states):
+#         for mind, metal in enumerate(all_metals):
+#             if s in sim_systems[study][metal].energy_landscapes['full_pes'].labels:
+#                 key = s + '-h2o' if study == 'wet' else s
+#                 barval = sim_systems[study][metal].states[key].Gvibr
+#             else:
+#                 barval = 0.0
+#             ax[locs[sind][0]][locs[sind][1]].bar(mind + 1, barval, color=meclrs[all_metals.index(metal)])
+#         if locs[sind][1] == 0:
+#             ax[locs[sind][0]][locs[sind][1]].tick_params(axis='y', which='both',
+#                                                          left=False, right=False)
+#             ax[locs[sind][0]][locs[sind][1]].set(ylabel='Gvibr [eV]')
+#         else:
+#             ax[locs[sind][0]][locs[sind][1]].tick_params(axis='y', which='both',
+#                                                          left=False, right=False, labelleft=False)
+#         if locs[sind][0] == 2:
+#             ax[locs[sind][0]][locs[sind][1]].set(xticks=np.arange(1, len(all_metals) + 1),
+#                                                  xticklabels=metal_names)
+#             ax[locs[sind][0]][locs[sind][1]].tick_params(axis='x', which='both', rotation=90,
+#                                                          bottom=False, top=False)
+#         else:
+#             ax[locs[sind][0]][locs[sind][1]].tick_params(axis='x', which='both',
+#                                                          bottom=False, top=False, labelbottom=False)
+#         ax[locs[sind][0]][locs[sind][1]].text(6, 0.9, state_names[sind],
+#                                               ha='center', va='top', color=gclr)
+#
+#     ax[-1][-1].set(xticks=np.arange(1, len(all_metals) + 1), xticklabels=metal_names,
+#                    xlim=(0, 12), ylim=(-1.2, 1))
+#     ax[-1][-1].tick_params(axis='x', which='both', rotation=90, bottom=False, top=False)
+#
+#     fig.tight_layout()
+#     fig.subplots_adjust(wspace=0, hspace=0)
+#     plt.savefig(base_out_dir + 'images/%s/Gvibr.png' % study, format='png', dpi=600)
+#     plt.savefig(base_out_dir + 'images/%s/Gvibr.eps' % study, format='eps', dpi=600)
