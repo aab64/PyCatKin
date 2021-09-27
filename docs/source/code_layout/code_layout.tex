@@ -49,9 +49,9 @@
 %			{Uncertainty};
 	
 		% Arrows
-		\path[thick, ->, dashed] ([xshift=-0.1*\rlen]system.south) edge[out=270, in=90] node [left] {} ([xshift=0.1*\rlen]state.north);
-		\path[thick, ->, dashed] (state.east) edge[out=0, in=180] node [left] {} (reaction.west);
-		\path[thick, ->, dashed] (state.west) edge[out=180, in=0] node [left] {} (energy.east);
+%		\path[thick, ->, dashed] ([xshift=-0.1*\rlen]system.south) edge[out=270, in=90] node [left] {} ([xshift=0.1*\rlen]state.north);
+		\path[thick, ->] (state.east) edge[out=0, in=180] node [left] {} (reaction.west);
+		\path[thick, ->] (state.west) edge[out=180, in=0] node [left] {} (energy.east);
 		\draw[thick, ->] 
 			 (reaction.north) --
 			 ([yshift=\rupp*\rsep-0.73*\rwid]reaction.north) -- 
