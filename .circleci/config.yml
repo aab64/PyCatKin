@@ -1,4 +1,4 @@
-version: 2.1
+version: 2
 
 orbs:
   # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
@@ -40,5 +40,5 @@ jobs:
           command: |
             pip install --upgrade pip
             pip install pytest
-            pip install .
+            pip install -e .
             pytest test
