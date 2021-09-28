@@ -1,4 +1,5 @@
 from pycatkin.constants.physical_constants import *
+from pycatkin.classes.state import ScalingState
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib as mpl
@@ -314,7 +315,7 @@ def draw_states(sim_system, rotation='', fig_path=None):
             print('Directory does not exist. Will try creating it...')
             os.mkdir(fig_path)
     for s in sim_system.snames:
-        if not isinstance(sim_system.states[s], Scaling):
+        if not isinstance(sim_system.states[s], ScalingState):
             sim_system.states[s].view_atoms(rotation=rotation, path=fig_path)
 
 
