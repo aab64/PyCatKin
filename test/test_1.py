@@ -52,35 +52,39 @@ def test_1(tmpdir):
                      temperatures=temperatures,
                      tof_terms=tof_terms,
                      steady_state_solve=True,
-                     save_results=True)
-    assert(os.path.isfile('drcs_vs_temperature.csv'))
-    df = pd.read_csv('drcs_vs_temperature.csv')
+                     save_results=True,
+                     csv_path=tmpdir)
+    assert(os.path.isfile(tmpdir + 'drcs_vs_temperature.csv'))
+    df = pd.read_csv(filepath_or_buffer=tmpdir + 'drcs_vs_temperature.csv')
     assert([i for i in df.columns[1::] if df[i][0] == max(df.T[0][1::])][0] == 'r9')
     assert([i for i in df.columns[1::] if df[i][1] == min(df.T[1][1::])][0] == 'r0')
 
     print('(6/7) Running energy span calculations')
     run_energy_span_temperatures(sim_system=sim_system,
                                  temperatures=temperatures,
-                                 save_results=True)
-    assert(os.path.isfile('energy_span_summary_full_pes.csv'))
-    df = pd.read_csv('energy_span_summary_full_pes.csv')
+                                 save_results=True,
+                                 csv_path=tmpdir)
+    assert(os.path.isfile(tmpdir + 'energy_span_summary_full_pes.csv'))
+    df = pd.read_csv(filepath_or_buffer=tmpdir + 'energy_span_summary_full_pes.csv')
     assert(df['TDI'][0] == 'sCH3OH')
     assert(df['TDI'][1] == 's2OCH4')
     assert(df['TDTS'][0] == 'TS6')
     assert(df['TDTS'][1] == 'TS3')
 
     print('(7/7) Saving energies')
-    save_state_energies(sim_system=sim_system)
-    assert(os.path.isfile('state_energies_800.0K_1.0bar.csv'))
-    df = pd.read_csv('state_energies_800.0K_1.0bar.csv')
+    save_state_energies(sim_system=sim_system,
+                        csv_path=tmpdir)
+    assert(os.path.isfile(tmpdir + 'state_energies_800.0K_1.0bar.csv'))
+    df = pd.read_csv(filepath_or_buffer=tmpdir + 'state_energies_800.0K_1.0bar.csv')
     assert(abs(max(df['Free (eV)']) - (-7.864)) <= 1e-3)
     assert(abs(max(df['Vibrational (eV)']) - 1.142) <= 1e-3)
     assert(abs(min(df['Rotational (eV)']) - (-1.259)) <= 1e-3)
     assert(abs(min(df['Translational (eV)']) - (-0.659)) <= 1e-3)
 
-    save_energies(sim_system=sim_system)
-    assert(os.path.isfile('reaction_energies_and_barriers_800.0K_1.0bar.csv'))
-    df = pd.read_csv('reaction_energies_and_barriers_800.0K_1.0bar.csv')
+    save_energies(sim_system=sim_system,
+                  csv_path=tmpdir)
+    assert(os.path.isfile(tmpdir + 'reaction_energies_and_barriers_800.0K_1.0bar.csv'))
+    df = pd.read_csv(filepath_or_buffer=tmpdir + 'reaction_energies_and_barriers_800.0K_1.0bar.csv')
     assert(abs(max(df['dEr (J/mol)']) - 220788.916) <= 1e-3)
     assert(abs(max(df['dGr (J/mol)']) - 66358.978) <= 1e-3)
     assert(abs(max(df['dEa (J/mol)']) - 138934.617) <= 1e-3)
