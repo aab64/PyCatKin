@@ -13,7 +13,7 @@ def test_3(tmpdir):
     print('------------------------------------')
 
     print('(1/4) Loading input file')
-    infile = resource_filename(Requirement.parse("pycatkin"), '/examples/COOxReactor/input_Pd111.json')
+    infile = resource_filename(Requirement.parse("pycatkin"), 'examples/COOxReactor/input_Pd111.json')
     assert(os.path.isfile(infile))
     sim_system = read_from_input_file(input_path=infile)
 
@@ -21,7 +21,7 @@ def test_3(tmpdir):
     for s in sim_system.snames:
         if sim_system.states[s].path:
             sim_system.states[s].path = resource_filename(Requirement.parse("pycatkin"),
-                                                          '/examples/COOxReactor/' +
+                                                          'examples/COOxReactor/' +
                                                           sim_system.states[s].path)
 
     print('(3/4) Drawing states with ASE')

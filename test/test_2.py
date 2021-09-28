@@ -12,7 +12,7 @@ def test_2(tmpdir):
     print('------------------------------------')
 
     print('(1/2) Loading input file')
-    infile = resource_filename(Requirement.parse("pycatkin"), '/examples/COOxVolcano/input.json')
+    infile = resource_filename(Requirement.parse("pycatkin"), 'examples/COOxVolcano/input.json')
     assert(os.path.isfile(infile))
     sim_system = read_from_input_file(input_path=infile)
 

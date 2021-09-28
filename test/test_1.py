@@ -8,14 +8,14 @@ import pandas as pd
 
 
 def test_1(tmpdir):
-    """Regression test for DMTM example.
+    """Regression test for DMTM examples.
 
     """
-    print('Regression test for DMTM example.')
+    print('Regression test for DMTM examples.')
     print('---------------------------------')
 
     print('(1/7) Loading input file')
-    infile = resource_filename(Requirement.parse("pycatkin"), '/examples/DMTM/input.json')
+    infile = resource_filename(Requirement.parse("pycatkin"), 'examples/DMTM/input.json')
     assert(os.path.isfile(infile))
     sim_system = read_from_input_file(input_path=infile)
 
@@ -23,11 +23,11 @@ def test_1(tmpdir):
     for s in sim_system.snames:
         if sim_system.states[s].path:
             sim_system.states[s].path = resource_filename(Requirement.parse("pycatkin"),
-                                                          '/examples/DMTM/' +
+                                                          'examples/DMTM/' +
                                                           sim_system.states[s].path)
         if sim_system.states[s].vibs_path:
             sim_system.states[s].vibs_path = resource_filename(Requirement.parse("pycatkin"),
-                                                               '/examples/DMTM/' +
+                                                               'examples/DMTM/' +
                                                                sim_system.states[s].vibs_path)
 
     print('(3/7) Checking system loaded correctly')
