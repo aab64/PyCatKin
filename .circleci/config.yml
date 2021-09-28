@@ -40,4 +40,5 @@ jobs:
           # This assumes pytest is installed via the install-package step above
           command: |
             pip install pytest
+            pip install pycatkin
             pytest
