@@ -1,4 +1,3 @@
-from pycatkin.classes.scaling import *
 from pycatkin.constants.physical_constants import *
 import matplotlib.pyplot as plt
 import numpy as np
