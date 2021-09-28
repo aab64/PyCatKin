@@ -38,6 +38,7 @@ jobs:
       - run:
           name: Run tests
           command: |
+            pip install --upgrade pip
             pip install pytest
             pip install .
-            pytest
+            pytest test
