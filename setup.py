@@ -5,7 +5,7 @@ setuptools.setup(
     version="0.1.0",
     author="Astrid Boje",
     description="Python Catalysis Kinetics Toolset",
-    packages=["pycatkin"],
+    packages=setuptools.find_packages(exclude=["examples","test"]),
     python_requires=">=3.7",
     install_requires=["numpy",
                       "scipy",
