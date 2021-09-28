@@ -13,9 +13,8 @@ be = np.linspace(start=-2.5, stop=0.5, num=10, endpoint=True)
 SCOg = 2.0487e-3
 SO2g = 2.1261e-3
 
-# Note the temperature and pressure
+# Note the temperature
 T = sim_system.params['temperature']
-p = sim_system.params['pressure']
 
 # Loop over energies and compute the activity
 activity = np.zeros((len(be), len(be)))
