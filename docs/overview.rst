@@ -418,6 +418,6 @@ The modules have the following functions:
     - **Reaction**: An elementary surface reaction. Defined by lists of reactant, product and transition state states, the site area on which the reaction occurs and the scaling (for example due to a non-unity sticking coefficient). Used to compute reaction energies and barriers, and thus, reaction rate constants. 
     - **Reactor**: The system being studied. Can be either a CSTR or an infinite dilution reactor. Provides information about the boundary conditions (mass transport).
     - **System**: Defined by a set of states, a set of reactions, and a reactor, with parameters for initial and boundary conditions, and solver tolerances. Used to solve for transient or steady-state profiles of relevant species, compute the DRC, and to save results.
-    - **Uncertainty**: Defined by a system, the mean and variance of Gaussian distribution, and the number of samples. Used to estimate the propogation of uncertainty in the energy landscape to the kinetics with a correlated error model. 
+    - **Uncertainty**: Defined by a system, the mean and variance of Gaussian distribution, and the number of samples. Used to estimate the propagation of uncertainty in the energy landscape to the kinetics with a correlated error model. 
 
 The reaction rate constants, input parser and some preset simulations are defined in the functions subpackage and the physical constants are defined in the constants subpackage. 

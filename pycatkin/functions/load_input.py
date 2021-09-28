@@ -3,7 +3,6 @@ from pycatkin.classes.state import *
 from pycatkin.classes.reaction import *
 from pycatkin.classes.system import *
 from pycatkin.classes.reactor import *
-# from pycatkin.classes.scaling import *
 from pycatkin.classes.energy import *
 
 
