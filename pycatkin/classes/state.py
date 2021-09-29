@@ -11,7 +11,8 @@ class State:
 
     def __init__(self, state_type=None, name=None, path=None, vibs_path=None, sigma=None,
                  mass=None, inertia=None, gasdata=None, add_to_energy=None, path_to_pickle=None,
-                 read_from_alternate=None, truncate_freq=True, energy_source=None, freq_source=None):
+                 read_from_alternate=None, truncate_freq=True, energy_source=None, freq_source=None,
+                 freq=None, i_freq=None, Gelec=None, Gzpe=None, Gvibr=None, Gtran=None, Grota=None, Gfree=None):
         """Initialises State class.
         State class stores the species name and atoms object,
         the electronic energy and vibrational frequencies from DFT,
@@ -42,16 +43,25 @@ class State:
             self.truncate_freq = truncate_freq
             self.energy_source = energy_source
             self.freq_source = freq_source
-            self.atoms = None
+            self.Gelec = Gelec
+            self.Gzpe = Gzpe
+            self.Gtran = Gtran
+            self.Gvibr = Gvibr
+            self.Grota = Grota
+            self.Gfree = Gfree
+            self.tran_source = None if self.Gtran is None else 'inputfile'
+            self.rota_source = None if self.Grota is None else 'inputfile'
+            self.vibr_source = None if self.Gvibr is None else 'inputfile'
+            self.free_source = None if self.Gfree is None else 'inputfile'
             self.freq = None
             self.i_freq = None
-            self.Gelec = None
-            self.Gtran = None
-            self.Gvibr = None
-            self.Grota = None
-            self.Gfree = None
-            self.Gzpe = None
             self.shape = None
+            self.atoms = None
+            if freq is not None:
+                self.freq_source = 'inputfile'
+                self.freq = np.array(sorted(freq, reverse=True))
+                if i_freq is not None:
+                    self.i_freq = np.array(sorted(i_freq, reverse=True))
             if self.state_type == 'gas':
                 assert(self.sigma is not None)
 
@@ -108,7 +118,7 @@ class State:
                 self.i_freq = np.array([float(line.split('=')[1].split('Hz')[0])
                                         for line in lines
                                         if '/' in line])
-        else:
+        elif self.freq_source != 'inputfile':
             freq = None
             i_freq = None
 
@@ -258,49 +268,69 @@ class State:
 
         Saves value in eV."""
 
-        if self.freq is None:
-            self.get_vibrations(verbose=verbose)
+        if self.Gzpe is None:
+            if self.freq is None:
+                self.get_vibrations(verbose=verbose)
 
-        self.Gzpe = 0.5 * h * sum(self.freq) * JtoeV
+            # Truncate some modes if required
+            if self.state_type == 'gas':
+                if self.shape is None:
+                    self.get_atoms()
+                ntrunc = self.shape
+            elif self.state_type == 'TS' and len(self.i_freq) == 0:
+                ntrunc = 1
+            else:
+                ntrunc = 0
+            nfreqs = self.freq.shape[0] - ntrunc
+            use_freq = copy.deepcopy(self.freq[0:nfreqs])
+
+            self.Gzpe = 0.5 * h * sum(use_freq) * JtoeV
 
     def calc_vibrational_contrib(self, T, verbose=False):
         """Calculates vibrational contribution to free energy.
 
         Saves value in eV."""
 
-        if self.freq is None:
-            self.get_vibrations(verbose=verbose)
+        if self.vibr_source is None:
+            if self.Gzpe is None:
+                self.calc_zpe(verbose=verbose)
 
-        # Truncate some modes if required
-        if self.state_type == 'gas':
-            if self.shape is None:
-                self.get_atoms()
-            ntrunc = self.shape
-        elif self.state_type == 'TS' and len(self.i_freq) == 0:
-            ntrunc = 1
-        else:
-            ntrunc = 0
-        nfreqs = self.freq.shape[0] - ntrunc
-        use_freq = copy.deepcopy(self.freq[0:nfreqs])
+            if self.freq is None:
+                self.get_vibrations(verbose=verbose)
 
-        if sum(use_freq) != 0.0:
-            self.Gvibr = (0.5 * h * sum(use_freq) +
-                          kB * T * sum(np.log(1 - np.exp(-use_freq * h / (kB * T))))) * JtoeV
-        else:
-            self.Gvibr = 0.0
+            # Truncate some modes if required
+            if self.state_type == 'gas':
+                if self.shape is None:
+                    self.get_atoms()
+                ntrunc = self.shape
+            elif self.state_type == 'TS' and len(self.i_freq) == 0:
+                ntrunc = 1
+            else:
+                ntrunc = 0
+            nfreqs = self.freq.shape[0] - ntrunc
+            use_freq = copy.deepcopy(self.freq[0:nfreqs])
+
+            if sum(use_freq) != 0.0:
+                self.Gvibr = self.Gzpe + (kB * T * sum(np.log(1 - np.exp(-use_freq * h / (kB * T))))) * JtoeV
+            elif self.Gzpe is not None:
+                self.Gvibr = self.Gzpe
+            else:
+                self.Gvibr = 0.0
 
     def calc_translational_contrib(self, T, p, verbose=False):
         """Calculates translational contribution to free energy.
 
         Saves value in eV."""
 
-        if self.state_type == 'gas':
-            if self.mass is None:
-                self.get_atoms()
-            self.Gtran = (-kB * T * np.log((kB * T / p) *
-                                           pow(2 * np.pi * (self.mass * amutokg) * kB * T / (h ** 2), 1.5))) * JtoeV
-        else:
-            self.Gtran = 0.0
+        if self.tran_source is None:
+            if self.state_type == 'gas':
+                if self.mass is None:
+                    self.get_atoms()
+                self.Gtran = (-kB * T * np.log((kB * T / p) *
+                                               pow(2 * np.pi * (self.mass * amutokg) * kB * T / (h ** 2),
+                                                   1.5))) * JtoeV
+            else:
+                self.Gtran = 0.0
 
         if self.gasdata is not None:
             for s in range(len(self.gasdata['fraction'])):
@@ -313,20 +343,21 @@ class State:
 
         Saves value in eV."""
 
-        if self.state_type == 'gas':
-            if self.inertia is None or self.shape is None:
-                self.get_atoms()
-            I = self.inertia * amuA2tokgm2
-            if self.shape == 2:
-                I = np.sqrt(np.prod([I[i] for i in range(len(I))
-                                     if I[i] != 0]))
-                self.Grota = (-kB * T * np.log(8 * np.pi * np.pi * kB * T * I / (self.sigma * h ** 2))) * JtoeV
+        if self.rota_source is None:
+            if self.state_type == 'gas':
+                if self.inertia is None or self.shape is None:
+                    self.get_atoms()
+                I = self.inertia * amuA2tokgm2
+                if self.shape == 2:
+                    I = np.sqrt(np.prod([I[i] for i in range(len(I))
+                                         if I[i] != 0]))
+                    self.Grota = (-kB * T * np.log(8 * np.pi * np.pi * kB * T * I / (self.sigma * h ** 2))) * JtoeV
+                else:
+                    self.Grota = (-kB * T * np.log((np.sqrt(np.pi) / self.sigma) *
+                                                   pow(8 * np.pi * np.pi * kB * T / (h ** 2), 1.5) *
+                                                   np.sqrt(np.prod(I)))) * JtoeV
             else:
-                self.Grota = (-kB * T * np.log((np.sqrt(np.pi) / self.sigma) *
-                                               pow(8 * np.pi * np.pi * kB * T / (h ** 2), 1.5) *
-                                               np.sqrt(np.prod(I)))) * JtoeV
-        else:
-            self.Grota = 0.0
+                self.Grota = 0.0
 
         if self.gasdata is not None:
             for s in range(len(self.gasdata['fraction'])):
@@ -338,15 +369,18 @@ class State:
 
         Saves value in eV."""
 
-        self.calc_electronic_energy(verbose=verbose)
-        self.calc_vibrational_contrib(T=T, verbose=verbose)
-        self.calc_translational_contrib(T=T, p=p, verbose=verbose)
-        self.calc_rotational_contrib(T=T, verbose=verbose)
-
-        self.Gfree = self.Gelec + self.Gtran + self.Grota + self.Gvibr
+        if self.free_source is None:
+            self.calc_electronic_energy(verbose=verbose)
+            self.calc_vibrational_contrib(T=T, verbose=verbose)
+            self.calc_translational_contrib(T=T, p=p, verbose=verbose)
+            self.calc_rotational_contrib(T=T, verbose=verbose)
+            self.Gfree = self.Gelec + self.Gtran + self.Grota + self.Gvibr
 
         if self.add_to_energy:
             self.Gfree += self.add_to_energy
+
+            if self.free_source == 'inputfile':
+                self.add_to_energy = None
 
         if verbose:
             print((self.name + ': %1.2f eV') % self.Gfree)
@@ -434,6 +468,7 @@ class ScalingState(State):
     def __init__(self, state_type=None, name=None, path=None, vibs_path=None, sigma=None,
                  mass=None, inertia=None, gasdata=None, add_to_energy=None, path_to_pickle=None,
                  read_from_alternate=None, truncate_freq=True, energy_source=None, freq_source=None,
+                 freq=None, i_freq=None, Gelec=None, Gzpe=None, Gvibr=None, Gtran=None, Grota=None, Gfree=None,
                  scaling_coeffs=None, scaling_reactions=None, dereference=False,
                  use_descriptor_as_reactant=False):
         """Initialises scaling relation state class.
@@ -444,7 +479,9 @@ class ScalingState(State):
                                            sigma=sigma, mass=mass, inertia=inertia, gasdata=gasdata,
                                            add_to_energy=add_to_energy, path_to_pickle=path_to_pickle,
                                            read_from_alternate=read_from_alternate, truncate_freq=truncate_freq,
-                                           energy_source=energy_source, freq_source=freq_source)
+                                           energy_source=energy_source, freq_source=freq_source,
+                                           freq=freq, i_freq=i_freq, Gelec=Gelec, Gzpe=Gzpe, Gvibr=Gvibr, Gtran=Gtran,
+                                           Grota=Grota, Gfree=Gfree)
         self.scaling_coeffs = scaling_coeffs
         self.scaling_reactions = scaling_reactions
         self.dereference = dereference
