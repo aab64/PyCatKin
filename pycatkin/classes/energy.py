@@ -60,7 +60,7 @@ class Energy:
                                                                 for i in self.minima[sind]] else 0
 
     def draw_energy_landscape(self, T, p, etype='free', eunits='eV', legend_location='upper right',
-                              verbose=False, path=None, show_labels=False):
+                              verbose=False, path=None, show_labels=False, figtitle=None):
         """Records free and electronic energies of minima and
         transition states on the energy landscape
         relative to the first entry in minima.
@@ -146,11 +146,13 @@ class Energy:
                xticks=range(len(self.energy_landscape[etype].keys())),
                ylabel='Relative ' + etype + ' energy (' + eunits + ')',
                ylim=(ax.get_ylim()[0] - 0.25 * conv, ax.get_ylim()[1] + 0.25 * conv))
+        if figtitle is not None:
+            ax.set(title=figtitle)
         plt.tick_params(axis='x', which='both',
                         bottom=False, top=False, labelbottom=False)
         fig.tight_layout()
         if path is not None:
-            fig.savefig(path + etype + '_energy_landscape.png',
+            fig.savefig(path + etype + '_energy_%s.png' % self.name,
                         format='png', dpi=600)
 
     def draw_energy_landscape_simple(self, T, p, fig, ax, linecolor='k', etype='free', eunits='eV',

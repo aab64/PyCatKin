@@ -497,7 +497,7 @@ def save_pes_energies(sim_system, csv_path=''):
                   sep=',', header=True, index=False)
 
 
-def compare_energy_landscapes(sim_systems, etype='free', eunits='eV', legend_location=None,
+def compare_energy_landscapes(sim_systems, landscapes=None, etype='free', eunits='eV', legend_location=None,
                               show_labels=False, fig_path=None, cmap=None):
     """Draws the energy landscapes for a number of systems using the parameters
     saved to sim_system.params and optionally saves them.
@@ -511,23 +511,43 @@ def compare_energy_landscapes(sim_systems, etype='free', eunits='eV', legend_loc
 
     fig, ax = plt.subplots(figsize=(10, 4))
     if cmap is None:
-        cmap = plt.get_cmap("tab20", len(sim_systems))
+        if landscapes is None:
+            cmap = plt.get_cmap("tab20", len(sim_systems))
+        else:
+            cmap = plt.get_cmap("tab20", len(landscapes))
 
-    for sind, sim_system in enumerate(sim_systems.values()):
-        for k in sim_system.energy_landscapes.keys():
-            fig, ax = sim_system.energy_landscapes[k].draw_energy_landscape_simple(T=sim_system.params['temperature'],
-                                                                                   p=sim_system.params['pressure'],
-                                                                                   verbose=sim_system.params['verbose'],
-                                                                                   fig=fig, ax=ax,
-                                                                                   linecolor=cmap(sind),
-                                                                                   etype=etype, eunits=eunits,
-                                                                                   show_labels=show_labels)
+    if landscapes is None:
+        for sind, sim_system in enumerate(sim_systems.values()):
+            for k in sim_system.energy_landscapes.keys():
+                fig, ax = sim_system.energy_landscapes[k].draw_energy_landscape_simple(
+                    T=sim_system.params['temperature'],
+                    p=sim_system.params['pressure'],
+                    verbose=sim_system.params['verbose'],
+                    fig=fig, ax=ax,
+                    linecolor=cmap(sind),
+                    etype=etype, eunits=eunits,
+                    show_labels=show_labels)
+    else:
+        for kind, k in enumerate(landscapes):
+            fig, ax = sim_systems.energy_landscapes[k].draw_energy_landscape_simple(
+                T=sim_systems.params['temperature'],
+                p=sim_systems.params['pressure'],
+                verbose=sim_systems.params['verbose'],
+                fig=fig, ax=ax,
+                linecolor=cmap(kind),
+                etype=etype, eunits=eunits,
+                show_labels=show_labels)
+
     if legend_location is not None:
         yvals = ax.get_ylim()
         xvals = ax.get_xlim()
+        if landscapes is None:
+            for sind, sname in enumerate(sim_systems.keys()):
+                ax.plot(xvals, (yvals[0] - 1e6, yvals[0] - 1e6), color=cmap(sind), label=sname)
+        else:
+            for sind, sname in enumerate(landscapes):
+                ax.plot(xvals, (yvals[0] - 1e6, yvals[0] - 1e6), color=cmap(sind), label=sname)
 
-        for sind, sname in enumerate(sim_systems.keys()):
-            ax.plot(xvals, (yvals[0] - 1e6, yvals[0] - 1e6), color=cmap(sind), label=sname)
         ax.set(xlim=xvals, ylim=(yvals[0] - 0.05 * abs(yvals[0]), yvals[1] + 0.05 * abs(yvals[1])))
         ax.legend(loc=legend_location)
 
