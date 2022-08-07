@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib as mpl
 import pandas as pd
 import os
+import copy
 
 font = {'family': 'sans-serif', 'weight': 'normal', 'size': 8}
 plt.rc('font', **font)
@@ -580,3 +581,17 @@ def plot_data_simple(fig=None, ax=None, xdata=None, ydata=None, label=None,
 
     return fig, ax
 
+
+def get_tof_for_given_reactions(sim_system, tof_terms):
+    """Given a system, return the sum of the rates of reactions specified in tof_terms.
+
+    """
+
+    sim_system_tmp = copy.deepcopy(sim_system)
+    sim_system_tmp.reaction_terms(sim_system_tmp.solution[-1])
+    tval = 0.0
+    for rval in tof_terms:
+        if rval in sim_system_tmp.reactions.keys():
+            i = list(sim_system_tmp.reactions.keys()).index(rval)
+            tval += sim_system_tmp.rates[i, 0] - sim_system_tmp.rates[i, 1]
+    return tval
