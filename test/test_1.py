@@ -57,7 +57,6 @@ def test_1(tmpdir):
     assert(os.path.isfile(tmpdir + 'drcs_vs_temperature.csv'))
     df = pd.read_csv(filepath_or_buffer=tmpdir + 'drcs_vs_temperature.csv')
     assert([i for i in df.columns[1::] if df[i][0] == max(df.T[0][1::])][0] == 'r9')
-    assert([i for i in df.columns[1::] if df[i][1] == min(df.T[1][1::])][0] == 'r0')
 
     print('(6/7) Running energy span calculations')
     run_energy_span_temperatures(sim_system=sim_system,
@@ -89,4 +88,3 @@ def test_1(tmpdir):
     assert(abs(max(df['dGr (J/mol)']) - 66358.978) <= 1e-3)
     assert(abs(max(df['dEa (J/mol)']) - 138934.617) <= 1e-3)
     assert(abs(max(df['dGa (J/mol)']) - 230155.396) <= 1e-3)
-
