@@ -6,7 +6,7 @@ from pycatkin.classes.reactor import *
 from pycatkin.classes.energy import *
 
 
-def read_from_input_file(input_path='input.json'):
+def read_from_input_file(input_path='input.json', base_system=None):
     """Reads simulation setup including mechanism,
     reaction conditions and solver settings from
     input json file. Creates a new simulator object.
@@ -94,6 +94,13 @@ def read_from_input_file(input_path='input.json'):
                 reactions[r].TS = [sim_system.states[s] for s in reactions[r].TS]
 
     if 'reaction derived reactions' in pck_system.keys():
+        if base_system is None:
+            if reactions is None:
+                raise RuntimeError('Base reactions not defined.')
+        else:
+            if not isinstance(base_system, System):
+                raise RuntimeError('Base system is not an instance of System.')
+
         if reactions is None:
             print('Reading reactions:')
             reactions = dict()
@@ -104,7 +111,7 @@ def read_from_input_file(input_path='input.json'):
             reactions[r].products = [sim_system.states[s] for s in reactions[r].products]
             if reactions[r].TS is not None:
                 reactions[r].TS = [sim_system.states[s] for s in reactions[r].TS]
-            reactions[r].base_reaction = reactions[reactions[r].base_reaction]
+            reactions[r].base_reaction = base_system.reactions[reactions[r].base_reaction]
             reaction_derived_reactions.append(reactions[r].base_reaction.name)
 
     if reactions is not None:
@@ -120,8 +127,7 @@ def read_from_input_file(input_path='input.json'):
                         for sr in s.scaling_reactions.keys():
                             if isinstance(s.scaling_reactions[sr]['reaction'], str):
                                 s.scaling_reactions[sr]['reaction'] = reactions[s.scaling_reactions[sr]['reaction']]
-            if r not in reaction_derived_reactions:
-                sim_system.add_reaction(reaction=reactions[r])
+            sim_system.add_reaction(reaction=reactions[r])
 
     if 'reactor' in pck_system.keys():
         print('Reading reactor:')
