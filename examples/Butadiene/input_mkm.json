@@ -1,0 +1,471 @@
+{
+	"states":
+	{
+		"*":
+		{
+			"state_type": "surface"
+		},
+		"H*":
+		{
+			"state_type": "adsorbate"
+		},
+		"O*":
+		{
+			"state_type": "adsorbate"
+		},
+		"OH*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C2H3O*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C2H4O*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C2H5O*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H6O_1*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H6O_2*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H6O_3*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H7O_1*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H7O_2*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H7O_3*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H8O_1*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H6O2*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H7O2*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H8O2_1*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H8O2_2*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H9O2_1*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H9O2_2*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H8O_2*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H8O_3*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H9O*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H8O2_3*":
+		{
+			"state_type": "adsorbate"
+		},
+		"C4H10O*":
+		{
+			"state_type": "adsorbate"
+		},
+		"H2":
+		{
+			"state_type": "gas",
+			"sigma": 2,
+			"mass": 2.016
+		},
+		"H2O":
+		{
+			"state_type": "gas",
+			"sigma": 2,
+			"mass": 18.02
+		},
+		"C2H4":
+		{
+			"state_type": "gas",
+			"sigma": 1,
+			"mass": 28.05
+		},
+		"C4H6":
+		{
+			"state_type": "gas",
+			"sigma": 1,
+			"mass": 54.09
+		},
+		"C2H4O":
+		{
+			"state_type": "gas",
+			"sigma": 1,
+			"mass": 44.05
+		},
+		"C2H5OH":
+		{
+			"state_type": "gas",
+			"sigma": 1,
+			"mass": 46.07
+		},
+		"C4H6O":
+		{
+			"state_type": "gas",
+			"sigma": 1,
+			"mass": 70.09
+		},
+		"C4H10O":
+		{
+			"state_type": "gas",
+			"sigma": 1,
+			"mass": 74.12
+		},
+		"C4H8O2":
+		{
+			"state_type": "gas",
+			"sigma": 1,
+			"mass": 88.11
+		}
+	},
+
+	"manual reactions":
+	{
+		"12A-12C":
+		{
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H7O_1*", "H*"],
+			"products": ["C4H8O_2*", "*"],
+			"dGrxn_user": -0.1,
+			"dGa_fwd_user": 0.61,
+			"area": 4.875e-19
+		},
+		"12C-12E":
+		{
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H8O_2*"],
+			"products": ["C4H8O_3*"],
+			"dGrxn_user": -0.05,
+			"dGa_fwd_user": 1.06,
+			"area": 4.875e-19
+		},
+		"12E-12G":
+		{
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H8O_3*", "H*"],
+			"products": ["C4H9O*", "*"],
+			"dGrxn_user": -0.69,
+			"dGa_fwd_user": 0.20,
+			"area": 4.875e-19
+		},
+		"butanol-12G":
+		{
+			"reac_type": "adsorption",
+			"reactants": ["C4H10O", "*", "*"],
+			"products": ["C4H9O*", "H*"],
+			"dGrxn_user": 0.46,
+			"dGa_fwd_user": null,
+			"area": 4.875e-19
+		}
+	},
+
+	"reaction derived reactions":
+	{
+		"1A-1C":
+		{
+			"base_reaction": "1A-1C",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H5O*", "H*"],
+			"products": ["H2", "C2H4O*", "*"],
+			"area": 4.875e-19
+		},
+		"2A-2C":
+		{
+			"base_reaction": "2A-2C",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H4O*", "*"],
+			"products": ["C2H3O*", "H*"],
+			"area": 4.875e-19
+		},
+		"2F-2H":
+		{
+			"base_reaction": "2F-2H",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H3O*", "C2H4O*"],
+			"products": ["C4H7O2*", "*"],
+			"area": 4.875e-19
+		},
+		"2J-2L":
+		{
+			"base_reaction": "2J-2L",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H7O2*", "*"],
+			"products": ["C4H6O2*", "H*"],
+			"area": 4.875e-19
+		},
+		"2L-2N":
+		{
+			"base_reaction": "2L-2N",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H6O2*", "*"],
+			"products": ["C4H6O_1*", "O*"],
+			"area": 4.875e-19
+		},
+		"3A-3C":
+		{
+			"base_reaction": "3A-3C",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H6O_1*", "C2H5O*"],
+			"products": ["C4H7O_1*", "C2H4O*"],
+			"area": 4.875e-19
+		},
+		"3D-3F":
+		{
+			"base_reaction": "3D-3F",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H7O_1*", "*"],
+			"products": ["C4H6O_2*", "H*"],
+			"area": 4.875e-19
+		},
+		"3F-3G":
+		{
+			"base_reaction": "3F-3G",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H6O_2*"],
+			"products": ["C4H6", "O*"],
+			"area": 4.875e-19
+		},
+		"4A-4C":
+		{
+			"base_reaction": "4A-4C",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H5O*", "C4H7O2*"],
+			"products": ["C4H8O2_1*", "C2H4O*"],
+			"area": 4.875e-19
+		},
+		"4D-4Ca":
+		{
+			"base_reaction": "4D-4Ca",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H9O2_1*", "*"],
+			"products": ["C4H8O2_1*", "H*"],
+			"area": 4.875e-19
+		},
+		"4D-4F":
+		{
+			"base_reaction": "4D-4F",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H9O2_1*", "*"],
+			"products": ["C4H8O2_2*", "H*"],
+			"area": 4.875e-19
+		},
+		"4F-4H":
+		{
+			"base_reaction": "4F-4H",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H8O2_2*", "*"],
+			"products": ["C4H7O_2*", "OH*"],
+			"area": 4.875e-19
+		},
+		"4I-4K":
+		{
+			"base_reaction": "4I-4K",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H7O_2*", "*"],
+			"products": ["C4H6", "O*", "H*"],
+			"area": 4.875e-19
+		},
+		"5A-5C":
+		{
+			"base_reaction": "5A-5C",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H5O*", "H*"],
+			"products": ["C2H4", "OH*", "H*"],
+			"area": 4.875e-19
+		},
+		"6A-6C":
+		{
+			"base_reaction": "6A-6C",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H4", "C2H4O*", "*"],
+			"products": ["C4H8O_1*", "*"],
+			"area": 4.875e-19
+		},
+		"6C-6E":
+		{
+			"base_reaction": "6C-6E",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H8O_1*", "*"],
+			"products": ["C4H7O_3*", "H*"],
+			"area": 4.875e-19
+		},
+		"6E-6G":
+		{
+			"base_reaction": "6E-6G",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H7O_3*", "*"],
+			"products": ["C4H6O_3*", "H*"],
+			"area": 4.875e-19
+		},
+		"6G-6H":
+		{
+			"base_reaction": "6G-6H",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H6O_3*"],
+			"products": ["C4H6", "O*"],
+			"area": 4.875e-19
+		},
+		"7A-7E":
+		{
+			"base_reaction": "7A-7E",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H4O*", "C2H5O*"],
+			"products": ["C4H9O2_2*", "*"],
+			"area": 4.875e-19
+		},
+		"9D-9C":
+		{
+			"base_reaction": "9D-9C",
+			"reac_type": "Arrhenius",
+			"reactants": ["O*", "H*"],
+			"products": ["OH*", "*"],
+			"area": 4.875e-19
+		},
+		"ethanol-1A":
+		{
+			"base_reaction": "ethanol-1A",
+			"reac_type": "adsorption",
+			"reactants": ["C2H5OH", "*", "*"],
+			"products": ["C2H5O*", "H*"],
+			"area": 4.875e-19
+		},
+		"8A-8C":
+		{
+			"base_reaction": "8A-8C",
+			"reac_type": "adsorption",
+			"reactants": ["H2", "*", "*"],
+			"products": ["H*", "H*"],
+			"area": 4.875e-19
+		},
+		"H2O-9B":
+		{
+			"base_reaction": "H2O-9B",
+			"reac_type": "adsorption",
+			"reactants": ["H2O", "*", "*"],
+			"products": ["OH*", "H*"],
+			"area": 4.875e-19
+		},
+		"acetaldehyde-10B":
+		{
+			"base_reaction": "acetaldehyde-10B",
+			"reac_type": "adsorption",
+			"reactants": ["C2H4O", "*"],
+			"products": ["C2H4O*"],
+			"area": 4.875e-19
+		},
+		"crotonaldehyde-2N":
+		{
+			"base_reaction": "crotonaldehyde-2N",
+			"reac_type": "adsorption",
+			"reactants": ["C4H6O", "*"],
+			"products": ["C4H6O_1*"],
+			"area": 4.875e-19
+		},
+		"3Ci-3Ciii":
+		{
+			"base_reaction": "3Ci-3Ciii",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H7O_1*", "H*", "H*"],
+			"products": ["C4H9O*", "*", "*"],
+			"area": 4.875e-19
+		},
+		"3Civ-3Cvi":
+		{
+			"base_reaction": "3Civ-3Cvi",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H9O*", "H*"],
+			"products": ["C4H10O*", "*"],
+			"area": 4.875e-19
+		},
+		"butanol-3Cvi":
+		{
+			"base_reaction": "butanol-3Cvi",
+			"reac_type": "adsorption",
+			"reactants": ["C4H10O", "*"],
+			"products": ["C4H10O*"],
+			"area": 4.875e-19
+		},
+		"7Ei-7Eiii":
+		{
+			"base_reaction": "7Ei-7Eiii",
+			"reac_type": "Arrhenius",
+			"reactants": ["C4H9O2_2*", "*"],
+			"products": ["C4H8O2_3*", "H*"],
+			"area": 4.875e-19
+		},
+		"ethylacetate-7Eiii":
+		{
+			"base_reaction": "ethylacetate-7Eiii",
+			"reac_type": "adsorption",
+			"reactants": ["C4H8O2", "*"],
+			"products": ["C4H8O2_3*"],
+			"area": 4.875e-19
+		}
+	},
+
+	"reactor": "InfiniteDilutionReactor",
+
+	"system":
+	{
+		"times": [0, 86400],
+		"T": 723,
+		"p": 101325,
+		"start_state":
+		{
+			"*": 1.0,
+			"H2": 0.0002,
+			"H2O": 2.0e-10,
+			"C2H4": 0.0002,
+			"C4H6": 2.0e-10,
+			"C2H4O": 2.0e-10,
+			"C2H5OH": 0.02,
+			"C4H6O": 2.0e-10,
+			"C4H10O": 0.0,
+			"C4H8O2": 0.0
+		},
+		"atol": 1e-08,
+		"rtol": 1e-06,
+		"xtol": null,
+		"ftol": 1.0e-8,
+		"use_jacobian": true,
+		"verbose": false
+	}
+}
