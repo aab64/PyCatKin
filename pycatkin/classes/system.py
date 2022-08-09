@@ -370,7 +370,7 @@ class System:
                                       len(self.snames)))
             self.solution[0, :] = yinit
             i = 1
-            while sol.successful() and sol.t < self.params['times'][-1]:
+            while sol.successful() and i <= self.params['nsteps']:
                 sol.integrate(self.times[i])
                 self.solution[i, :] = sol.y
                 i += 1
