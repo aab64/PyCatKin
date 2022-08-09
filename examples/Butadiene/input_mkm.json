@@ -438,6 +438,70 @@
 			"reactants": ["C4H8O2", "*"],
 			"products": ["C4H8O2_3*"],
 			"area": 4.875e-19
+		},
+		"1A-1C_Cu":
+		{
+			"base_reaction": "1A-1C_Cu",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H5O*", "H*"],
+			"products": ["H2", "C2H4O*", "*"],
+			"area": 4.875e-19
+		},
+		"1A-1C_Zn":
+		{
+			"base_reaction": "1A-1C_Zn",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H5O*", "H*"],
+			"products": ["H2", "C2H4O*", "*"],
+			"area": 4.875e-19
+		},
+		"2F-2H_Cu":
+		{
+			"base_reaction": "2F-2H_Cu",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H3O*", "C2H4O*"],
+			"products": ["C4H7O2*", "*"],
+			"area": 4.875e-19
+		},
+		"2F-2H_Zn":
+		{
+			"base_reaction": "2F-2H_Zn",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H3O*", "C2H4O*"],
+			"products": ["C4H7O2*", "*"],
+			"area": 4.875e-19
+		},
+		"5A-5C_Cu":
+		{
+			"base_reaction": "5A-5C_Cu",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H5O*", "H*"],
+			"products": ["C2H4", "OH*", "H*"],
+			"area": 4.875e-19
+		},
+		"5A-5C_Zn":
+		{
+			"base_reaction": "5A-5C_Zn",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H5O*", "H*"],
+			"products": ["C2H4", "OH*", "H*"],
+			"area": 4.875e-19
+		},
+		"6A-6C_Cu":
+		{
+			"base_reaction": "6A-6C_Cu",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H4", "C2H4O*", "*"],
+			"products": ["C4H8O_1*", "*"],
+			"area": 4.875e-19
+		},
+		"6A-6C_Zn":
+		{
+			"base_reaction": "6A-6C_Zn",
+			"reac_type": "Arrhenius",
+			"reactants": ["C2H4", "C2H4O*", "*"],
+			"products": ["C4H8O_1*", "*"],
+			"area": 4.875e-19
 		}
 	},
 
@@ -463,8 +527,8 @@
 		},
 		"atol": 1e-08,
 		"rtol": 1e-06,
-		"xtol": null,
-		"ftol": 1.0e-8,
+		"xtol": 1.0e-8,
+		"ftol": 1.0e-12,
 		"use_jacobian": true,
 		"verbose": false
 	}
